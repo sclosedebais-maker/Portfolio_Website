@@ -33,6 +33,15 @@ Accessibility: single `h1`, ordered headings, a skip link, visible focus rings o
 every interactive element, AA contrast in both themes, and a
 `prefers-reduced-motion` path that disables all animation.
 
+## Just open it
+
+`sonya-close-debais.html` is the whole site in one file: CSS and JavaScript are
+inlined, so it needs nothing else next to it. Double-click it and it opens in your
+browser. You can email it, put it on a USB stick, or drop it on any web host as-is.
+
+It is generated from the three source files, so edit those and regenerate rather
+than editing the bundle by hand.
+
 ## Running it locally
 
 ```sh

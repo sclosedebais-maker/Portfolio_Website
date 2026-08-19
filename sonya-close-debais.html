@@ -1,0 +1,1465 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Sonya Close-DeBais | Data & AI Advisory</title>
+    <meta name="description" content="Sonya Close-DeBais. Data & AI Business Advisory Lead at Avanade. 25+ years in design-led digital transformation, AI strategy, and building capability.">
+    <noscript>
+      <style>
+        /* The reveal animation starts hidden and is switched on by script.js.
+           With no JS there is nothing to switch it on, so show everything. */
+        .section, .timeline-item, .skill, .passion, .case, .edu-item {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      </style>
+    </noscript>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+/* ============================================================================
+   SONYA CLOSE-DEBAIS PORTFOLIO
+   Design System: Black Cockatoo
+   ─────────────────────────────────────────────────────────────────────────
+   A restrained, confident personal site. Deep charcoal ground, crimson tail
+   flash, muted garden olive. Editorial rhythm, generous whitespace, F1 detail.
+   ============================================================================ */
+
+/* ============================================================================
+   RESET & BASE
+   ============================================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+/* ============================================================================
+   COLOUR TOKENS – LIGHT THEME (base :root)
+   ============================================================================ */
+
+:root {
+  /* Ground & Ink */
+  --bg: #faf8f5;
+  --bg-raised: #ffffff;
+  --ink: #16151a;
+  --ink-soft: #5c5c66;
+
+  /* Accents */
+  --accent: #b7202e;
+  --accent-soft: #d84d2a;
+  --olive: #5c6b4a;
+  --chilli: #e85a2a;
+
+  /* Detail */
+  --line: rgba(0, 0, 0, 0.12);
+  --line-bold: rgba(0, 0, 0, 0.24);
+
+  /* Spacing scale (for consistency) */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+}
+
+/* ============================================================================
+   COLOUR TOKENS – DARK THEME (system preference)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111013;
+    --bg-raised: #1a1820;
+    --ink: #f2efe9;
+    --ink-soft: #d4cfc7;
+
+    --accent: #e2564f;
+    --accent-soft: #f07548;
+    --olive: #8ea070;
+    --chilli: #f07548;
+
+    --line: rgba(255, 255, 255, 0.14);
+    --line-bold: rgba(255, 255, 255, 0.28);
+  }
+
+  :root:not([data-theme="light"]) .skill {
+    box-shadow: none;
+  }
+}
+
+/* ============================================================================
+   COLOUR TOKENS – DARK THEME (explicit override)
+   ============================================================================ */
+
+:root[data-theme="dark"] {
+  --bg: #111013;
+  --bg-raised: #1a1820;
+  --ink: #f2efe9;
+  --ink-soft: #d4cfc7;
+
+  --accent: #e2564f;
+  --accent-soft: #f07548;
+  --olive: #8ea070;
+  --chilli: #f07548;
+
+  --line: rgba(255, 255, 255, 0.14);
+  --line-bold: rgba(255, 255, 255, 0.28);
+}
+
+:root[data-theme="dark"] .skill {
+  box-shadow: none;
+}
+
+/* ============================================================================
+   BODY & TYPOGRAPHY
+   ============================================================================ */
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* Display type (hero) */
+.hero-name {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(3rem, 11vw, 8rem);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+}
+
+/* Section titles */
+.section-title {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: clamp(2rem, 3.5vw, 2.75rem);
+}
+
+/* Monospace for numerals, labels, labels */
+.section-num,
+.timeline-year,
+.eyebrow,
+.nav-links a {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: clamp(0.65rem, 1vw, 0.85rem);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ============================================================================
+   SKIP LINK
+   ============================================================================ */
+
+.skip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--accent);
+  color: var(--bg);
+  border-radius: 0 0 8px 0;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.skip:focus {
+  transform: translateY(0);
+}
+
+/* ============================================================================
+   NAVIGATION
+   ============================================================================ */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  background: rgba(var(--bg-rgb), 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+
+  /* CSS custom property fallback for background */
+  --bg-rgb: 250, 248, 245;
+}
+
+:root[data-theme="dark"] .nav,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .nav {
+    --bg-rgb: 17, 16, 19;
+  }
+}
+
+.nav-mark {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: center;
+}
+
+.nav-links a {
+  position: relative;
+  color: var(--ink);
+  font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+.nav-links a.is-active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.nav-links a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background-color: transparent;
+  transition: border-color 0.3s ease;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.theme-toggle-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  transition: transform 0.3s ease;
+}
+
+/* ============================================================================
+   HERO SECTION
+   ============================================================================ */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: min(80vh, 52rem);
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+  padding-top: clamp(3rem, 6vw, 5rem);
+  padding-bottom: clamp(3.5rem, 6.5vw, 5.5rem);
+}
+
+.eyebrow {
+  color: var(--olive);
+  margin-bottom: var(--space-md);
+  font-size: clamp(0.65rem, 1vw, 0.75rem);
+}
+
+.hero-name {
+  word-break: break-word;
+  margin-bottom: var(--space-md);
+}
+
+.hero-line {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.375rem, 2.6vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+  max-width: 34ch;
+  margin-bottom: var(--space-lg);
+  color: var(--ink);
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  line-height: 1.7;
+  max-width: 46ch;
+  margin-bottom: var(--space-2xl);
+  color: var(--ink-soft);
+}
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1.5rem, 3vw, 2rem);
+  border-radius: 50px;
+  font-size: clamp(0.9rem, 1vw, 1rem);
+  font-weight: 600;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-soft);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-bold);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ============================================================================
+   SECTIONS
+   ============================================================================ */
+
+.section {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+  padding-top: clamp(3.5rem, 6.5vw, 5.5rem);
+  padding-bottom: clamp(3.5rem, 6.5vw, 5.5rem);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.section.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.section-num {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--accent);
+  margin-bottom: var(--space-md);
+  font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+}
+
+.section-num::after {
+  content: '';
+  flex: 0 0 4rem;
+  height: 1px;
+  background-color: var(--line-bold);
+}
+
+.prose {
+  margin-top: 0;
+  font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+  line-height: 1.7;
+  color: var(--ink-soft);
+  max-width: 44rem;
+}
+
+.prose + .prose {
+  margin-top: 1.25em;
+}
+
+.prose p + p {
+  margin-top: 1.25em;
+}
+
+/* ============================================================================
+   PLACEHOLDER TEXT
+   ============================================================================ */
+
+.ph {
+  color: var(--ink-soft);
+  text-decoration: underline dashed var(--line-bold);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* ============================================================================
+   TIMELINE
+   ============================================================================ */
+
+.timeline {
+  margin-top: 0;
+  position: relative;
+  list-style: none;
+  padding-left: 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--line-bold);
+}
+
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 1.5rem;
+  padding: 0 0 clamp(2rem, 3.5vw, 2.75rem) 2rem;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.timeline-item.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 720px) {
+  .timeline-item {
+    grid-template-columns: 1fr;
+    padding-left: 2rem;
+    gap: 1rem;
+  }
+}
+
+/* Stagger animation for timeline items */
+.timeline-item:nth-child(1) {
+  transition-delay: 0.06s;
+}
+
+.timeline-item:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.timeline-item:nth-child(3) {
+  transition-delay: 0.18s;
+}
+
+.timeline-item:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+.timeline-item:nth-child(5) {
+  transition-delay: 0.3s;
+}
+
+.timeline-item:nth-child(n + 6) {
+  transition-delay: calc((var(--index, 0) + 1) * 0.06s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s;
+  }
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 1.5rem;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  border: 2px solid var(--bg);
+  transform: translateX(-50%);
+}
+
+.timeline-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-top: 0.25rem;
+}
+
+.timeline-year {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.timeline-role {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.05rem, 1.3vw, 1.2rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.timeline-org {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.timeline-desc {
+  color: var(--ink-soft);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+/* ============================================================================
+   TIMELINE ROLES (nested list)
+   ============================================================================ */
+
+.timeline-roles {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 34rem;
+}
+
+.timeline-roles li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 520px) {
+  .timeline-roles li {
+    flex-wrap: wrap;
+  }
+}
+
+.timeline-roles-title {
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.timeline-roles-date {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   SKILLS GRID
+   ============================================================================ */
+
+.skills-grid {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (min-width: 600px) {
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .skills-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.skill {
+  padding: clamp(1.5rem, 2.5vw, 1.85rem);
+  background-color: var(--bg-raised);
+  border: 1px solid var(--line-bold);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.skill.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger animation for skills */
+.skill:nth-child(1) {
+  transition-delay: 0.06s;
+}
+
+.skill:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.skill:nth-child(3) {
+  transition-delay: 0.18s;
+}
+
+.skill:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+.skill:nth-child(5) {
+  transition-delay: 0.3s;
+}
+
+.skill:nth-child(6) {
+  transition-delay: 0.36s;
+}
+
+.skill:nth-child(n + 7) {
+  transition-delay: calc((var(--index, 0) + 1) * 0.06s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill {
+    opacity: 1;
+    transform: none;
+    transition: border-color 0.3s ease;
+    transition-delay: 0s;
+  }
+}
+
+.skill:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.skill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.skill-name {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  line-height: 1.2;
+}
+
+.skill-desc {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+/* ============================================================================
+   CASES GRID
+   ============================================================================ */
+
+.cases {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (min-width: 900px) {
+  .cases {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.case {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  background-color: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.case.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger animation for cases */
+.case:nth-child(1) {
+  transition-delay: 0.06s;
+}
+
+.case:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.case:nth-child(3) {
+  transition-delay: 0.18s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case {
+    opacity: 1;
+    transform: none;
+    transition: border-color 0.3s ease;
+    transition-delay: 0s;
+  }
+}
+
+.case:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.case:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.case-kicker {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--olive);
+  margin-bottom: 0.75rem;
+}
+
+.case-title {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.case-text {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.case-metric {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+/* ============================================================================
+   PASSIONS GRID
+   ============================================================================ */
+
+.passions {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (max-width: 900px) {
+  .passions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.passion {
+  padding: clamp(1.5rem, 3vw, 2rem);
+  background-color: var(--bg-raised);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.passion.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger animation for passions */
+.passion:nth-child(1) {
+  transition-delay: 0.06s;
+  border-left-color: var(--accent);
+}
+
+.passion:nth-child(2) {
+  transition-delay: 0.12s;
+  border-left-color: var(--chilli);
+}
+
+.passion:nth-child(3) {
+  transition-delay: 0.18s;
+  border-left-color: var(--olive);
+}
+
+.passion:nth-child(4) {
+  transition-delay: 0.24s;
+  border-left-color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .passion {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s;
+  }
+}
+
+.passion-name {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.1rem, 1.3vw, 1.25rem);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  line-height: 1.2;
+}
+
+.passion-text {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+/* ============================================================================
+   EDUCATION LIST
+   ============================================================================ */
+
+.edu-list {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (min-width: 760px) {
+  .edu-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.edu-item {
+  border-left: 2px solid var(--olive);
+  padding-left: 1.25rem;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.edu-item.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger animation for edu items */
+.edu-item:nth-child(1) {
+  transition-delay: 0.06s;
+}
+
+.edu-item:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.edu-item:nth-child(3) {
+  transition-delay: 0.18s;
+}
+
+.edu-item:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edu-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s;
+  }
+}
+
+.edu-title {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.edu-meta {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--olive);
+  margin: 0.4rem 0 0.6rem;
+}
+
+.edu-note {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ============================================================================
+   CONTACT LINKS
+   ============================================================================ */
+
+.contact-links {
+  margin-top: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  list-style: none;
+  padding-left: 0;
+  margin-top: var(--space-xl);
+}
+
+.contact-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  color: var(--ink);
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) 0%,
+    transparent 0%
+  );
+  background-size: 0% 2px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition: background-size 0.4s ease;
+  padding-bottom: 2px;
+}
+
+.contact-link:hover {
+  background-size: 100% 2px;
+}
+
+.contact-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.footer {
+  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  text-align: center;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: clamp(0.85rem, 0.95vw, 0.9rem);
+}
+
+.footer-mark {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--accent);
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+/* ============================================================================
+   FOCUS VISIBLE (global override for clarity)
+   ============================================================================ */
+
+*:focus-visible {
+  outline-color: var(--accent);
+}
+
+/* ============================================================================
+   UTILITIES & RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 760px) {
+  .nav-links {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: var(--space-sm) var(--space-md);
+  }
+}
+
+/* Ensure no horizontal scroll on any viewport */
+body,
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ============================================================================
+   END STYLESHEET
+   ============================================================================ */
+  </style>
+</head>
+<body>
+
+    <a class="skip" href="#top">Skip to content</a>
+
+    <header class="nav">
+        <a class="nav-mark" href="#top">SCD</a>
+        <nav class="nav-links">
+            <a href="#about">About</a>
+            <a href="#work">Experience</a>
+            <a href="#highlights">Work</a>
+            <a href="#skills">Skills</a>
+            <a href="#offclock">Off the clock</a>
+            <a href="#contact">Contact</a>
+        </nav>
+        <button class="theme-toggle" aria-label="Toggle colour theme">
+            <span class="theme-toggle-dot"></span>
+        </button>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero" id="top">
+            <p class="eyebrow">Brisbane, Australia · Data & AI · Design innovation</p>
+            <h1 class="hero-name">Sonya Close-DeBais</h1>
+            <p class="hero-line">I lead AI and digital transformation by designing for business need and human use, not technology first.</p>
+            <p class="hero-sub">I'm the Data & AI Business Advisory Lead at Avanade, working across Financial Services, Government, Defence, and Mining. After twenty-five years and a research master's in design innovation, I've learned that transformation works best when you start with the problem and the people.</p>
+            <div class="hero-cta">
+                <a class="btn btn-primary" href="#contact">Get in touch</a>
+                <a class="btn btn-ghost" href="#work">See the work</a>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section class="section" id="about">
+            <p class="section-num">01</p>
+            <h2 class="section-title">About</h2>
+            <div class="prose">
+                <p>Right now, I lead the AI Community of Practice at Avanade, designing and delivering AI-driven solutions for clients in Financial Services, Government, Defence, Utilities, Mining, and CMT. My work sits between business need and technology capability. I translate strategic vision into proofs of concept and deployable systems. I mentor junior team members, with a focus on building women into leadership in technology.</p>
+                <p>For twenty-five years, I've grounded my work in design thinking and human-centred approaches to complex problems. I hold a research master's in design innovation because I learned early that the technology is usually the easy part. The hard part is understanding what matters, designing for real use, and building teams and capability that sustains the work. That thread runs through every role I've held, from risk and process design through to AI strategy.</p>
+                <p>If you've been in a room where someone asked the question everyone hoped had gone away, it was probably me. I'm the one who'll push back on "that's how we've always done it" and won't let a dodgy assumption slide. Some call it annoying. I call it caring about getting it right. In twenty-five years, that's proven surprisingly useful.</p>
+            </div>
+        </section>
+
+        <!-- Experience -->
+        <section class="section" id="work">
+            <p class="section-num">02</p>
+            <h2 class="section-title">Experience</h2>
+            <ol class="timeline">
+                <li class="timeline-item">
+                    <div class="timeline-meta">
+                        <span class="timeline-year">2021 — now</span>
+                    </div>
+                    <div class="timeline-body">
+                        <h3 class="timeline-role">Group Manager, Advanced Analytics</h3>
+                        <p class="timeline-org">Avanade</p>
+                        <p class="timeline-desc">Lead AI-driven initiatives and advisory for clients across Financial Services, Government, Defence, Utilities, Mining, and Communications. Present to boards and senior leadership on AI strategy, business value, and how to start and scale AI capability. Design solutions grounded in client need and measurable outcomes.</p>
+                    </div>
+                </li>
+                <li class="timeline-item">
+                    <div class="timeline-meta">
+                        <span class="timeline-year">2008 — 2020</span>
+                    </div>
+                    <div class="timeline-body">
+                        <h3 class="timeline-role">Six roles, insurance and banking</h3>
+                        <p class="timeline-org">Suncorp Group</p>
+                        <p class="timeline-desc">Progressed through leadership roles spanning risk, process design, innovation, business design, and AI. Built enterprise AI strategy and roadmap. Designed cognitive systems that captured expert decision-making and delivered measurable business value. Led innovation initiatives including a blockchain prototype for workers compensation that brought together teams across four regions.</p>
+                        <ul class="timeline-roles">
+                            <li><span class="timeline-roles-title">Artificial Intelligence Manager</span> <span class="timeline-roles-date">Aug 2019 – Oct 2020</span></li>
+                            <li><span class="timeline-roles-title">Innovation Manager</span> <span class="timeline-roles-date">May 2019 – Aug 2019</span></li>
+                            <li><span class="timeline-roles-title">Senior Business Design Manager</span> <span class="timeline-roles-date">Jul 2016 – May 2019</span></li>
+                            <li><span class="timeline-roles-title">Senior Innovation Partner</span> <span class="timeline-roles-date">Feb 2012 – Jun 2016</span></li>
+                            <li><span class="timeline-roles-title">Senior Process Designer</span> <span class="timeline-roles-date">Jul 2010 – Feb 2012</span></li>
+                            <li><span class="timeline-roles-title">Senior Risk Manager</span> <span class="timeline-roles-date">Jun 2008 – Jul 2010</span></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="timeline-item">
+                    <div class="timeline-meta">
+                        <span class="timeline-year">2007 — 2008</span>
+                    </div>
+                    <div class="timeline-body">
+                        <h3 class="timeline-role">Senior Risk Consultant</h3>
+                        <p class="timeline-org">Financial Services Consulting</p>
+                        <p class="timeline-desc">Advised financial services clients on risk framework and control design. Built risk-based decision models and control operating models.</p>
+                    </div>
+                </li>
+                <li class="timeline-item">
+                    <div class="timeline-meta">
+                        <span class="timeline-year">2005 — 2007</span>
+                    </div>
+                    <div class="timeline-body">
+                        <h3 class="timeline-role">Risk & Compliance Manager</h3>
+                        <p class="timeline-org">Infocus Wealth Management</p>
+                        <p class="timeline-desc">Managed risk and compliance for an AFS licence covering 50 financial planning offices and 220 financial planners. Built frameworks, policy, and monitoring that scaled across a distributed network.</p>
+                    </div>
+                </li>
+                <li class="timeline-item">
+                    <div class="timeline-meta">
+                        <span class="timeline-year">2000 — 2002</span>
+                    </div>
+                    <div class="timeline-body">
+                        <h3 class="timeline-role">Financial Analyst</h3>
+                        <p class="timeline-org">Australian Securities and Investments Commission</p>
+                        <p class="timeline-desc">Analysed financial compliance and regulatory risk across the financial services sector.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Selected work -->
+        <section class="section" id="highlights">
+            <p class="section-num">03</p>
+            <h2 class="section-title">Selected work</h2>
+            <div class="cases">
+                <article class="case">
+                    <p class="case-kicker">Avanade · 2021—now</p>
+                    <h3 class="case-title">AI for domestic violence protection orders</h3>
+                    <p class="case-text">Led a multidisciplinary team to build a working AI concept helping victim-survivors of domestic violence complete protection order applications. The work was presented to Assistant Commissioners of Police across all Australian jurisdictions and to Ministers for Domestic Violence, and was sponsored through to presentation with the Federal Domestic Violence Commissioner.</p>
+                    <p class="case-metric">Presented to all Australian police jurisdictions</p>
+                </article>
+                <article class="case">
+                    <p class="case-kicker">Suncorp · 2016—2019</p>
+                    <h3 class="case-title">Cloning expert decisions</h3>
+                    <p class="case-text">Led design, UX, and delivery of a cognitive modelling system that captured the judgement of the business's expert decision-makers and moved those decisions closer to customers. The system improved speed and consistency while preserving expert insight.</p>
+                    <p class="case-metric">$468,000 benefit in six months · 52% shorter customer wait</p>
+                </article>
+                <article class="case">
+                    <p class="case-kicker">Suncorp · 2019</p>
+                    <h3 class="case-title">Blockchain for workers compensation</h3>
+                    <p class="case-text">Led a virtual team across India, New York, Tasmania, and Queensland to build a working blockchain prototype that cut the time required to manage workers compensation claims. Presented the findings at the Accord blockchain symposium.</p>
+                    <p class="case-metric">Team across four regions · Presented at Accord</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="section" id="skills">
+            <p class="section-num">04</p>
+            <h2 class="section-title">What I do</h2>
+            <ul class="skills-grid">
+                <li class="skill">
+                    <h3 class="skill-name">Artificial Intelligence & Generative AI</h3>
+                    <p class="skill-desc">Designing and delivering AI-driven solutions using Azure OpenAI services, machine learning, and conversational AI. Grounding AI in genuine business need and measurable outcomes rather than technology first.</p>
+                </li>
+                <li class="skill">
+                    <h3 class="skill-name">Design-Led Innovation</h3>
+                    <p class="skill-desc">Applying design thinking and human-centred approaches to complex business and technology challenges. Holding a research master's in this practice, I use it to understand problems before solving them.</p>
+                </li>
+                <li class="skill">
+                    <h3 class="skill-name">Strategy & Foresight</h3>
+                    <p class="skill-desc">Building AI strategy and roadmaps that align technology capability with business value and competitive position. Helping organisations see around the corner and prepare for emerging technology.</p>
+                </li>
+                <li class="skill">
+                    <h3 class="skill-name">Executive Advisory & Facilitation</h3>
+                    <p class="skill-desc">Presenting to boards and senior leadership on AI, technology, and business value. Facilitating conversations across functions to align strategy and resolve competing priorities. Running workshops on innovation and digital transformation.</p>
+                </li>
+                <li class="skill">
+                    <h3 class="skill-name">Delivery & Business Value</h3>
+                    <p class="skill-desc">Leading the end-to-end delivery of complex programmes. Using business model analysis and value frameworks to ensure technology drives measurable outcomes, not just features.</p>
+                </li>
+                <li class="skill">
+                    <h3 class="skill-name">Building Capability</h3>
+                    <p class="skill-desc">Designing and leading the development of people and teams. Mentoring junior team members and building women into leadership in technology. Creating organisations and teams that can sustain innovation beyond individual effort.</p>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Education & Speaking -->
+        <section class="section" id="education">
+            <p class="section-num">05</p>
+            <h2 class="section-title">Study &amp; speaking</h2>
+            <ul class="edu-list">
+                <li class="edu-item">
+                    <h3 class="edu-title">Master of Design (Research), Design Innovation</h3>
+                    <p class="edu-meta">Queensland University of Technology, 2016–2018</p>
+                    <p class="edu-note">Thesis: "Exploring design thinking programs for innovation in a large organisation."</p>
+                </li>
+                <li class="edu-item">
+                    <h3 class="edu-title">Artificial Intelligence</h3>
+                    <p class="edu-meta">RMIT Online, 2019</p>
+                    <p class="edu-note">Graded mastery in AI strategy and business application.</p>
+                </li>
+                <li class="edu-item">
+                    <h3 class="edu-title">Understanding and Identifying Design-Led Innovation Capability in Large Organisations</h3>
+                    <p class="edu-meta">Design Management Institute Conference, 2016</p>
+                    <p class="edu-note">Peer-reviewed conference paper.</p>
+                </li>
+                <li class="edu-item">
+                    <h3 class="edu-title">Auditing Design & Innovation Programmes in a Multinational Insurance Provider</h3>
+                    <p class="edu-meta">ISPIM Conference, 2015</p>
+                    <p class="edu-note">Peer-reviewed conference paper.</p>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Off the clock -->
+        <section class="section" id="offclock">
+            <p class="section-num">06</p>
+            <h2 class="section-title">Off the clock</h2>
+            <div class="passions">
+                <article class="passion">
+                    <h3 class="passion-name">Black cockatoos</h3>
+                    <p class="passion-text">The red-tailed black cockatoo is possibly the most elegant thing in the Australian sky. It's a kind of aggressive grace. I've spent mornings watching them, usually because I should be doing something else. There's something about their single-mindedness that feels like home.</p>
+                </article>
+                <article class="passion">
+                    <h3 class="passion-name">Chillis</h3>
+                    <p class="passion-text">I grow hot chillis the way some people grow roses, with devoted obsession. Every summer I'm experimenting with heat, flavour, and which varieties will outlast the local pests. It's strategic gardening. It's also just deeply satisfying to bite into something you grew yourself.</p>
+                </article>
+                <article class="passion">
+                    <h3 class="passion-name">The garden</h3>
+                    <p class="passion-text">A working garden teaches you patience and brutality in equal measure. Some things don't make it. Some years you get aphids instead of eggplants. But there's a kind of honest productivity in it that I find genuinely restorative. It's the opposite of management meetings.</p>
+                </article>
+                <article class="passion">
+                    <h3 class="passion-name">Formula One</h3>
+                    <p class="passion-text">I've followed F1 since I could sit still long enough to watch a race. It's not about the glamour. It's the strategic complexity that gets me. Team orders, tyre management, reading the track, incremental gains, and the engineering brilliance required to win by half a second. It's strategy and execution in its purest form. I respect that deeply.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section class="section" id="contact">
+            <p class="section-num">07</p>
+            <h2 class="section-title">Get in touch</h2>
+            <p class="prose">If something here resonates, or if you're working on something that needs a clear head and straight talk, I'd like to hear about it.</p>
+            <div class="contact-links">
+                <a class="contact-link" href="mailto:s.closedebais@gmail.com">s.closedebais@gmail.com</a>
+                <a class="contact-link" href="https://www.linkedin.com/in/sonya-close-debais-901bb893/" target="_blank" rel="noopener">LinkedIn</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 Sonya Close-DeBais. Built honestly. <span class="footer-mark"></span></p>
+    </footer>
+<script>
+(function() {
+    // ===== Theme Toggle =====
+    const themeToggle = document.querySelector('.theme-toggle');
+    const html = document.documentElement;
+    const themeKey = 'scd-theme';
+
+    // Restore saved theme on load
+    const savedTheme = localStorage.getItem(themeKey);
+    if (savedTheme) {
+        html.setAttribute('data-theme', savedTheme);
+    }
+
+    // Toggle theme on button click
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem(themeKey, next);
+        });
+    }
+
+    // ===== Reveal on Scroll =====
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const elementsToReveal = document.querySelectorAll('.section, .timeline-item, .skill, .passion, .case, .edu-item');
+
+    if (prefersReduced) {
+        // If motion is reduced, immediately show all elements
+        elementsToReveal.forEach(el => {
+            el.classList.add('is-visible');
+        });
+    } else {
+        // Use IntersectionObserver for reveal on scroll
+        const revealObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        // Only add once
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.12 }
+        );
+
+        elementsToReveal.forEach(el => {
+            revealObserver.observe(el);
+        });
+    }
+
+    // ===== Scroll Spy =====
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const sections = document.querySelectorAll('.section, .hero');
+
+    const scrollSpyObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    navLinks.forEach(link => {
+                        link.classList.remove('is-active');
+                        if (link.getAttribute('href') === `#${id}`) {
+                            link.classList.add('is-active');
+                        }
+                    });
+                }
+            });
+        },
+        { threshold: 0.3 }
+    );
+
+    sections.forEach(section => {
+        scrollSpyObserver.observe(section);
+    });
+})();
+</script>
+</body>
+</html>
