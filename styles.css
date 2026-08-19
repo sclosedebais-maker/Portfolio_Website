@@ -118,6 +118,10 @@ button {
     --line: rgba(255, 255, 255, 0.14);
     --line-bold: rgba(255, 255, 255, 0.28);
   }
+
+  :root:not([data-theme="light"]) .skill {
+    box-shadow: none;
+  }
 }
 
 /* ============================================================================
@@ -137,6 +141,10 @@ button {
 
   --line: rgba(255, 255, 255, 0.14);
   --line-bold: rgba(255, 255, 255, 0.28);
+}
+
+:root[data-theme="dark"] .skill {
+  box-shadow: none;
 }
 
 /* ============================================================================
@@ -179,7 +187,7 @@ h6 {
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  margin-bottom: clamp(2rem, 4vw, 3rem);
+  margin-bottom: clamp(2rem, 3.5vw, 2.75rem);
 }
 
 /* Monospace for numerals, labels, labels */
@@ -318,13 +326,13 @@ h6 {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  min-height: min(88vh, 60rem);
+  min-height: min(80vh, 52rem);
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 5vw, 3rem);
   padding-top: clamp(3rem, 6vw, 5rem);
-  padding-bottom: clamp(4rem, 8vw, 7rem);
+  padding-bottom: clamp(3.5rem, 6.5vw, 5.5rem);
 }
 
 .eyebrow {
@@ -340,18 +348,18 @@ h6 {
 
 .hero-line {
   font-family: Fraunces, Georgia, serif;
-  font-size: clamp(1.25rem, 2.5vw, 1.9rem);
+  font-size: clamp(1.375rem, 2.6vw, 2rem);
   font-weight: 600;
-  line-height: 1.3;
-  max-width: 48rem;
+  line-height: 1.25;
+  max-width: 34ch;
   margin-bottom: var(--space-lg);
   color: var(--ink);
 }
 
 .hero-sub {
-  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
   line-height: 1.7;
-  max-width: 52rem;
+  max-width: 46ch;
   margin-bottom: var(--space-2xl);
   color: var(--ink-soft);
 }
@@ -361,7 +369,7 @@ h6 {
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
-  margin-top: var(--space-2xl);
+  margin-top: clamp(2rem, 4vw, 2.75rem);
 }
 
 /* ============================================================================
@@ -417,8 +425,8 @@ h6 {
   max-width: 72rem;
   margin-inline: auto;
   padding-inline: clamp(1.25rem, 5vw, 3rem);
-  padding-top: clamp(4rem, 8vw, 7rem);
-  padding-bottom: clamp(4rem, 8vw, 7rem);
+  padding-top: clamp(3.5rem, 6.5vw, 5.5rem);
+  padding-bottom: clamp(3.5rem, 6.5vw, 5.5rem);
   opacity: 0;
   transform: translateY(18px);
   transition: opacity 0.6s ease, transform 0.6s ease;
@@ -438,8 +446,9 @@ h6 {
 }
 
 .section-num {
-  position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   color: var(--accent);
   margin-bottom: var(--space-md);
   font-size: clamp(0.75rem, 1.2vw, 0.85rem);
@@ -447,16 +456,13 @@ h6 {
 
 .section-num::after {
   content: '';
-  display: block;
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 2rem;
+  flex: 0 0 4rem;
   height: 1px;
   background-color: var(--line-bold);
 }
 
 .prose {
+  margin-top: 0;
   font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
   line-height: 1.7;
   color: var(--ink-soft);
@@ -487,6 +493,7 @@ h6 {
    ============================================================================ */
 
 .timeline {
+  margin-top: 0;
   position: relative;
   list-style: none;
   padding-left: 0;
@@ -505,7 +512,7 @@ h6 {
 .timeline-item {
   position: relative;
   display: grid;
-  grid-template-columns: 8.5rem 1fr;
+  grid-template-columns: 9.5rem 1fr;
   gap: 1.5rem;
   padding: 0 0 clamp(2rem, 3.5vw, 2.75rem) 2rem;
   opacity: 0;
@@ -563,13 +570,14 @@ h6 {
 .timeline-item::before {
   content: '';
   position: absolute;
-  left: -6px;
+  left: 6px;
   top: 1.5rem;
   width: 13px;
   height: 13px;
   border-radius: 50%;
   background-color: var(--accent);
   border: 2px solid var(--bg);
+  transform: translateX(-50%);
 }
 
 .timeline-meta {
@@ -599,7 +607,7 @@ h6 {
 
 .timeline-org {
   color: var(--ink-soft);
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .timeline-desc {
@@ -609,15 +617,70 @@ h6 {
 }
 
 /* ============================================================================
+   TIMELINE ROLES (nested list)
+   ============================================================================ */
+
+.timeline-roles {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 34rem;
+}
+
+.timeline-roles li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 520px) {
+  .timeline-roles li {
+    flex-wrap: wrap;
+  }
+}
+
+.timeline-roles-title {
+  font-size: 0.9rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.timeline-roles-date {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* ============================================================================
    SKILLS GRID
    ============================================================================ */
 
 .skills-grid {
+  margin-top: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-columns: 1fr;
   gap: clamp(1.25rem, 2.5vw, 2rem);
   list-style: none;
   padding-left: 0;
+}
+
+@media (min-width: 600px) {
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .skills-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .skill {
@@ -687,8 +750,8 @@ h6 {
 
 .skill-name {
   font-family: Fraunces, Georgia, serif;
-  font-size: clamp(1rem, 1.2vw, 1.1rem);
-  font-weight: 700;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
   margin-bottom: var(--space-sm);
   line-height: 1.2;
 }
@@ -700,10 +763,116 @@ h6 {
 }
 
 /* ============================================================================
+   CASES GRID
+   ============================================================================ */
+
+.cases {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (min-width: 900px) {
+  .cases {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.case {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  background-color: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.case.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger animation for cases */
+.case:nth-child(1) {
+  transition-delay: 0.06s;
+}
+
+.case:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.case:nth-child(3) {
+  transition-delay: 0.18s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case {
+    opacity: 1;
+    transform: none;
+    transition: border-color 0.3s ease;
+    transition-delay: 0s;
+  }
+}
+
+.case:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.case:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.case-kicker {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--olive);
+  margin-bottom: 0.75rem;
+}
+
+.case-title {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.case-text {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.case-metric {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+/* ============================================================================
    PASSIONS GRID
    ============================================================================ */
 
 .passions {
+  margin-top: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: clamp(1.25rem, 2.5vw, 2rem);
@@ -777,23 +946,107 @@ h6 {
 }
 
 /* ============================================================================
+   EDUCATION LIST
+   ============================================================================ */
+
+.edu-list {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (min-width: 760px) {
+  .edu-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.edu-item {
+  border-left: 2px solid var(--olive);
+  padding-left: 1.25rem;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.edu-item.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger animation for edu items */
+.edu-item:nth-child(1) {
+  transition-delay: 0.06s;
+}
+
+.edu-item:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.edu-item:nth-child(3) {
+  transition-delay: 0.18s;
+}
+
+.edu-item:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edu-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s;
+  }
+}
+
+.edu-title {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.edu-meta {
+  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--olive);
+  margin: 0.4rem 0 0.6rem;
+}
+
+.edu-note {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ============================================================================
    CONTACT LINKS
    ============================================================================ */
 
 .contact-links {
+  margin-top: 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+  flex-wrap: wrap;
+  gap: 2rem;
   list-style: none;
   padding-left: 0;
+  margin-top: var(--space-xl);
 }
 
 .contact-link {
   position: relative;
   display: inline-flex;
   align-items: center;
-  font-size: clamp(1rem, 1.2vw, 1.15rem);
-  font-weight: 600;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
   color: var(--ink);
   background: linear-gradient(
     to right,
@@ -832,10 +1085,12 @@ h6 {
 
 .footer-mark {
   display: inline-block;
-  font-family: JetBrains Mono, IBM Plex Mono, ui-monospace, monospace;
-  font-weight: 700;
-  color: var(--accent);
-  margin-right: var(--space-xs);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--accent);
+  vertical-align: middle;
+  margin-left: 0.5rem;
 }
 
 /* ============================================================================
@@ -850,22 +1105,15 @@ h6 {
    UTILITIES & RESPONSIVE
    ============================================================================ */
 
+@media (max-width: 760px) {
+  .nav-links {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .nav {
-    padding: var(--space-md);
-  }
-
-  .nav-links {
-    gap: var(--space-md);
-  }
-
-  .hero {
-    min-height: auto;
-    padding: var(--space-2xl) var(--space-lg);
-  }
-
-  .section {
-    padding: var(--space-2xl) var(--space-lg);
+    padding: var(--space-sm) var(--space-md);
   }
 }
 

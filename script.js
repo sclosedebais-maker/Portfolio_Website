@@ -22,7 +22,7 @@
 
     // ===== Reveal on Scroll =====
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const elementsToReveal = document.querySelectorAll('.section, .timeline-item, .skill, .passion');
+    const elementsToReveal = document.querySelectorAll('.section, .timeline-item, .skill, .passion, .case, .edu-item');
 
     if (prefersReduced) {
         // If motion is reduced, immediately show all elements
