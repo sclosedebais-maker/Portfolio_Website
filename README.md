@@ -36,10 +36,23 @@ every interactive element, AA contrast in both themes, and a
 ## Running it locally
 
 ```sh
+./serve.sh
+```
+
+That serves the folder and opens <http://localhost:8000> in your browser. Pass a
+port if 8000 is taken: `./serve.sh 3000`. Ctrl+C stops it.
+
+If you would rather not use the script, this is all it does:
+
+```sh
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000>.
+You can also just double-click `index.html` to open it straight from disk. Every
+part of the page works that way, including the theme toggle and the scroll
+animations, because there is no build step and nothing is fetched from your own
+server. The only reason to prefer the local server is that it matches how the
+site will behave once hosted.
 
 ## Hosting
 
