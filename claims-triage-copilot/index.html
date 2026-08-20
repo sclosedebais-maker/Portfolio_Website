@@ -1,0 +1,1562 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claims &amp; Vulnerable-Customer Triage Copilot — synthetic demo</title>
+<link rel="icon" href="data:,">
+<meta name="robots" content="noindex">
+<style>
+/* ============================================================
+   Claims & Vulnerable-Customer Triage Copilot
+   Synthetic conference demo. No network, no storage, no LLM.
+   ============================================================ */
+
+:root{
+  --ink:#111116;
+  --cloud:#FFFFFF;
+  --panel:#F5F7FA;
+  --signal:#FF5800;
+  --slate:#4A4F58;
+
+  /* derived tokens */
+  --signal-text:#C23F00;   /* accent at AA for small text on light */
+  --line:#E1E6ED;
+  --line-strong:#C9D1DB;
+  --slate-soft:#6B717B;
+  --ink-soft:#2A2C34;
+  --panel-deep:#EAEEF4;
+  --ink-line:#2C2E38;
+  --ink-panel:#1A1C23;
+
+  --r-lg:16px;
+  --r-md:12px;
+  --r-sm:8px;
+
+  --shadow-sm:0 1px 2px rgba(17,17,22,.05), 0 1px 3px rgba(17,17,22,.04);
+  --shadow-md:0 2px 4px rgba(17,17,22,.04), 0 8px 24px rgba(17,17,22,.07);
+
+  --font:Calibri, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+
+  --rail:296px;
+  --notes:352px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--cloud);
+  color:var(--slate);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{color:var(--ink);margin:0;font-weight:700;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--ink);color:#fff;padding:10px 16px;border-radius:var(--r-sm);transition:top .15s}
+.skip:focus{top:12px}
+
+/* ---------- app frame ---------- */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ---------- banner ---------- */
+.banner{
+  flex:0 0 auto;display:flex;align-items:center;gap:14px;
+  background:var(--signal);color:#1A0800;
+  padding:7px 24px;font-size:12.5px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;
+}
+.banner .dot{width:8px;height:8px;border-radius:50%;background:#1A0800;flex:0 0 auto}
+.banner .sep{opacity:.55;font-weight:600;letter-spacing:.04em;text-transform:none;font-size:12.5px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:24px;
+  background:var(--ink);color:#EDEFF3;padding:0 24px;height:62px;
+  border-bottom:1px solid var(--ink-line);
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand .mark{
+  width:30px;height:30px;border-radius:9px;background:var(--signal);
+  display:grid;place-items:center;flex:0 0 auto;
+}
+.brand .mark svg{display:block}
+.brand h1{color:#fff;font-size:16px;line-height:1.2;white-space:nowrap}
+.brand .sub{font-size:12px;color:#9AA1AD;line-height:1.2;margin-top:1px;white-space:nowrap}
+
+.topbar-spacer{flex:1 1 auto}
+
+.topbtn{
+  background:transparent;border:1px solid #3A3D48;color:#DFE3EA;
+  padding:7px 13px;border-radius:999px;cursor:pointer;font-size:13px;
+  display:inline-flex;align-items:center;gap:8px;transition:background .15s,border-color .15s;
+  white-space:nowrap;
+}
+.topbtn:hover{background:#22242D;border-color:#4E525E}
+.topbtn[aria-pressed="true"]{background:var(--signal);border-color:var(--signal);color:#1A0800;font-weight:700}
+.topbtn kbd{font:inherit;font-size:11px;opacity:.7;border:1px solid currentColor;border-radius:4px;padding:0 4px;line-height:15px}
+.topbtn[aria-pressed="true"] kbd{opacity:.85}
+
+/* ---------- body layout ---------- */
+.main{flex:1 1 auto;display:flex;min-height:0}
+
+/* ---------- left rail ---------- */
+.rail{
+  flex:0 0 var(--rail);width:var(--rail);background:var(--panel);
+  border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;
+}
+.rail-scroll{overflow-y:auto;padding:18px 16px 22px;display:flex;flex-direction:column;gap:20px}
+.rail-label{
+  font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--slate-soft);margin-bottom:9px;
+}
+
+.caselist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.casebtn{
+  width:100%;text-align:left;background:var(--cloud);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:11px 12px;cursor:pointer;display:flex;gap:11px;
+  align-items:flex-start;transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.casebtn:hover{border-color:var(--line-strong);box-shadow:var(--shadow-sm)}
+.casebtn[aria-current="true"]{border-color:var(--ink);background:var(--ink);box-shadow:var(--shadow-md)}
+.casebtn[aria-current="true"] .casebtn-name{color:#fff}
+.casebtn[aria-current="true"] .casebtn-meta{color:#A7AEBA}
+.casebtn .num{
+  flex:0 0 auto;width:21px;height:21px;border-radius:6px;background:var(--panel-deep);
+  color:var(--slate);font-size:12px;font-weight:700;display:grid;place-items:center;margin-top:1px;
+}
+.casebtn[aria-current="true"] .num{background:var(--signal);color:#1A0800}
+.casebtn-name{display:block;font-weight:700;color:var(--ink);font-size:14px;line-height:1.25}
+.casebtn-meta{display:block;font-size:12px;color:var(--slate-soft);margin-top:3px;line-height:1.35}
+.casebtn-tier{
+  display:inline-block;margin-top:7px;font-size:10.5px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--line-strong);
+  color:var(--slate);background:var(--panel);
+}
+.casebtn[aria-current="true"] .casebtn-tier{border-color:#43464F;background:#22242D;color:#D6DAE2}
+.tier-high{border-color:var(--signal)!important;color:var(--signal-text)!important;background:#FFF1E9!important}
+.casebtn[aria-current="true"] .tier-high{background:#3A1A08!important;color:#FFB489!important;border-color:#7A3A12!important}
+
+/* audit trail */
+.audit{display:flex;flex-direction:column;gap:0}
+.audit-empty{font-size:12.5px;color:var(--slate-soft);font-style:italic;line-height:1.45}
+.audit-item{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.audit-item:first-child{border-top:0}
+.audit-time{flex:0 0 auto;font-size:11.5px;color:var(--slate-soft);font-variant-numeric:tabular-nums;padding-top:1px;width:36px}
+.audit-body{font-size:12.5px;line-height:1.4}
+.audit-actor{font-weight:700;color:var(--ink)}
+.audit-actor.ai{color:var(--slate-soft);font-weight:700}
+
+/* ---------- centre column ---------- */
+.stage{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;min-height:0;background:var(--cloud)}
+
+.stage-head{flex:0 0 auto;padding:20px 32px 0;border-bottom:1px solid var(--line)}
+.claimhead{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.claimhead h2{font-size:22px;line-height:1.2}
+.claimhead .ref{font-size:12.5px;color:var(--slate-soft);margin-top:4px;font-variant-numeric:tabular-nums}
+.claimhead-spacer{flex:1 1 auto}
+.claimfacts{display:flex;gap:26px;flex-wrap:wrap}
+.fact .k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--slate-soft)}
+.fact .v{font-size:13.5px;color:var(--ink);font-weight:600;margin-top:2px}
+
+/* stepper */
+.stepper{display:flex;gap:0;margin:18px -32px 0;padding:0 32px;list-style:none;overflow:hidden}
+.stepper li{flex:1 1 0;min-width:0}
+.step{
+  width:100%;background:transparent;border:0;border-bottom:3px solid transparent;
+  padding:9px 6px 11px;text-align:left;cursor:default;display:flex;gap:8px;align-items:center;
+  color:var(--slate-soft);
+}
+.step .sn{
+  flex:0 0 auto;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line-strong);
+  display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--cloud);
+}
+.step .st{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step[data-state="done"]{color:var(--slate)}
+.step[data-state="done"] .sn{background:var(--ink);border-color:var(--ink);color:#fff}
+.step[data-state="active"]{color:var(--ink);border-bottom-color:var(--signal)}
+.step[data-state="active"] .sn{background:var(--signal);border-color:var(--signal);color:#1A0800}
+.step[data-state="active"] .st{font-weight:700}
+
+.stage-scroll{flex:1 1 auto;overflow-y:auto;padding:24px 32px 40px;scroll-behavior:smooth}
+.stack{display:flex;flex-direction:column;gap:18px;max-width:900px}
+
+/* ---------- cards ---------- */
+.card{background:var(--cloud);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
+.card:focus{outline:none}
+.card:focus-visible{outline:3px solid var(--signal);outline-offset:3px}
+.card.filled{background:var(--panel);box-shadow:none}
+.card-head{display:flex;align-items:center;gap:12px;padding:16px 20px 0}
+.card-head h3{font-size:15.5px}
+.card-head .spacer{flex:1 1 auto}
+.card-body{padding:14px 20px 18px}
+.card-foot{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:14px 20px;border-top:1px solid var(--line);background:var(--panel);
+  border-radius:0 0 var(--r-lg) var(--r-lg);
+}
+.card-foot .hint{font-size:12.5px;color:var(--slate-soft);flex:1 1 auto;min-width:180px}
+
+.tag{
+  display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--line-strong);color:var(--slate);background:var(--panel);white-space:nowrap;
+}
+.tag.ai{background:var(--ink);border-color:var(--ink);color:#fff}
+.tag.draft{background:#FFF1E9;border-color:#FFC7A5;color:var(--signal-text)}
+.tag.human{background:#fff;border-color:var(--ink);color:var(--ink)}
+.tag.hold{background:#fff;border-color:var(--line-strong);color:var(--slate-soft)}
+
+/* buttons */
+.btn{
+  border-radius:999px;padding:9px 18px;cursor:pointer;font-size:14px;font-weight:600;
+  border:1px solid transparent;transition:background .15s,border-color .15s,color .15s,transform .08s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-primary:hover{background:#000}
+.btn-accent{background:var(--signal);color:#1A0800;border-color:var(--signal);font-weight:700}
+.btn-accent:hover{background:#E64F00}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+.btn-ghost:hover{background:var(--panel);border-color:var(--slate-soft)}
+.btn-quiet{background:transparent;color:var(--slate);border-color:transparent;padding:9px 12px;text-decoration:underline;text-underline-offset:3px}
+.btn-quiet:hover{color:var(--ink)}
+.btn[disabled]{opacity:.42;cursor:not-allowed}
+.btn[disabled]:active{transform:none}
+
+/* ---------- step 1 : complexity ---------- */
+.complexity{display:flex;align-items:stretch;gap:20px;flex-wrap:wrap}
+.cx-dial{
+  flex:0 0 168px;border-radius:var(--r-md);background:var(--panel);border:1px solid var(--line);
+  padding:16px;display:flex;flex-direction:column;justify-content:center;gap:10px;
+}
+.cx-value{font-size:27px;font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.02em}
+.cx-value.high{color:var(--signal-text)}
+.cx-scale{display:flex;gap:4px}
+.cx-seg{height:6px;flex:1 1 0;border-radius:3px;background:var(--panel-deep)}
+.cx-seg.on{background:var(--ink)}
+.cx-seg.on.high{background:var(--signal)}
+.cx-conf{font-size:12px;color:var(--slate-soft)}
+.cx-why{flex:1 1 320px;min-width:280px}
+.cx-why ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.cx-why li{display:flex;gap:10px;font-size:14px;line-height:1.45}
+.cx-why li::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--signal);margin-top:8px}
+
+.override{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-strong)}
+.override[hidden]{display:none}
+.chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.chip{
+  background:var(--cloud);border:1px solid var(--line-strong);border-radius:999px;
+  padding:6px 14px;font-size:13px;cursor:pointer;transition:.15s;
+}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:700}
+
+/* ---------- step 2 : signals ---------- */
+.axisbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.axis{
+  font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 10px;border-radius:var(--r-sm);background:var(--panel);color:var(--slate);
+  border:1px solid var(--line);
+}
+.axis b{color:var(--ink)}
+
+.signals{display:flex;flex-direction:column;gap:11px}
+.signal{
+  border:1px solid var(--line);border-radius:var(--r-md);background:var(--cloud);
+  padding:14px 16px;transition:opacity .25s, border-color .2s, background .2s;
+}
+.signal[data-weight="high"]{border-color:#FFC7A5;background:#FFFAF7}
+.signal[data-kind="protective"]{background:var(--panel);border-style:dashed}
+.signal[data-status="setaside"]{opacity:.44}
+.signal-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.signal-title{font-size:14.5px;font-weight:700;color:var(--ink);flex:1 1 auto;min-width:160px}
+.wt{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.wt-high{background:var(--signal);color:#1A0800}
+.wt-moderate{background:var(--ink);color:#fff}
+.wt-low{background:var(--panel-deep);color:var(--slate)}
+.wt-protective{background:#fff;color:var(--slate);border:1px solid var(--line-strong)}
+.ax{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-soft);white-space:nowrap}
+
+.signal-quote{
+  margin:11px 0 0;padding:9px 13px;background:var(--panel);border-radius:var(--r-sm);
+  font-size:13.5px;color:var(--ink-soft);font-style:italic;line-height:1.45;
+}
+.signal[data-weight="high"] .signal-quote{background:#FFF1E9}
+.signal-quote cite{display:block;font-style:normal;font-size:11.5px;color:var(--slate-soft);margin-top:5px;letter-spacing:.02em}
+
+.signal-why{margin-top:11px;font-size:13.5px;line-height:1.5}
+.signal-why .lbl{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--slate-soft);display:block;margin-bottom:3px}
+
+.signal-act{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.signal-act .st-note{flex:1 1 auto;font-size:12px;color:var(--slate-soft)}
+.mini{
+  background:transparent;border:1px solid var(--line-strong);border-radius:999px;
+  padding:4px 12px;font-size:12.5px;cursor:pointer;color:var(--slate);transition:.15s;white-space:nowrap;
+}
+.mini:hover{border-color:var(--ink);color:var(--ink)}
+.mini[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+
+/* ---------- step 3 : pathway ---------- */
+.pathway{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.pathway-top{padding:15px 17px;background:var(--ink);color:#fff}
+.pathway-top .pw-name{font-size:17px;font-weight:700;color:#fff}
+.pathway-top .pw-sub{font-size:13px;color:#A7AEBA;margin-top:3px}
+.pathway ol{margin:0;padding:6px 0;list-style:none;counter-reset:pw}
+.pathway ol li{
+  display:flex;gap:12px;padding:11px 17px;border-top:1px solid var(--line);font-size:14px;line-height:1.45;
+}
+.pathway ol li:first-child{border-top:0}
+.pathway ol li::before{
+  counter-increment:pw;content:counter(pw);flex:0 0 auto;width:21px;height:21px;border-radius:6px;
+  background:var(--panel-deep);color:var(--slate);font-size:11.5px;font-weight:700;
+  display:grid;place-items:center;margin-top:1px;
+}
+.pathway ol li.emph{background:#FFFAF7}
+.pathway ol li.emph::before{background:var(--signal);color:#1A0800}
+.pathway ol li b{color:var(--ink)}
+
+.alts{margin-top:14px}
+.alts[hidden]{display:none}
+.altlist{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.alt{
+  width:100%;text-align:left;background:var(--cloud);border:1px solid var(--line-strong);
+  border-radius:var(--r-md);padding:11px 14px;cursor:pointer;transition:.15s;
+}
+.alt:hover{border-color:var(--ink);background:var(--panel)}
+.alt[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+.alt[aria-pressed="true"] .alt-n{color:#fff}
+.alt-n{font-weight:700;color:var(--ink);font-size:14px}
+.alt-d{font-size:12.5px;margin-top:2px;opacity:.85}
+
+/* ---------- step 4 : draft ---------- */
+.withheld{
+  border:1px dashed var(--line-strong);border-radius:var(--r-md);background:var(--panel);
+  padding:15px 17px;margin-bottom:14px;
+}
+.withheld-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.withheld-h .wh-t{font-weight:700;color:var(--ink);font-size:14.5px}
+.withheld p{font-size:13.5px;line-height:1.5}
+.withheld .strike{
+  margin-top:10px;padding:9px 13px;background:var(--cloud);border-radius:var(--r-sm);
+  border:1px solid var(--line);color:var(--slate-soft);font-size:13px;
+}
+.withheld .strike s{color:#8B919B}
+
+.channel{display:flex;align-items:center;gap:10px;margin-bottom:11px;flex-wrap:wrap}
+.channel .ch-label{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--slate-soft)}
+.channel .ch-val{font-size:14px;font-weight:700;color:var(--ink)}
+
+.draftmeta{display:flex;gap:22px;flex-wrap:wrap;padding:12px 15px;background:var(--panel);border-radius:var(--r-md) var(--r-md) 0 0;border:1px solid var(--line);border-bottom:0}
+.draftmeta .k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--slate-soft)}
+.draftmeta .v{font-size:13.5px;color:var(--ink);margin-top:2px}
+.drafttext{
+  display:block;width:100%;border:1px solid var(--line);border-radius:0 0 var(--r-md) var(--r-md);
+  padding:16px 18px;font-family:var(--font);font-size:14.5px;line-height:1.62;color:var(--ink-soft);
+  background:var(--cloud);resize:vertical;min-height:230px;
+}
+.drafttext:focus{outline:3px solid var(--signal);outline-offset:-1px}
+.draftnote{font-size:12.5px;color:var(--slate-soft);margin-top:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.callguide{border:1px solid var(--line);border-radius:var(--r-md);margin-top:16px;overflow:hidden}
+.callguide h4{font-size:13.5px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.callguide ul{margin:0;padding:8px 16px 14px 32px;display:flex;flex-direction:column;gap:7px}
+.callguide li{font-size:13.5px;line-height:1.5}
+
+/* ---------- step 5 : decision ---------- */
+.decision{display:flex;flex-direction:column;gap:14px}
+.decision-q{font-size:15px;color:var(--ink);font-weight:600}
+.dec-actions{display:flex;gap:10px;flex-wrap:wrap}
+.outcome{
+  border-radius:var(--r-md);padding:17px 19px;border:1px solid var(--line);background:var(--panel);
+}
+.outcome.held{border-color:var(--signal);background:#FFF6F0}
+.outcome-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.outcome-t{font-size:16px;font-weight:700;color:var(--ink)}
+.outcome p{font-size:14px;line-height:1.55}
+.outcome .who{margin-top:10px;font-size:13px;color:var(--slate);padding-top:10px;border-top:1px solid var(--line)}
+.outcome.held .who{border-top-color:#FFC7A5}
+
+/* ---------- gate / empty ---------- */
+.gate{
+  border:1px dashed var(--line-strong);border-radius:var(--r-lg);background:var(--panel);
+  padding:34px 28px;text-align:center;
+}
+.gate h3{font-size:18px;margin-bottom:8px}
+.gate p{font-size:14px;max-width:520px;margin:0 auto 18px;line-height:1.55}
+
+/* scanning bar */
+.scanning{display:flex;align-items:center;gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--panel)}
+.scanning .sc-t{font-size:14px;color:var(--ink);font-weight:600}
+.scanbar{flex:1 1 auto;height:6px;border-radius:3px;background:var(--panel-deep);overflow:hidden;position:relative}
+.scanbar i{position:absolute;inset:0 100% 0 0;background:var(--signal);animation:fill .7s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes fill{to{inset:0 0 0 0}}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(9px);animation:rise .44s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:var(--d,0ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* ---------- presenter notes ---------- */
+.notes{
+  flex:0 0 var(--notes);width:var(--notes);background:var(--ink);color:#D8DCE4;
+  display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--ink-line);
+}
+.notes[hidden]{display:none}
+.notes-head{flex:0 0 auto;padding:16px 20px 12px;border-bottom:1px solid var(--ink-line);display:flex;align-items:center;gap:10px}
+.notes-head h2{color:#fff;font-size:14px;letter-spacing:.02em}
+.notes-head .spacer{flex:1 1 auto}
+.notes-scroll{flex:1 1 auto;overflow-y:auto;padding:16px 20px 28px;display:flex;flex-direction:column;gap:16px}
+.nb{border-radius:var(--r-md);border:1px solid var(--ink-line);background:var(--ink-panel);padding:13px 15px;transition:.2s}
+.nb.current{border-color:var(--signal);background:#241408}
+.nb-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.nb-n{width:19px;height:19px;border-radius:6px;background:#2E313B;color:#C3C9D4;font-size:11px;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
+.nb.current .nb-n{background:var(--signal);color:#1A0800}
+.nb-t{font-size:12.5px;font-weight:700;color:#fff;letter-spacing:.02em}
+.nb ul{margin:0;padding:0 0 0 16px;display:flex;flex-direction:column;gap:7px}
+.nb li{font-size:13px;line-height:1.5;color:#C6CBD5}
+.nb.current li{color:#EEF0F4}
+.nb li strong{color:#fff}
+.nb li em{color:#FFB489;font-style:normal;font-weight:700}
+.notes-foot{flex:0 0 auto;padding:12px 20px;border-top:1px solid var(--ink-line);font-size:11.5px;color:#7C838F;line-height:1.45}
+
+/* ---------- shortcut overlay ---------- */
+.overlay{position:fixed;inset:0;background:rgba(17,17,22,.62);display:grid;place-items:center;z-index:60;padding:24px}
+.overlay[hidden]{display:none}
+.sheet{background:var(--cloud);border-radius:var(--r-lg);max-width:520px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden}
+.sheet-h{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.sheet-h h2{font-size:17px}
+.sheet-h .spacer{flex:1 1 auto}
+.sheet dl{margin:0;padding:8px 22px 20px}
+.sheet .row{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sheet .row:last-child{border-bottom:0}
+.sheet dt{flex:0 0 118px;display:flex;gap:5px}
+.sheet dd{margin:0;font-size:13.5px}
+kbd.key{
+  font:inherit;font-size:12px;font-weight:700;background:var(--panel);border:1px solid var(--line-strong);
+  border-bottom-width:2px;border-radius:6px;padding:2px 7px;color:var(--ink);white-space:nowrap;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:1500px){
+  :root{--rail:264px;--notes:320px}
+  .stage-scroll{padding:20px 26px 34px}
+  .stage-head{padding:17px 26px 0}
+  .stepper{margin:15px -26px 0;padding:0 26px}
+}
+@media (max-width:1240px){
+  :root{--notes:300px}
+  .step .st{font-size:11.5px}
+}
+@media (max-height:820px){
+  .topbar{height:56px}
+  .stage-head{padding-top:14px}
+  .stack{gap:15px}
+  .stage-scroll{padding-top:18px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}
+  .stage-scroll{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
+
+@media print{ .notes,.topbar,.rail{display:none} }
+</style>
+</head>
+<body>
+<a class="skip" href="#stage">Skip to claim workspace</a>
+
+<div class="app">
+
+  <div class="banner" role="note">
+    <span class="dot" aria-hidden="true"></span>
+    <span>Synthetic demo data</span>
+    <span class="sep">— every name, claim and clinical detail on this screen is fabricated for demonstration. No real customer data, no live AI, no network connection.</span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5 2.5 3.7v4c0 3.3 2.3 6.3 5.5 7.1 3.2-.8 5.5-3.8 5.5-7.1v-4L8 1.5Z" stroke="#1A0800" stroke-width="1.6" stroke-linejoin="round"/><path d="M5.8 8.1 7.3 9.6l3-3.2" stroke="#1A0800" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>
+        <h1>Claims &amp; Vulnerable-Customer Triage Copilot</h1>
+        <span class="sub">Assistive triage — recommendations only. A person makes every decision.</span>
+      </span>
+    </div>
+
+    <span class="topbar-spacer"></span>
+
+    <button class="topbtn" id="btn-notes" type="button" aria-pressed="false">Presenter mode <kbd>P</kbd></button>
+    <button class="topbtn" id="btn-reset" type="button">Reset case <kbd>R</kbd></button>
+    <button class="topbtn" id="btn-keys" type="button" aria-haspopup="dialog">Shortcuts <kbd>?</kbd></button>
+  </header>
+
+  <div class="main">
+
+    <nav class="rail" aria-label="Cases and audit trail">
+      <div class="rail-scroll">
+        <div>
+          <p class="rail-label" id="lbl-cases">Claims in queue</p>
+          <ul class="caselist" id="caselist" aria-labelledby="lbl-cases"></ul>
+        </div>
+        <div>
+          <p class="rail-label" id="lbl-audit">Audit trail — this case</p>
+          <div class="audit" id="audit" aria-labelledby="lbl-audit" aria-live="polite"></div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="stage" id="stage" tabindex="-1">
+      <div class="stage-head">
+        <div class="claimhead">
+          <div>
+            <h2 id="claim-name">—</h2>
+            <p class="ref" id="claim-ref">—</p>
+          </div>
+          <span class="claimhead-spacer"></span>
+          <div class="claimfacts" id="claim-facts"></div>
+        </div>
+        <ol class="stepper" id="stepper"></ol>
+      </div>
+      <div class="stage-scroll" id="stage-scroll">
+        <div class="stack" id="stack"></div>
+      </div>
+    </main>
+
+    <aside class="notes" id="notes" aria-label="Presenter notes" hidden>
+      <div class="notes-head">
+        <h2>Presenter notes</h2>
+        <span class="spacer"></span>
+        <button class="topbtn" id="btn-notes-close" type="button">Hide</button>
+      </div>
+      <div class="notes-scroll" id="notes-scroll"></div>
+      <div class="notes-foot">Visible on this screen only. Present from a mirrored display, or hide with <b>P</b> before switching to a projector that shows this window.</div>
+    </aside>
+
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" id="sheet">
+    <div class="sheet-h">
+      <h2 id="sheet-title">Keyboard shortcuts</h2>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="btn-keys-close" type="button">Close</button>
+    </div>
+    <dl>
+      <div class="row"><dt><kbd class="key">1</kbd><kbd class="key">2</kbd><kbd class="key">3</kbd></dt><dd>Jump straight to a case</dd></div>
+      <div class="row"><dt><kbd class="key">&larr;</kbd><kbd class="key">&rarr;</kbd></dt><dd>Previous / next case</dd></div>
+      <div class="row"><dt><kbd class="key">Enter</kbd></dt><dd>Advance to the next step of the current case</dd></div>
+      <div class="row"><dt><kbd class="key">Backspace</kbd></dt><dd>Step back one stage</dd></div>
+      <div class="row"><dt><kbd class="key">P</kbd></dt><dd>Show or hide presenter notes</dd></div>
+      <div class="row"><dt><kbd class="key">R</kbd></dt><dd>Reset the current case to the start</dd></div>
+      <div class="row"><dt><kbd class="key">Shift</kbd><kbd class="key">R</kbd></dt><dd>Reset all three cases (between rehearsals)</dd></div>
+      <div class="row"><dt><kbd class="key">?</kbd><kbd class="key">Esc</kbd></dt><dd>Open / close this list</dd></div>
+    </dl>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   All content is static. Nothing here fetches, stores or calls
+   anything. The demo is a pure function of (case, step, clicks).
+   ============================================================ */
+
+"use strict";
+
+/* ---------- CASE CONTENT ----------------------------------------------
+   Ordered low -> medium -> high so keys 1/2/3 escalate with the story.
+   Every field below is synthetic.
+---------------------------------------------------------------------- */
+
+const CASES = [
+{
+  id:"IP-58213", name:"David Nguyen", product:"Income Protection",
+  occupation:"Warehouse Supervisor", received:"3 days ago", tier:"low",
+  facts:[
+    {k:"Product", v:"Income Protection"},
+    {k:"Occupation", v:"Warehouse Supervisor"},
+    {k:"Received", v:"3 days ago"},
+    {k:"File size", v:"11 pages, 3 documents"}
+  ],
+  intake:{
+    read:"11 pages across 3 documents, read in 4 seconds",
+    rows:[
+      {label:"Diagnosis category", value:"Musculoskeletal — lower back strain", src:"GP Medical Certificate, p.1"},
+      {label:"Incapacity duration to date", value:"6 weeks", src:"Claim Form, Section 3"},
+      {label:"Claim history", value:"First claim on this policy", src:"Policy record"},
+      {label:"Employer duties available", value:"Modified duties confirmed available", src:"Employer Statement, p.2"}
+    ]
+  },
+  complexity:{
+    tier:"low", label:"Low complexity", confidence:"High confidence",
+    why:[
+      "Diagnosis, treatment plan and certified incapacity period are internally consistent — nothing in the file contradicts anything else.",
+      "The employer has already confirmed modified duties, so a return-to-work path exists without further negotiation.",
+      "No prior claims on the policy and no language in the file that meets the vulnerability framework's thresholds."
+    ]
+  },
+  signals:[
+    {axis:"Social", kind:"protective", weight:"protective", title:"Employer actively engaged",
+     quote:"Happy to have David back on light duties whenever his GP clears him.",
+     source:"Employer Statement, p.2",
+     why:"A named workplace contact offering suitable duties before being asked is one of the strongest predictors of a short claim duration. Recorded here as a protective factor so it isn't lost if the claim runs longer than expected."},
+    {axis:"Financial", kind:"risk", weight:"low", title:"Short, bounded income gap",
+     quote:"I've got about six weeks of leave paid out, so the timing should be alright.",
+     source:"Claim Form, Section 6 — claimant's own words",
+     why:"The claimant describes a defined buffer covering the waiting period. Flagged at low weight only so that, if the claim extends past week eight, the buffer is known to have run out."}
+  ],
+  pathway:{
+    name:"Standard fast-track assessment",
+    sub:"Desk-based · single point of contact · review at 6 weeks",
+    steps:[
+      {t:"Assign to the general assessment queue — no specialist allocation required."},
+      {t:"Confirm the benefit start date against the 30-day waiting period and issue the decision letter."},
+      {t:"Diarise a light-touch check-in at week 6 to confirm the return to modified duties happened."},
+      {t:"<b>No rehabilitation referral proposed.</b> The employer's offer of duties already covers it; a referral would add contact without adding support."}
+    ],
+    alts:[
+      {n:"Add an early rehabilitation referral", d:"Bring a consultant in now rather than waiting for week 6.",
+       steps:["Refer to a rehabilitation consultant for a graded return-to-work plan.","Hold the week-6 review as a joint call with the consultant."]},
+      {n:"Route for a senior second look", d:"Treat as non-routine despite the copilot's read.",
+       steps:["Queue for senior assessor review before any decision letter issues.","Copilot's low-complexity read is retained on file as an input, not a decision."]}
+    ]
+  },
+  draft:{
+    channel:"Email", channelWhy:"Straightforward file, engaged claimant, no distress indicators — a written update is appropriate and respects his time.",
+    to:"David Nguyen", subject:"Your income protection claim — what happens next",
+    body:`Hi David,
+
+Thanks for sending through your claim form and medical certificate. I've been through everything and you've given us what we need — there's nothing outstanding from you at this stage.
+
+Your GP's certificate and your employer's confirmation of modified duties mean we can move your claim through our fast-track assessment. You should have a decision from us within 5 business days.
+
+I've also made a note to check in with you around the six-week mark, just to see how the return to lighter duties is going.
+
+If anything changes before then — with your recovery or at work — call me on the number below and we'll sort it out.
+
+Warm regards,
+Case Manager
+Claims Team`,
+    edit:{label:"Apply my usual sign-off", find:"Case Manager\nClaims Team", replace:"Sam\nYour claims case manager — direct line 1800 000 000"}
+  },
+  decision:{
+    q:"Nothing has left the building yet. What do you want to do with this draft?",
+    actions:[
+      {id:"send", label:"Approve and send", style:"btn-primary",
+       outcome:{tone:"sent", title:"Approved and sent by the assessor", body:"The email went to David exactly as it appears above, after a person read it. The copilot drafted it; it did not send it.", who:"Recorded against: Sam (assessor) · Copilot draft accepted with 1 assessor edit"}},
+      {id:"changes", label:"Request changes", style:"btn-ghost",
+       outcome:{tone:"held", title:"Sent back for redrafting — nothing issued", body:"The draft has been returned with your comments. No communication has gone to David.", who:"Recorded against: Sam (assessor)"}},
+      {id:"escalate", label:"Escalate for a second look", style:"btn-ghost",
+       outcome:{tone:"held", title:"Escalated — nothing issued", body:"The claim is queued for a senior assessor. The copilot's low-complexity read travels with it as an input, not as a decision.", who:"Recorded against: Sam (assessor)"}}
+    ]
+  },
+  notes:{
+    read:["Open with the boring case on purpose. <em>This is the one that should be boring.</em>",
+      "Point at the <strong>source</strong> line under each field — every extraction is traceable back to a page of the file. That's the audit answer.",
+      "\"Four seconds. Eleven pages. That's the only part of this that's about speed.\""],
+    signals:["Two signals, and one of them is <strong>positive</strong>. Make the point that a triage tool that only ever finds problems is a tool nobody trusts.",
+      "The low-weight financial one is deliberate — <em>flagged now so it isn't a surprise at week eight.</em>"],
+    pathway:["Note what it recommends <strong>against</strong>: no rehab referral. Restraint is a feature.",
+      "Click \"Choose a different pathway\" if the room looks sceptical — show that overriding takes one click and gets logged."],
+    draft:["It's a real textarea. Type in it if you want. <em>The words are always the assessor's to change.</em>",
+      "Hit \"Apply my usual sign-off\" — small, human, and it shows the draft is a starting point."],
+    decide:["This is the fast one. Approve, send, move on. Sets up the contrast with case three.",
+      "Glance at the audit trail on the left — <strong>every line says who.</strong>"]
+  }
+},
+
+{
+  id:"IP-59902", name:"Robert Fenwick", product:"Income Protection",
+  occupation:"Delivery Driver", received:"5 days ago", tier:"medium",
+  facts:[
+    {k:"Product", v:"Income Protection"},
+    {k:"Occupation", v:"Delivery Driver"},
+    {k:"Received", v:"5 days ago"},
+    {k:"File size", v:"34 pages, 7 documents"}
+  ],
+  intake:{
+    read:"34 pages across 7 documents, including a closed 2024 claim file",
+    rows:[
+      {label:"Diagnosis category", value:"Musculoskeletal — recurring lower back injury", src:"GP Medical Certificate, p.1"},
+      {label:"Incapacity duration to date", value:"3 weeks", src:"Claim Form, Section 3"},
+      {label:"Claim history", value:"Same condition claimed 14 months ago", src:"Policy claim history"},
+      {label:"Employer duties available", value:"Limited modified-duties options reported", src:"Employer Statement, p.1"},
+      {label:"Prior claim outcome", value:"Returned to full duties at week 9", src:"Closed claim IP-51188, file note"}
+    ]
+  },
+  complexity:{
+    tier:"medium", label:"Medium complexity", confidence:"Moderate confidence",
+    why:[
+      "Second claim for the same condition inside 18 months — the file needs a fresh look, not a copy of the 2024 assessment.",
+      "The employer's position has changed: modified duties were available last time and are limited now, which breaks the pathway that worked before.",
+      "The claimant's own description of his recovery is more guarded than the medical certificate implies. Worth a human ear, not a conclusion."
+    ]
+  },
+  signals:[
+    {axis:"Bio", kind:"risk", weight:"moderate", title:"Recurrence inside 18 months",
+     quote:"Same spot as last time. It never really went away, I just got back on the truck.",
+     source:"Claim Form, Section 4 — claimant's own words",
+     why:"He is describing an incomplete recovery from the 2024 episode, not a new injury. That distinction changes the assessment question from \"how long to heal\" to \"what makes this durable\" — and it is not visible anywhere in the medical certificate."},
+    {axis:"Social", kind:"risk", weight:"moderate", title:"Return-to-work path has narrowed",
+     quote:"We don't have the same off-road roles going at the moment.",
+     source:"Employer Statement, p.1",
+     why:"The graded return that resolved the last claim depended on duties this employer no longer has. Re-running the 2024 plan would likely produce the same recurrence a third time."},
+    {axis:"Financial", kind:"risk", weight:"moderate", title:"Pressure to return before he is ready",
+     quote:"I can't do another nine weeks off, financially. I'll manage.",
+     source:"Contact note, day 3 — claimant's own words",
+     why:"\"I'll manage\" following a financial statement is a stated intention to work through pain. This is the pattern that turns a medium claim into a long one, and it is exactly the kind of line a busy assessor scrolls past at 4pm on a Friday."},
+    {axis:"Psycho", kind:"protective", weight:"protective", title:"Strong treatment engagement",
+     quote:"Attended all six physiotherapy appointments to date.",
+     source:"Physiotherapy progress report, p.2",
+     why:"Full attendance with an active treating team gives any rehabilitation plan a realistic chance of landing. Recorded so the pathway builds on it rather than duplicating it."}
+  ],
+  pathway:{
+    name:"Rehabilitation consultant referral with graded return-to-work planning",
+    sub:"Specialist allocation · fresh capacity assessment · 3-weekly contact",
+    steps:[
+      {t:"Refer to a rehabilitation consultant for a <b>fresh</b> functional capacity assessment — do not carry over the 2024 findings."},
+      {t:"Consultant works with the employer on what alternate duties could exist, given the roles they say they no longer have."},
+      {t:"Move to three-weekly contact rather than the standard six — the recurrence risk sits between reviews, not at them.", emph:true},
+      {t:"Raise the financial-pressure comment directly and gently on the next call, and put the hardship provisions on the table before he has to ask.", emph:true},
+      {t:"<b>Do not</b> close on the 2024 template. Flagged because the file is set up to make that the path of least resistance."}
+    ],
+    alts:[
+      {n:"Desk assessment on the prior file", d:"Treat as a straightforward recurrence of a known condition.",
+       steps:["Assess against the 2024 findings and issue a decision without a new capacity assessment.","Copilot flagged the recurrence risk against this option; the override is recorded."]},
+      {n:"Independent medical examination first", d:"Send for an IME before any rehabilitation planning.",
+       steps:["Arrange an independent examination and hold rehabilitation planning until the report lands.","Adds roughly four weeks before any support reaches him."]}
+    ]
+  },
+  draft:{
+    channel:"Email", channelWhy:"He is engaged and responsive, and there are no distress indicators — but the copilot has drafted this to open a conversation rather than close one.",
+    to:"Robert Fenwick", subject:"Your claim — arranging a proper look at where you're at",
+    body:`Hi Robert,
+
+Thanks for letting us know your back has flared up again.
+
+I can see this connects to your claim from last year, and I don't want to just assume this time is the same as that time — particularly as you've mentioned the pain never fully settled.
+
+So rather than working from the old file, I'm arranging for a rehabilitation consultant to call you this week. Their job is to look at where you're actually at now, and work out with you and your employer what a return could realistically look like given the roles currently available.
+
+One other thing. You mentioned being worried about how long you can manage financially. That's a normal thing to be worried about and it's worth us talking through properly — there are options that might help, and I'd rather raise them now than have you feel you need to push through before you're ready.
+
+I'll call you Thursday afternoon unless another time suits better.
+
+Warm regards,
+Case Manager
+Claims Team`,
+    edit:{label:"Soften the financial paragraph", find:"That's a normal thing to be worried about and it's worth us talking through properly — there are options that might help, and I'd rather raise them now than have you feel you need to push through before you're ready.", replace:"That's a really common worry and there's no awkwardness in it — there are a few options that might take the pressure off, and I'd like to walk you through them when we speak."}
+  },
+  decision:{
+    q:"The copilot has proposed a pathway and drafted a message. Neither is live. Your call:",
+    actions:[
+      {id:"send", label:"Approve pathway and send", style:"btn-primary",
+       outcome:{tone:"sent", title:"Pathway accepted and email sent by the assessor", body:"The rehabilitation referral is raised and the email has gone to Robert as it appears above. The financial-pressure paragraph stayed in because a person decided it should.", who:"Recorded against: Sam (assessor) · Copilot draft accepted with 1 assessor edit"}},
+      {id:"call", label:"Refer first, write after the call", style:"btn-ghost",
+       outcome:{tone:"held", title:"Referral raised — nothing sent to the customer", body:"The rehabilitation consultant has been engaged. The written update is held until after that conversation, so it can reflect what Robert actually says rather than what the file assumes.", who:"Recorded against: Sam (assessor)"}},
+      {id:"changes", label:"Request changes", style:"btn-ghost",
+       outcome:{tone:"held", title:"Sent back for redrafting — nothing issued", body:"The draft is returned with your comments. Nothing has gone to Robert.", who:"Recorded against: Sam (assessor)"}}
+    ]
+  },
+  notes:{
+    read:["Middle case. The tension here is <strong>the file that looks familiar</strong>.",
+      "Land this line: \"The risk on a repeat claim isn't that we get it wrong. It's that we get it <em>fast</em> — off last year's template.\"",
+      "Point at the prior-claim row: it pulled a <strong>closed 2024 file</strong> into the read."],
+    signals:["Read the third quote out loud: <em>\"I can't do another nine weeks off, financially. I'll manage.\"</em>",
+      "Then pause and say: <strong>that's the whole demo.</strong> Nine words, page 22, 4pm on a Friday.",
+      "Note the axis labels — Bio, Social, Financial, Psycho. This is the bio-psycho-social frame the room already knows."],
+    pathway:["Two steps are highlighted — both are about <strong>contact</strong>, not assessment.",
+      "\"Put hardship provisions on the table before he has to ask\" — that's a service standard, and the AI surfaced the trigger for it."],
+    draft:["Show the financial paragraph. Then click \"Soften the financial paragraph\" — <em>the assessor's judgement about tone, not the model's.</em>",
+      "Optional: set aside a signal back on step 2 and show the pathway count change."],
+    decide:["Take the middle option — refer first, write later. It shows a human choosing something the AI did not propose.",
+      "Audit line reads <strong>held, not sent.</strong>"]
+  }
+},
+
+{
+  id:"TPD-40871", name:"Priya Sharma", product:"Total & Permanent Disability",
+  occupation:"Retail Store Manager", received:"1 day ago", tier:"high",
+  facts:[
+    {k:"Product", v:"Total & Permanent Disability"},
+    {k:"Occupation", v:"Retail Store Manager"},
+    {k:"Received", v:"1 day ago"},
+    {k:"File size", v:"62 pages, 9 documents"}
+  ],
+  intake:{
+    read:"62 pages across 9 documents, including a 14-page claim narrative",
+    rows:[
+      {label:"Diagnosis category", value:"Mental health — major depressive episode", src:"Psychiatrist report, p.2"},
+      {label:"Trigger event", value:"Workplace incident, February 2026", src:"Claim narrative, p.1"},
+      {label:"Claim history", value:"First claim on this policy", src:"Policy record"},
+      {label:"Return-to-work outlook", value:"Not yet determined", src:"Psychiatrist report, p.3"},
+      {label:"Prior support engagement", value:"No rehabilitation or EAP contact on record", src:"Policy record"}
+    ]
+  },
+  complexity:{
+    tier:"high", label:"High complexity", confidence:"High confidence",
+    why:[
+      "A first TPD claim following a workplace incident, with an unresolved return-to-work outlook — the file has no natural end point yet, and no support has been offered.",
+      "Multiple vulnerability indicators appear together rather than singly. Under the framework, co-occurrence is the trigger for early human contact, not the individual flags.",
+      "The claimant's narrative describes financial pressure in her own words while no hardship provision has been raised with her. That gap is the copilot's main concern."
+    ]
+  },
+  signals:[
+    {axis:"Financial", kind:"risk", weight:"high", title:"Explicit financial hardship language",
+     quote:"We're behind on rent and I don't know how we'll manage if this drags on.",
+     source:"Claim narrative, p.9 — claimant's own words",
+     why:"Arrears on essential housing costs, stated unprompted, meets the hardship threshold in the vulnerable-customer framework. The copilot is not assessing her finances — it is flagging that she has already told us, and nobody has responded to it."},
+    {axis:"Social", kind:"risk", weight:"high", title:"Limited support network nearby",
+     quote:"My family are all overseas and I haven't really told anyone here what's going on.",
+     source:"Claim narrative, p.11 — claimant's own words",
+     why:"Isolation compounds every other factor in this file: it removes the informal support that usually absorbs a delay, and it means a letter that lands badly has nobody to absorb it either."},
+    {axis:"Psycho", kind:"risk", weight:"high", title:"Active mental health condition, no support engaged",
+     quote:"Symptoms consistent with a major depressive episode; treatment commenced March 2026.",
+     source:"Psychiatrist report, p.2",
+     why:"Treatment is underway clinically, but the policy record shows no rehabilitation or EAP contact at all. The claim is being processed while the support side of it has not started."},
+    {axis:"Service", kind:"risk", weight:"moderate", title:"First claim — may not know what to ask for",
+     quote:"No prior claims on this policy.",
+     source:"Policy record",
+     why:"She has no template for this process. Anything we do not offer, she will not know to request — which makes the burden of raising hardship options ours, not hers."},
+    {axis:"Bio", kind:"risk", weight:"moderate", title:"Outlook genuinely undetermined",
+     quote:"Capacity for a return to pre-incident duties cannot be assessed at this stage.",
+     source:"Psychiatrist report, p.3",
+     why:"An open-ended file with no forecast date. Flagged because open-ended claims are where routine correspondence quietly substitutes for contact — the file stays active and nobody actually speaks to her."},
+    {axis:"Social", kind:"protective", weight:"protective", title:"Engaged with her treating psychiatrist",
+     quote:"Attending fortnightly; reports the sessions are helping.",
+     source:"Psychiatrist report, p.4",
+     why:"One stable, trusted professional relationship already exists. Any support offered should connect to it rather than compete with it."}
+  ],
+  pathway:{
+    name:"Priority allocation — early intervention, human-led contact",
+    sub:"Senior assessor + vulnerable-customer specialist · phone contact within 24 hours",
+    steps:[
+      {t:"Joint ownership by a senior assessor and the vulnerable-customer specialist. One named person, one direct number.", emph:true},
+      {t:"<b>Outbound phone call within 24 hours.</b> Not a letter, not an email, not an SMS with a portal link.", emph:true},
+      {t:"Raise hardship provisions and the interim payment option on that call, before she has to ask.", emph:true},
+      {t:"Pause the outstanding information requests until after the call. She has three open requests and no contact from a person."},
+      {t:"Offer rehabilitation and EAP support alongside — not instead of — her existing psychiatrist."},
+      {t:"<b>No written decision correspondence</b> until a person has spoken to her."}
+    ],
+    alts:[
+      {n:"Standard TPD assessment queue", d:"Process to the usual timeline with written updates.",
+       steps:["Claim proceeds through the standard queue with letter-based correspondence.","Copilot flagged five risk signals against this option; the override is recorded on file."]},
+      {n:"Specialist allocation, contact by letter", d:"Escalate the ownership but keep written contact.",
+       steps:["Vulnerable-customer specialist takes ownership and writes to her within 24 hours.","Copilot's note stands: a letter to an isolated claimant has nobody to absorb it."]}
+    ]
+  },
+  draft:{
+    channel:"No email drafted",
+    channelWhy:"The copilot has declined to draft the customer email for this claim. It has prepared a call and a two-line SMS to arrange it instead.",
+    withheld:{
+      title:"Email update — deliberately not drafted",
+      body:"On the signals in this file, a written update is the wrong instrument. It would land with someone who is isolated, unwell and already behind on rent, with no one beside her to read it and no way to ask a question back. The copilot can write a warm, compliant, well-structured email here. It should not.",
+      strike:"Suppressed draft: \"Dear Ms Sharma, We are writing to confirm receipt of your Total and Permanent Disability claim and to request the following outstanding information…\""
+    },
+    smsTo:"Priya Sharma", smsSubject:"SMS — to arrange a call, not to update her",
+    body:`Hi Priya, it's Sam from the claims team. I'd like to give you a call tomorrow to talk through your claim properly and go through the support that's available. Would 10am or 2pm suit you better? No need to prepare anything.`,
+    edit:{label:"Add a direct number", find:"No need to prepare anything.", replace:"No need to prepare anything. If you'd rather call me, I'm on 1800 000 000."},
+    callGuide:{
+      title:"Call preparation — drafted for the person making the call, not for the customer",
+      items:[
+        "Open by acknowledging the claim and thanking her for what she wrote in her narrative. She put a lot in there.",
+        "Say the hardship options out loud early. Do not wait to be asked, and do not describe them as an exception.",
+        "Confirm next steps and realistic timeframes in plain language. Avoid \"assessment\" and \"determination\" unless you explain them.",
+        "Ask directly whether she has support at home. The file suggests she does not.",
+        "Mention rehabilitation and EAP as an addition to her psychiatrist, not a replacement.",
+        "Leave a named contact and a direct line. Not a case number, not a general queue.",
+        "Three information requests are outstanding. Do not lead with them; if she is up to it, offer to help her work through them together."
+      ]
+    }
+  },
+  decision:{
+    q:"There is no send button on the important thing here. What happens next is a person picking up a phone:",
+    actions:[
+      {id:"assign", label:"Assign to me — I'll call Priya today", style:"btn-accent",
+       outcome:{tone:"held", title:"Nothing has been sent. A person is calling her.", body:"The claim is now jointly owned by you and the vulnerable-customer specialist, the outstanding information requests are paused, and the call is scheduled for today. No automated correspondence will issue on this claim until after that conversation.\n\nThe copilot read 62 pages, found five signals in her own words, and told you to pick up the phone. It could not have made this call, and it did not make this decision.", who:"Recorded against: Sam (senior assessor) · Copilot recommendation accepted · No customer communication issued"}},
+      {id:"sms", label:"Send the SMS to arrange the call", style:"btn-ghost",
+       outcome:{tone:"held", title:"SMS sent to arrange a call — no claim correspondence issued", body:"The two-line message has gone to Priya. It contains no claim information, no requests and no decision — its only job is to get a person on the phone with her.", who:"Recorded against: Sam (senior assessor) · Suppressed email draft remains suppressed"}},
+      {id:"changes", label:"Request changes to the call plan", style:"btn-ghost",
+       outcome:{tone:"held", title:"Call plan returned for redrafting — nothing sent", body:"The call preparation notes are back with your comments. No contact has been made yet.", who:"Recorded against: Sam (senior assessor)"}}
+    ]
+  },
+  notes:{
+    read:["<strong>Slow down here.</strong> This is the case the talk is actually about.",
+      "62 pages, one day old. \"On a normal Tuesday this file gets skimmed.\"",
+      "Point at the last row: <em>no rehabilitation or EAP contact on record.</em> The claim started; the support didn't."],
+    signals:["Let the reveal finish before you talk. Six signals, five of them risk.",
+      "Read the first quote: <em>\"We're behind on rent and I don't know how we'll manage if this drags on.\"</em>",
+      "Then: \"She already told us. It's on page nine. <strong>Nobody had read page nine yet.</strong>\"",
+      "Note the reasoning line — it says the copilot is <strong>not assessing her finances.</strong> That distinction is the compliance answer."],
+    pathway:["Three highlighted steps. Read step two aloud, slowly: <strong>\"Not a letter, not an email, not an SMS with a portal link.\"</strong>",
+      "Step four is the quiet one — <em>pause the information requests.</em> Three open requests, no human contact. That's how trust goes."],
+    draft:["<strong>THE BEAT.</strong> Let the room see there is no email. Wait for it to land.",
+      "\"The copilot <em>can</em> write this email. It's telling you not to send one.\"",
+      "Show the suppressed draft text — it's perfectly good, and perfectly wrong.",
+      "Then scroll to the call guide: the AI drafted something <strong>for the assessor</strong>, not for the customer."],
+    decide:["Hover over \"Send the SMS\". Pause. <em>Then click \"Assign to me — I'll call Priya today\" instead.</em>",
+      "Say it plainly: <strong>\"I'm not going to click send. I'm going to call her.\"</strong>",
+      "Read the last line of the outcome panel out loud, then stop talking.",
+      "Close: the audit trail says <strong>no customer communication issued</strong> — and a person's name is on every line."]
+  }
+}
+];
+
+const STEPS = [
+  {id:"read",    label:"Read file"},
+  {id:"signals", label:"Surface signals"},
+  {id:"pathway", label:"Propose pathway"},
+  {id:"draft",   label:"Draft update"},
+  {id:"decide",  label:"Human decision"}
+];
+
+/* ---------- STATE (in memory only — no storage APIs anywhere) ---------- */
+
+function freshState(){
+  return {
+    step:-1,            // -1 = not started, 0..4 = furthest revealed step
+    scanning:false,
+    override:null,      // assessor complexity override
+    overrideOpen:false,
+    setAside:{},        // signal index -> true
+    altOpen:false,
+    alt:null,           // assessor-chosen alternative pathway index
+    edited:false,
+    draftText:null,
+    decision:null,
+    revealed:{},        // step id -> already animated
+    audit:[]
+  };
+}
+
+let states = CASES.map(freshState);
+let active = 0;
+let notesOn = false;
+
+const $ = function(id){ return document.getElementById(id); };
+const st = function(){ return states[active]; };
+const cs = function(){ return CASES[active]; };
+
+/* Deterministic clock: fixed base time, +2 minutes per logged action.
+   Never reads the system clock, so rehearsals and the live run look identical. */
+function stamp(n){
+  var m = 9*60 + 41 + n*2;
+  var h = Math.floor(m/60), mm = m%60;
+  return String(h).padStart(2,"0") + ":" + String(mm).padStart(2,"0");
+}
+function log(actor, text){
+  st().audit.push({actor:actor, text:text});
+}
+
+/* ---------- RENDER: rail ---------- */
+
+function renderRail(){
+  var list = $("caselist");
+  list.innerHTML = "";
+  CASES.forEach(function(c, i){
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "casebtn";
+    b.setAttribute("aria-current", i === active ? "true" : "false");
+    b.innerHTML =
+      '<span class="num" aria-hidden="true">' + (i+1) + '</span>' +
+      '<span>' +
+        '<span class="casebtn-name">' + c.name + '</span>' +
+        '<span class="casebtn-meta">Claim #' + c.id + '<br>' + c.product + ' · received ' + c.received + '</span>' +
+        '<span class="casebtn-tier' + (c.tier === "high" ? " tier-high" : "") + '">' + c.complexity.label + '</span>' +
+      '</span>';
+    b.addEventListener("click", function(){ selectCase(i); });
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+
+  var a = $("audit");
+  var entries = st().audit;
+  if(!entries.length){
+    a.innerHTML = '<p class="audit-empty">Empty. Every action taken in this demo will be recorded here against the person who took it.</p>';
+    return;
+  }
+  a.innerHTML = entries.map(function(e, i){
+    return '<div class="audit-item">' +
+      '<span class="audit-time">' + stamp(i) + '</span>' +
+      '<span class="audit-body"><span class="audit-actor' + (e.actor === "Copilot" ? " ai" : "") + '">' + e.actor + '</span> — ' + e.text + '</span>' +
+      '</div>';
+  }).join("");
+}
+
+/* ---------- RENDER: header + stepper ---------- */
+
+function renderHead(){
+  var c = cs();
+  $("claim-name").textContent = c.name;
+  $("claim-ref").textContent = "Claim #" + c.id + " · " + c.occupation + " · synthetic file";
+  $("claim-facts").innerHTML = c.facts.map(function(f){
+    return '<div class="fact"><div class="k">' + f.k + '</div><div class="v">' + f.v + '</div></div>';
+  }).join("");
+
+  $("stepper").innerHTML = STEPS.map(function(s, i){
+    var state = i < st().step ? "done" : (i === st().step ? "active" : "todo");
+    return '<li><div class="step" data-state="' + state + '">' +
+      '<span class="sn" aria-hidden="true">' + (i+1) + '</span>' +
+      '<span class="st">' + s.label + '</span></div></li>';
+  }).join("");
+}
+
+/* ---------- card helpers ---------- */
+
+function card(opts){
+  var el = document.createElement("section");
+  el.className = "card" + (opts.filled ? " filled" : "");
+  el.tabIndex = -1;
+  if(opts.id) el.id = opts.id;
+  var tags = (opts.tags || []).map(function(t){
+    return '<span class="tag ' + t.k + '">' + t.t + '</span>';
+  }).join("");
+  el.innerHTML =
+    '<div class="card-head"><h3>' + opts.title + '</h3><span class="spacer"></span>' + tags + '</div>' +
+    '<div class="card-body">' + opts.body + '</div>';
+  if(opts.foot){
+    var f = document.createElement("div");
+    f.className = "card-foot";
+    f.innerHTML = opts.foot;
+    el.appendChild(f);
+  }
+  return el;
+}
+
+function firstReveal(el, id, delay){
+  if(!st().revealed[id]){
+    el.classList.add("reveal");
+    if(delay) el.style.setProperty("--d", delay + "ms");
+  }
+}
+
+/* ---------- STEP 1 — read the file ---------- */
+
+function stepRead(){
+  var c = cs(), s = st();
+  var rows = c.intake.rows.map(function(r){
+    return '<div class="signal-quote" style="font-style:normal;display:flex;gap:16px;flex-wrap:wrap;align-items:baseline">' +
+      '<span style="flex:0 0 190px;color:var(--slate)">' + r.label + '</span>' +
+      '<span style="flex:1 1 200px;font-weight:600;color:var(--ink)">' + r.value +
+      '<cite>Source: ' + r.src + '</cite></span></div>';
+  }).join("");
+
+  var readCard = card({
+    id:"card-read-file",
+    title:"What the copilot read",
+    tags:[{k:"ai", t:"AI extraction"}],
+    body:'<p style="font-size:13.5px;color:var(--slate-soft);margin-bottom:12px">' + c.intake.read +
+         '. Every field below is traceable to the page it came from.</p>' +
+         '<div style="display:flex;flex-direction:column;gap:8px">' + rows + '</div>'
+  });
+  firstReveal(readCard, "read");
+
+  var tier = c.complexity.tier;
+  var segs = [1,2,3].map(function(n){
+    var on = (tier === "low" && n === 1) || (tier === "medium" && n <= 2) || (tier === "high");
+    return '<span class="cx-seg' + (on ? " on" : "") + (on && tier === "high" ? " high" : "") + '"></span>';
+  }).join("");
+
+  var shownLabel = s.override ? s.override : c.complexity.label;
+  var overridden = !!s.override;
+
+  var cxCard = card({
+    id:"card-read",
+    title:"Complexity read",
+    tags:[{k:"ai", t:"Recommendation only"}],
+    body:
+      '<div class="complexity">' +
+        '<div class="cx-dial">' +
+          '<div class="cx-value' + (tier === "high" ? " high" : "") + '">' + c.complexity.label.replace(" complexity","") + '</div>' +
+          '<div class="cx-scale" aria-hidden="true">' + segs + '</div>' +
+          '<div class="cx-conf">' + c.complexity.confidence + '</div>' +
+        '</div>' +
+        '<div class="cx-why"><ul>' + c.complexity.why.map(function(w){ return "<li><span>" + w + "</span></li>"; }).join("") + '</ul></div>' +
+      '</div>' +
+      (overridden
+        ? '<div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-strong);font-size:13.5px">' +
+          '<span class="tag human">Assessor override</span> &nbsp;The assessor set this claim to <b style="color:var(--ink)">' + shownLabel +
+          '</b>. The copilot\'s read is retained on file as an input, not as a decision.</div>'
+        : '') +
+      '<div class="override" id="override-box"' + (s.overrideOpen ? "" : " hidden") + '>' +
+        '<div class="rail-label" style="margin:0">Set the complexity yourself</div>' +
+        '<div class="chiprow" role="group" aria-label="Assessor complexity override">' +
+          ["Low complexity","Medium complexity","High complexity"].map(function(l){
+            return '<button type="button" class="chip" data-override="' + l + '" aria-pressed="' + (s.override === l) + '">' + l + '</button>';
+          }).join("") +
+        '</div>' +
+      '</div>',
+    foot: s.step > 0
+      ? '<span class="tag human">Reviewed by assessor</span><span class="hint">Step 1 accepted. The copilot has not acted on anything.</span>'
+      : '<button class="btn btn-primary" data-act="accept-read">Accept this read</button>' +
+        '<button class="btn btn-ghost" data-act="toggle-override">Override complexity</button>' +
+        '<span class="hint">The copilot cannot progress this claim on its own. It waits here.</span>'
+  });
+  firstReveal(cxCard, "read", 120);
+  st().revealed["read"] = true;
+  return [readCard, cxCard];
+}
+
+/* ---------- STEP 2 — signals ---------- */
+
+function stepSignals(){
+  var c = cs(), s = st();
+  var counts = {};
+  c.signals.forEach(function(sig){ counts[sig.axis] = (counts[sig.axis] || 0) + 1; });
+  var axisbar = '<div class="axisbar">' + Object.keys(counts).map(function(k){
+    return '<span class="axis">' + k + ' <b>' + counts[k] + '</b></span>';
+  }).join("") + '</div>';
+
+  var sigHtml = c.signals.map(function(sig, i){
+    var aside = !!s.setAside[i];
+    var protective = sig.kind === "protective";
+    return '<article class="signal" data-weight="' + sig.weight + '" data-kind="' + sig.kind + '" data-status="' + (aside ? "setaside" : "kept") + '"' +
+      (s.revealed["signals"] ? "" : ' style="--d:' + (i*90) + 'ms"') + (s.revealed["signals"] ? "" : ' data-anim="1"') + '>' +
+      '<div class="signal-top">' +
+        '<span class="ax">' + sig.axis + '</span>' +
+        '<span class="signal-title">' + sig.title + '</span>' +
+        '<span class="wt wt-' + sig.weight + '">' + (protective ? "Protective factor" : sig.weight + " weight") + '</span>' +
+      '</div>' +
+      '<blockquote class="signal-quote">&ldquo;' + sig.quote + '&rdquo;<cite>' + sig.source + '</cite></blockquote>' +
+      '<div class="signal-why"><span class="lbl">Why the copilot flagged this</span>' + sig.why + '</div>' +
+      '<div class="signal-act">' +
+        '<span class="st-note">' + (aside ? "Set aside by the assessor — excluded from the pathway." : "Retained by the assessor.") + '</span>' +
+        '<button type="button" class="mini" data-aside="' + i + '" aria-pressed="' + aside + '">' + (aside ? "Restore signal" : "Set aside") + '</button>' +
+      '</div>' +
+      '</article>';
+  }).join("");
+
+  var kept = c.signals.filter(function(_, i){ return !s.setAside[i]; }).length;
+
+  var el = card({
+    id:"card-signals",
+    title:"Bio-psycho-social signals",
+    tags:[{k:"ai", t:"Flagged for a human to weigh"}],
+    body:
+      '<p style="font-size:13.5px;color:var(--slate-soft);margin-bottom:12px">Drawn from the claimant\'s own words and the case history. These are prompts for a human look — not a diagnosis, not a score of the person, and not an entitlement decision.</p>' +
+      axisbar +
+      '<div class="signals">' + sigHtml + '</div>' +
+      '<p style="margin-top:14px;font-size:12.5px;color:var(--slate-soft);line-height:1.5;padding-top:12px;border-top:1px solid var(--line)">' +
+      '<b style="color:var(--ink)">' + kept + ' of ' + c.signals.length + '</b> signals retained by the assessor. Setting one aside removes it from the pathway logic and is recorded in the audit trail.</p>',
+    foot: s.step > 1
+      ? '<span class="tag human">Reviewed by assessor</span><span class="hint">Step 2 accepted.</span>'
+      : '<button class="btn btn-primary" data-act="accept-signals">I\'ve reviewed these signals</button>' +
+        '<span class="hint">Keep or set aside anything you disagree with before you move on.</span>'
+  });
+  if(!s.revealed["signals"]){
+    Array.prototype.forEach.call(el.querySelectorAll('[data-anim]'), function(n){ n.classList.add("reveal"); });
+    s.revealed["signals"] = true;
+  }
+  return [el];
+}
+
+/* ---------- STEP 3 — pathway ---------- */
+
+function stepPathway(){
+  var c = cs(), s = st();
+  var chosen = s.alt !== null ? c.pathway.alts[s.alt] : null;
+  var kept = c.signals.filter(function(_, i){ return !s.setAside[i]; }).length;
+
+  var steps = chosen
+    ? chosen.steps.map(function(t){ return "<li><span>" + t + "</span></li>"; }).join("")
+    : c.pathway.steps.map(function(x){ return '<li' + (x.emph ? ' class="emph"' : '') + "><span>" + x.t + "</span></li>"; }).join("");
+
+  var el = card({
+    id:"card-pathway",
+    title:"Recommended case-management pathway",
+    tags: chosen ? [{k:"human", t:"Assessor-selected"}] : [{k:"ai", t:"Proposal only"}],
+    body:
+      '<div class="pathway">' +
+        '<div class="pathway-top">' +
+          '<div class="pw-name">' + (chosen ? chosen.n : c.pathway.name) + '</div>' +
+          '<div class="pw-sub">' + (chosen ? "Chosen by the assessor — this overrides the copilot's proposal" : c.pathway.sub) + '</div>' +
+        '</div>' +
+        '<ol>' + steps + '</ol>' +
+      '</div>' +
+      '<p style="margin-top:12px;font-size:12.5px;color:var(--slate-soft)">Built from the ' + kept + ' signals the assessor retained' +
+        (s.override ? ' and the assessor\'s complexity override' : '') + '. Nothing on this pathway has been actioned.</p>' +
+      '<div class="alts" id="alts-box"' + (s.altOpen ? "" : " hidden") + '>' +
+        '<div class="rail-label" style="margin:0">Other pathways available to you</div>' +
+        '<ul class="altlist">' +
+          c.pathway.alts.map(function(a, i){
+            return '<li><button type="button" class="alt" data-alt="' + i + '" aria-pressed="' + (s.alt === i) + '">' +
+              '<div class="alt-n">' + a.n + '</div><div class="alt-d">' + a.d + '</div></button></li>';
+          }).join("") +
+          (s.alt !== null ? '<li><button type="button" class="alt" data-alt="reset"><div class="alt-n">Return to the copilot\'s proposal</div><div class="alt-d">' + c.pathway.name + '</div></button></li>' : "") +
+        '</ul>' +
+      '</div>',
+    foot: s.step > 2
+      ? '<span class="tag human">Reviewed by assessor</span><span class="hint">Step 3 accepted.</span>'
+      : '<button class="btn btn-primary" data-act="accept-pathway">Accept this pathway</button>' +
+        '<button class="btn btn-ghost" data-act="toggle-alts">Choose a different pathway</button>' +
+        '<span class="hint">A proposal is not an allocation. Nothing is assigned until you say so.</span>'
+  });
+  firstReveal(el, "pathway");
+  s.revealed["pathway"] = true;
+  return [el];
+}
+
+/* ---------- STEP 4 — draft ---------- */
+
+function stepDraft(){
+  var c = cs(), s = st(), d = c.draft;
+  var body = "";
+
+  if(d.withheld){
+    body +=
+      '<div class="withheld">' +
+        '<div class="withheld-h"><span class="tag hold">Withheld</span><span class="wh-t">' + d.withheld.title + '</span></div>' +
+        '<p>' + d.withheld.body + '</p>' +
+        '<div class="strike"><s>' + d.withheld.strike + '</s></div>' +
+      '</div>';
+  }
+
+  body +=
+    '<div class="channel">' +
+      '<span class="ch-label">Channel</span><span class="ch-val">' + d.channel + '</span>' +
+      '<span style="flex:1 1 200px;font-size:13px;color:var(--slate)">' + d.channelWhy + '</span>' +
+    '</div>' +
+    '<div class="draftmeta">' +
+      '<div><div class="k">To</div><div class="v">' + (d.smsTo || d.to) + ' <span style="color:var(--slate-soft)">(synthetic)</span></div></div>' +
+      '<div><div class="k">' + (d.smsSubject ? "Message" : "Subject") + '</div><div class="v">' + (d.smsSubject || d.subject) + '</div></div>' +
+    '</div>' +
+    '<textarea class="drafttext" id="drafttext" aria-label="Draft message — editable by the assessor" spellcheck="false">' +
+      (s.draftText !== null ? s.draftText : d.body) +
+    '</textarea>' +
+    '<div class="draftnote"><span class="tag draft">Draft — not sent</span>' +
+      '<span>This is a live text box. Change any word of it — the message that goes out is whatever a person leaves here.</span></div>';
+
+  if(d.callGuide){
+    body += '<div class="callguide"><h4>' + d.callGuide.title + '</h4><ul>' +
+      d.callGuide.items.map(function(x){ return "<li>" + x + "</li>"; }).join("") + '</ul></div>';
+  }
+
+  var el = card({
+    id:"card-draft",
+    title: d.withheld ? "Customer contact — what the copilot did and did not draft" : "Drafted customer update",
+    tags:[{k:"draft", t:"Nothing sent"}],
+    body: body,
+    foot: s.step > 3
+      ? '<span class="tag human">Reviewed by assessor</span><span class="hint">Step 4 accepted. Still nothing sent.</span>'
+      : '<button class="btn btn-primary" data-act="accept-draft">I\'ve read the draft</button>' +
+        (s.edited
+          ? '<span class="tag human">Assessor edit applied</span>'
+          : '<button class="btn btn-ghost" data-act="apply-edit">' + d.edit.label + '</button>') +
+        '<span class="hint">Reading it is a step of its own. That is the point.</span>'
+  });
+  firstReveal(el, "draft");
+  s.revealed["draft"] = true;
+  return [el];
+}
+
+/* ---------- STEP 5 — decision ---------- */
+
+function stepDecide(){
+  var c = cs(), s = st();
+  var chosen = s.decision !== null
+    ? c.decision.actions.filter(function(a){ return a.id === s.decision; })[0]
+    : null;
+
+  var body;
+  if(chosen){
+    var o = chosen.outcome;
+    body =
+      '<div class="outcome ' + (o.tone === "held" ? "held" : "") + '">' +
+        '<div class="outcome-h"><span class="tag ' + (o.tone === "held" ? "hold" : "human") + '">' +
+          (o.tone === "held" ? "Held by a human" : "Released by a human") + '</span>' +
+          '<span class="outcome-t">' + o.title + '</span></div>' +
+        o.body.split("\n\n").map(function(p){ return "<p>" + p + "</p>"; }).join('<p style="height:8px"></p>') +
+        '<div class="who">' + o.who + '</div>' +
+      '</div>';
+  } else {
+    body =
+      '<p class="decision-q">' + c.decision.q + '</p>' +
+      '<div class="dec-actions">' +
+        c.decision.actions.map(function(a){
+          return '<button type="button" class="btn ' + a.style + '" data-decide="' + a.id + '">' + a.label + '</button>';
+        }).join("") +
+      '</div>' +
+      '<p style="font-size:12.5px;color:var(--slate-soft);line-height:1.5">Up to this point the copilot has read a file, flagged signals, proposed a pathway and drafted words. It has not contacted anybody, allocated anybody, or changed the status of this claim.</p>';
+  }
+
+  var el = card({
+    id:"card-decide",
+    title:"Human decision",
+    tags:[{k:"human", t:"Assessor only"}],
+    body:'<div class="decision">' + body + '</div>',
+    foot: chosen
+      ? '<button class="btn btn-ghost" data-act="reset">Reset this case</button>' +
+        '<span class="hint">' + (active < CASES.length - 1
+            ? 'Next case: <b>' + CASES[active+1].name + '</b> — press <b>' + (active+2) + '</b> or <b>&rarr;</b>.'
+            : 'That is the whole loop. Press <b>1</b> to go back to the start.') + '</span>'
+      : ""
+  });
+  firstReveal(el, "decide");
+  s.revealed["decide"] = true;
+  return [el];
+}
+
+/* ---------- RENDER: stage ---------- */
+
+var RENDERERS = [stepRead, stepSignals, stepPathway, stepDraft, stepDecide];
+
+function renderStage(){
+  var stack = $("stack"), s = st(), c = cs();
+  stack.innerHTML = "";
+
+  if(s.scanning){
+    var sc = document.createElement("div");
+    sc.className = "scanning";
+    sc.innerHTML = '<span class="sc-t">Reading the claim file…</span><span class="scanbar"><i></i></span><span class="tag ai">On-device demo</span>';
+    stack.appendChild(sc);
+    return;
+  }
+
+  if(s.step < 0){
+    var g = document.createElement("div");
+    g.className = "gate";
+    g.innerHTML =
+      '<h3>' + c.name + '’s claim file has landed in the queue</h3>' +
+      '<p>' + c.intake.read + '. Nothing has been read, flagged or actioned yet. The copilot starts when a person asks it to.</p>' +
+      '<button class="btn btn-accent" data-act="start">Run triage on this file</button>';
+    stack.appendChild(g);
+    return;
+  }
+
+  for(var i = 0; i <= s.step; i++){
+    RENDERERS[i]().forEach(function(el){ stack.appendChild(el); });
+  }
+}
+
+/* ---------- RENDER: presenter notes ---------- */
+
+function renderNotes(){
+  if(!notesOn) return;
+  var c = cs(), s = st();
+  $("notes-scroll").innerHTML = STEPS.map(function(step, i){
+    var lines = (c.notes[step.id] || []).map(function(l){ return "<li>" + l + "</li>"; }).join("");
+    return '<div class="nb' + (i === s.step ? " current" : "") + '">' +
+      '<div class="nb-h"><span class="nb-n">' + (i+1) + '</span><span class="nb-t">' + step.label + '</span></div>' +
+      '<ul>' + lines + '</ul></div>';
+  }).join("");
+  var cur = $("notes-scroll").querySelector(".nb.current");
+  if(cur) cur.scrollIntoView({block:"nearest"});
+}
+
+function render(){
+  renderRail(); renderHead(); renderStage(); renderNotes();
+}
+
+/* ---------- ACTIONS ---------- */
+
+function captureDraft(){
+  var t = $("drafttext");
+  if(t) st().draftText = t.value;
+}
+
+function scrollToNewest(){
+  var wrap = $("stage-scroll"), stack = $("stack");
+  var last = stack.lastElementChild;
+  if(!last) return;
+  var top = last.getBoundingClientRect().top - stack.getBoundingClientRect().top;
+  wrap.scrollTop = Math.max(0, top - 8);
+  /* Move focus to the newly revealed card so keyboard and screen-reader users
+     land on the new content instead of being left behind. */
+  if(last.tabIndex === -1) last.focus({preventScroll:true});
+}
+
+function advance(){
+  var s = st();
+  if(s.scanning) return;
+  if(s.step < 0){ start(); return; }
+  if(s.step >= STEPS.length - 1) return;
+  captureDraft();
+
+  var c = cs();
+  if(s.step === 0) log("Sam (assessor)", "accepted the complexity read" + (s.override ? " with an override to " + s.override.toLowerCase() : "") + ".");
+  if(s.step === 1) log("Sam (assessor)", "reviewed " + c.signals.length + " signals, retained " + c.signals.filter(function(_, i){ return !s.setAside[i]; }).length + ".");
+  if(s.step === 2) log("Sam (assessor)", "accepted the " + (s.alt !== null ? "assessor-selected" : "recommended") + " pathway. Not yet actioned.");
+  if(s.step === 3) log("Sam (assessor)", "read the draft" + (s.edited ? " and applied an edit" : "") + ". Nothing sent.");
+
+  s.step += 1;
+  if(s.step === 1) log("Copilot", "surfaced " + c.signals.length + " bio-psycho-social signals with reasoning.");
+  if(s.step === 2) log("Copilot", "proposed a case-management pathway.");
+  if(s.step === 3) log("Copilot", c.draft.withheld ? "declined to draft an email and prepared a call plan instead." : "drafted a customer update. Not sent.");
+
+  render();
+  scrollToNewest();
+}
+
+function back(){
+  var s = st();
+  if(s.scanning) return;
+  captureDraft();
+  if(s.step >= 0){
+    s.step -= 1;
+    s.decision = null;
+    s.audit = s.audit.slice(0, Math.max(0, s.audit.length - 2));
+    render();
+  }
+}
+
+function start(){
+  var s = st();
+  s.scanning = true;
+  render();
+  window.setTimeout(function(){
+    s.scanning = false;
+    s.step = 0;
+    log("Sam (assessor)", "opened claim #" + cs().id + " and asked the copilot to triage it.");
+    log("Copilot", "read " + cs().intake.read + " and returned a complexity read.");
+    render();
+  }, 700);
+}
+
+function resetCase(i){
+  states[i] = freshState();
+  if(i === active) render();
+}
+
+function selectCase(i){
+  if(i === active || i < 0 || i >= CASES.length) return;
+  captureDraft();
+  active = i;
+  render();
+  $("stage-scroll").scrollTop = 0;
+}
+
+/* ---------- EVENT DELEGATION ---------- */
+
+document.addEventListener("click", function(ev){
+  var t = ev.target.closest ? ev.target.closest("[data-act],[data-override],[data-aside],[data-alt],[data-decide]") : null;
+  if(!t) return;
+  var s = st(), c = cs();
+
+  var act = t.getAttribute("data-act");
+  if(act === "start"){ start(); return; }
+  if(act === "accept-read" || act === "accept-signals" || act === "accept-pathway" || act === "accept-draft"){ advance(); return; }
+  if(act === "toggle-override"){ s.overrideOpen = !s.overrideOpen; render(); return; }
+  if(act === "toggle-alts"){ s.altOpen = !s.altOpen; render(); return; }
+  if(act === "apply-edit"){
+    captureDraft();
+    var base = s.draftText !== null ? s.draftText : c.draft.body;
+    s.draftText = base.split(c.draft.edit.find).join(c.draft.edit.replace);
+    s.edited = true;
+    log("Sam (assessor)", "edited the copilot's draft — " + c.draft.edit.label.toLowerCase() + ".");
+    render();
+    return;
+  }
+  if(act === "reset"){ resetCase(active); return; }
+
+  var ov = t.getAttribute("data-override");
+  if(ov){
+    s.override = (s.override === ov) ? null : ov;
+    render();
+    return;
+  }
+
+  var aside = t.getAttribute("data-aside");
+  if(aside !== null){
+    var idx = Number(aside);
+    if(s.setAside[idx]){ delete s.setAside[idx]; }
+    else { s.setAside[idx] = true; }
+    render();
+    return;
+  }
+
+  var alt = t.getAttribute("data-alt");
+  if(alt !== null){
+    s.alt = (alt === "reset") ? null : ((s.alt === Number(alt)) ? null : Number(alt));
+    render();
+    return;
+  }
+
+  var dec = t.getAttribute("data-decide");
+  if(dec){
+    captureDraft();
+    s.decision = dec;
+    var chosen = c.decision.actions.filter(function(a){ return a.id === dec; })[0];
+    log("Sam (assessor)", chosen.outcome.tone === "held"
+      ? "chose &ldquo;" + chosen.label + "&rdquo;. No customer communication issued."
+      : "approved and sent the update to the customer.");
+    render();
+    scrollToNewest();
+    return;
+  }
+});
+
+/* draft edits stay in memory only, never stored */
+document.addEventListener("input", function(ev){
+  if(ev.target && ev.target.id === "drafttext") st().draftText = ev.target.value;
+});
+
+/* ---------- PRESENTER NOTES + OVERLAY ---------- */
+
+function setNotes(on){
+  notesOn = on;
+  $("notes").hidden = !on;
+  $("btn-notes").setAttribute("aria-pressed", String(on));
+  if(on) renderNotes();
+}
+$("btn-notes").addEventListener("click", function(){ setNotes(!notesOn); });
+$("btn-notes-close").addEventListener("click", function(){ setNotes(false); $("btn-notes").focus(); });
+$("btn-reset").addEventListener("click", function(){ resetCase(active); });
+
+var lastFocus = null;
+function setKeys(on){
+  $("overlay").hidden = !on;
+  if(on){ lastFocus = document.activeElement; $("btn-keys-close").focus(); }
+  else if(lastFocus){ lastFocus.focus(); lastFocus = null; }
+}
+$("btn-keys").addEventListener("click", function(){ setKeys(true); });
+$("btn-keys-close").addEventListener("click", function(){ setKeys(false); });
+$("overlay").addEventListener("click", function(ev){ if(ev.target === $("overlay")) setKeys(false); });
+$("sheet").addEventListener("keydown", function(ev){
+  if(ev.key !== "Tab") return;
+  var f = $("sheet").querySelectorAll("button");
+  var first = f[0], last = f[f.length-1];
+  if(ev.shiftKey && document.activeElement === first){ ev.preventDefault(); last.focus(); }
+  else if(!ev.shiftKey && document.activeElement === last){ ev.preventDefault(); first.focus(); }
+});
+
+/* ---------- KEYBOARD ---------- */
+
+document.addEventListener("keydown", function(ev){
+  if(ev.metaKey || ev.ctrlKey || ev.altKey) return;
+
+  if(ev.key === "Escape"){ if(!$("overlay").hidden){ setKeys(false); ev.preventDefault(); } return; }
+  if(!$("overlay").hidden) return;
+
+  var tag = (ev.target.tagName || "").toLowerCase();
+  var typing = tag === "textarea" || tag === "input";
+  var onControl = tag === "button" || tag === "a";
+
+  if(ev.key === "?" || (ev.key === "/" && ev.shiftKey)){ if(!typing){ setKeys(true); ev.preventDefault(); } return; }
+  if(typing) return;
+
+  if(ev.key === "1" || ev.key === "2" || ev.key === "3"){ selectCase(Number(ev.key) - 1); ev.preventDefault(); return; }
+  if(ev.key === "ArrowRight"){ selectCase(Math.min(active + 1, CASES.length - 1)); ev.preventDefault(); return; }
+  if(ev.key === "ArrowLeft"){ selectCase(Math.max(active - 1, 0)); ev.preventDefault(); return; }
+  if(ev.key === "p" || ev.key === "P"){ setNotes(!notesOn); ev.preventDefault(); return; }
+  if(ev.key === "R"){ states = CASES.map(freshState); render(); ev.preventDefault(); return; }
+  if(ev.key === "r"){ resetCase(active); ev.preventDefault(); return; }
+  if(ev.key === "Backspace"){ back(); ev.preventDefault(); return; }
+  if(ev.key === "Enter" && !onControl){ advance(); ev.preventDefault(); return; }
+});
+
+/* ---------- GO ---------- */
+render();
+</script>
+</body>
+</html>
