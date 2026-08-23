@@ -1,0 +1,910 @@
+/* ============================================================================
+   SONYA CLOSE-DEBAIS — "THE LAP"
+   Visual prototype. Extends the Black Cockatoo system into a pit-wall world.
+   ─────────────────────────────────────────────────────────────────────────
+   Committed to a single dark ground: the use scene is a timing screen, and a
+   timing screen is not a light-mode object. The live site (index.html) keeps
+   its light/dark pair; this surface deliberately does not.
+   ============================================================================ */
+
+/* ── Faces ─────────────────────────────────────────────────────────────────
+   Self-hosted. The live site's Fraunces/Inter pairing reads as every third
+   personal site; this one keeps the same three-voice structure (display serif
+   / grotesque / mono) with faces that carry more edge. Mono here is genuine
+   measurement — years, durations, readouts — not a technical costume. */
+
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url(fonts/newsreader-var.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/newsreader-italic-var.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 700;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url(fonts/archivo-var.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(fonts/jetbrains-mono-var.woff2) format('woff2');
+}
+
+/* ── Tokens ──────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Ground & ink. Charcoal carried over from the live site, pushed darker so
+     the tail-flash reads as emission rather than paint. */
+  --ground: #0d0c10;
+  --ground-raised: #15141a;
+  --ground-sunk: #08070a;
+  --ink: #f4f1ea;
+  --ink-soft: #b3ab9e;   /* warm sand, tinted from the ink — never gray */
+  --ink-faint: #7d7770;
+
+  /* Accents, from the bird and the garden. */
+  --flash: #e2564f;      /* red-tailed black cockatoo */
+  --chilli: #f07548;
+  --olive: #8ea070;
+
+  --line: rgba(244, 241, 234, 0.14);
+  --line-bold: rgba(244, 241, 234, 0.28);
+  --line-hair: rgba(244, 241, 234, 0.07);
+
+  /* Type scale — six roles, obvious steps (1.29× minimum, mostly 1.6×+).
+     Display is capped at 6rem; the live site's 8rem was shouting. */
+  --fs-micro: 0.75rem;
+  --fs-body: 1.0625rem;
+  --fs-sub: 1.375rem;
+  --fs-lead: clamp(1.5rem, 2.6vw, 2.125rem);
+  --fs-title: clamp(2.25rem, 5vw, 3.5rem);
+  --fs-display: clamp(3rem, 10vw, 6rem);
+
+  /* Spacing — 4px base, so the useful middle steps exist. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 9rem;
+
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --measure: 68ch;
+  --bar: 3.5rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body, h1, h2, h3, p, dl, dd, dt, ul, ol, li, figure, figcaption {
+  margin: 0;
+  padding: 0;
+}
+
+ul, ol { list-style: none; }
+
+a { color: inherit; text-decoration: none; }
+
+canvas { display: block; max-width: 100%; }
+
+body {
+  background-color: var(--ground);
+  color: var(--ink);
+  font-family: Archivo, system-ui, sans-serif;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Browser surfaces ──────────────────────────────────────────────────────
+   The parts nobody draws. Left at defaults they announce that a page was
+   assembled rather than built. */
+
+::selection { background-color: var(--flash); color: var(--ground); }
+
+:root {
+  color-scheme: dark;
+  scrollbar-color: var(--line-bold) transparent;
+  scrollbar-width: thin;
+  caret-color: var(--flash);
+  accent-color: var(--flash);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--ground-sunk); }
+::-webkit-scrollbar-thumb {
+  background: var(--line-bold);
+  border: 3px solid var(--ground-sunk);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--flash); }
+
+:focus-visible {
+  outline: 2px solid var(--flash);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a:not([class]) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--line-bold);
+  transition: text-decoration-color 140ms var(--ease-out);
+}
+
+a:not([class]):hover { text-decoration-color: var(--flash); }
+
+.skip {
+  position: fixed;
+  top: var(--s-3);
+  left: var(--s-3);
+  z-index: 100;
+  transform: translateY(-200%);
+  padding: var(--s-3) var(--s-4);
+  background: var(--flash);
+  color: var(--ground);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.skip:focus { transform: none; }
+
+/* ── Shared type ─────────────────────────────────────────────────────────── */
+
+.display,
+.title,
+.subtitle {
+  font-family: Newsreader, Georgia, serif;
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+}
+
+.display {
+  font-size: var(--fs-display);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.title {
+  font-size: var(--fs-title);
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.subtitle {
+  font-size: var(--fs-sub);
+  line-height: 1.15;
+}
+
+.lead {
+  font-family: Newsreader, Georgia, serif;
+  font-size: var(--fs-lead);
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  max-width: 22ch;
+  color: var(--ink);
+}
+
+.standfirst {
+  max-width: 46ch;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+/* The timing-screen voice: mono, wide-tracked, small. Used only for
+   measurement and wayfinding. */
+.pitwall-nav a,
+.pitwall-readout,
+.plate dt,
+.sector-time,
+.stint-where,
+.readout dt,
+.trace-caption,
+.scroll-cue,
+.splits-date,
+.papers-meta,
+.flag-copy {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+main > section {
+  padding-inline: var(--gutter);
+  padding-block: clamp(var(--s-8), 11vh, var(--s-10));
+  border-top: 1px solid var(--line-hair);
+}
+
+main > section:first-child { border-top: none; }
+
+.section-head {
+  display: grid;
+  gap: var(--s-4);
+  margin-bottom: var(--s-8);
+  max-width: 74rem;
+}
+
+@media (min-width: 60rem) {
+  .section-head {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: var(--s-7);
+  }
+}
+
+/* ── Pit wall (header) ───────────────────────────────────────────────────── */
+
+.pitwall {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  height: var(--bar);
+  display: flex;
+  align-items: center;
+  gap: var(--s-5);
+  padding-inline: var(--gutter);
+  background: color-mix(in srgb, var(--ground) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--line-hair);
+}
+
+.pitwall-mark {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  flex: none;
+}
+
+.pitwall-initials {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--flash);
+}
+
+.pitwall-name {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.pitwall-nav {
+  display: flex;
+  gap: var(--s-5);
+  margin-inline-start: auto;
+}
+
+.pitwall-nav a {
+  color: var(--ink-soft);
+  padding-block: var(--s-2);
+  border-bottom: 1px solid transparent;
+  transition: color 140ms var(--ease-out), border-color 140ms var(--ease-out);
+}
+
+.pitwall-nav a:hover { color: var(--ink); }
+
+.pitwall-nav a[aria-current="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--flash);
+}
+
+.pitwall-readout {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex: none;
+  padding-inline-start: var(--s-5);
+  border-inline-start: 1px solid var(--line-hair);
+}
+
+.pitwall-readout-label { color: var(--ink-faint); }
+
+.pitwall-readout-value {
+  color: var(--flash);
+  min-width: 7ch;
+}
+
+.pitwall-progress {
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 1px;
+  background: var(--line-hair);
+}
+
+.pitwall-progress i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--flash);
+  transform-origin: left;
+}
+
+@media (max-width: 60rem) {
+  .pitwall-nav,
+  .pitwall-name { display: none; }
+  .pitwall-readout { margin-inline-start: auto; border: none; padding: 0; }
+}
+
+/* ── Ignition ────────────────────────────────────────────────────────────── */
+
+.ignition {
+  min-height: 100svh;
+  padding-top: calc(var(--bar) + var(--s-8)) !important;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: var(--s-7);
+  align-content: center;
+}
+
+.ignition-copy {
+  display: grid;
+  gap: var(--s-6);
+  align-content: center;
+  max-width: 74rem;
+}
+
+@media (min-width: 60rem) {
+  .ignition-copy {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    align-items: end;
+    gap: var(--s-8);
+  }
+  .ignition-copy .display { grid-column: 1; }
+  .ignition-copy .lead { grid-column: 2; padding-bottom: var(--s-2); }
+  .plate { grid-column: 1 / -1; }
+}
+
+.plate {
+  display: grid;
+  gap: var(--s-4);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 40rem) {
+  .plate { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-6); }
+}
+
+.plate dt {
+  color: var(--ink-faint);
+  margin-bottom: var(--s-1);
+}
+
+.plate dd { color: var(--ink); }
+
+/* The one authored moment lives here. */
+.trace {
+  position: relative;
+  width: 100%;
+  height: clamp(6rem, 16vh, 11rem);
+}
+
+#trace-canvas { width: 100%; height: 100%; }
+
+.trace-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  color: var(--ink-faint);
+  text-align: right;
+}
+
+.scroll-cue {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  color: var(--ink-faint);
+}
+
+.scroll-cue::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--line-bold), transparent);
+}
+
+/* ── The lap ─────────────────────────────────────────────────────────────── */
+
+.sectors {
+  display: grid;
+  max-width: 74rem;
+}
+
+.sector {
+  position: relative;
+  display: grid;
+  gap: var(--s-3);
+  padding-block: var(--s-6);
+  padding-inline-start: var(--s-6);
+  border-top: 1px solid var(--line-hair);
+}
+
+.sector:first-child { border-top: 1px solid var(--line); }
+.sector:last-child { border-bottom: 1px solid var(--line); }
+
+@media (min-width: 48rem) {
+  .sector {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: var(--s-6);
+    padding-block: var(--s-7);
+    padding-inline-start: var(--s-7);
+  }
+}
+
+/* The rail and its node — the playhead's track through the career. */
+.sector::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 1px;
+  background: var(--line);
+}
+
+.sector::after {
+  content: "";
+  position: absolute;
+  inset-block-start: var(--s-6);
+  inset-inline-start: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ground);
+  border: 1px solid var(--line-bold);
+  transition: background-color 260ms var(--ease-out),
+              border-color 260ms var(--ease-out),
+              box-shadow 260ms var(--ease-out);
+}
+
+@media (min-width: 48rem) {
+  .sector::after { inset-block-start: var(--s-7); }
+}
+
+.sector.is-live::after {
+  background: var(--flash);
+  border-color: var(--flash);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--flash) 18%, transparent);
+}
+
+.sector-time {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  color: var(--ink-soft);
+}
+
+@media (min-width: 48rem) {
+  .sector-time {
+    flex-direction: column;
+    gap: var(--s-1);
+    position: sticky;
+    top: calc(var(--bar) + var(--s-5));
+    align-self: start;
+  }
+}
+
+.sector-years { color: var(--ink); }
+.sector-dur { color: var(--ink-faint); letter-spacing: 0.1em; }
+
+.sector.is-live .sector-years { color: var(--flash); }
+
+.sector-role {
+  font-family: Newsreader, Georgia, serif;
+  font-size: var(--fs-sub);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.sector-org {
+  color: var(--olive);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  font-stretch: 108%;
+  margin-block: var(--s-1) var(--s-3);
+}
+
+.sector-desc {
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.splits {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line-hair);
+  display: grid;
+  gap: var(--s-2);
+  max-width: 42rem;
+}
+
+.splits li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.splits-role {
+  font-size: 0.9375rem;
+  color: var(--ink);
+}
+
+.splits li::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  min-width: var(--s-4);
+  background: var(--line-hair);
+  transform: translateY(-0.2em);
+}
+
+.splits-date {
+  color: var(--ink-faint);
+  flex: none;
+  order: 3;
+}
+
+/* ── Stints ──────────────────────────────────────────────────────────────── */
+
+/* Not three equal cards. The consequential piece leads at full width; the two
+   measured pieces share the row beneath it. */
+.stints { background: var(--ground-sunk); }
+
+.stint {
+  max-width: 74rem;
+}
+
+.stint-lead {
+  padding-bottom: var(--s-7);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--s-7);
+}
+
+.stint-where {
+  color: var(--ink-faint);
+  margin-bottom: var(--s-3);
+}
+
+.stint-title {
+  font-family: Newsreader, Georgia, serif;
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin-bottom: var(--s-4);
+}
+
+.stint-lead .stint-title { font-size: var(--fs-title); max-width: 20ch; }
+.stint-pair .stint-title { font-size: var(--fs-sub); }
+
+.stint-text {
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.stint-lead .stint-text { font-size: 1.125rem; }
+
+.stint-metric {
+  margin-top: var(--s-5);
+  font-family: Newsreader, Georgia, serif;
+  font-size: var(--fs-lead);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.stint-metric b {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--flash);
+}
+
+.stint-pair {
+  display: grid;
+  gap: var(--s-7);
+  max-width: 74rem;
+}
+
+@media (min-width: 56rem) {
+  .stint-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-8);
+  }
+}
+
+.readouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-6);
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+.readout dt {
+  color: var(--ink-faint);
+  margin-bottom: var(--s-2);
+}
+
+.readout dd {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--flash);
+  font-variant-numeric: tabular-nums;
+}
+
+.readout-text {
+  font-size: var(--fs-body) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  color: var(--ink-soft) !important;
+  font-family: Archivo, system-ui, sans-serif !important;
+}
+
+/* ── Practice ────────────────────────────────────────────────────────────── */
+
+.index {
+  max-width: 74rem;
+  border-top: 1px solid var(--line);
+}
+
+.index-row {
+  display: grid;
+  gap: var(--s-2);
+  padding-block: var(--s-5);
+  border-bottom: 1px solid var(--line-hair);
+}
+
+@media (min-width: 52rem) {
+  .index-row {
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+    gap: var(--s-6);
+    align-items: baseline;
+  }
+}
+
+.index dt {
+  font-weight: 600;
+  font-stretch: 106%;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.index dd {
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.practice .subtitle {
+  margin-top: var(--s-8);
+  margin-bottom: var(--s-5);
+  color: var(--ink);
+}
+
+.papers {
+  display: grid;
+  gap: var(--s-5);
+  max-width: 74rem;
+}
+
+@media (min-width: 52rem) {
+  .papers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-6) var(--s-8); }
+}
+
+.papers li {
+  padding-inline-start: var(--s-4);
+  border-inline-start: 1px solid var(--line);
+}
+
+.papers-title {
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.papers-meta { color: var(--ink-faint); margin-block: var(--s-2) var(--s-1); }
+.papers-note { color: var(--ink-soft); font-size: 0.9375rem; }
+
+/* ── Paddock ─────────────────────────────────────────────────────────────── */
+
+.passions {
+  display: grid;
+  gap: var(--s-6);
+  max-width: 74rem;
+}
+
+@media (min-width: 52rem) {
+  .passions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-7) var(--s-8); }
+}
+
+.passion {
+  --hue: var(--ink-faint);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+  position: relative;
+}
+
+/* A 3rem tail flash of the accent, not a full colored border. */
+.passion::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: 0;
+  width: 3rem;
+  height: 1px;
+  background: var(--hue);
+}
+
+.passion-flash { --hue: var(--flash); }
+.passion-chilli { --hue: var(--chilli); }
+.passion-olive { --hue: var(--olive); }
+.passion-ink { --hue: var(--ink); }
+
+.passion-name {
+  font-family: Newsreader, Georgia, serif;
+  font-size: var(--fs-sub);
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: var(--s-3);
+  color: var(--hue);
+}
+
+.passion-text {
+  color: var(--ink-soft);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+/* ── Radio ───────────────────────────────────────────────────────────────── */
+
+.radio {
+  display: grid;
+  gap: var(--s-5);
+  justify-items: start;
+}
+
+.radio .title { max-width: 14ch; }
+
+.radio-line {
+  max-width: 44ch;
+  color: var(--ink-soft);
+  font-size: 1.125rem;
+  text-wrap: pretty;
+}
+
+.radio-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-4) var(--s-7);
+  margin-top: var(--s-3);
+}
+
+.radio-primary {
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(1.5rem, 4.4vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  background-image: linear-gradient(var(--flash), var(--flash));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 320ms var(--ease-out), color 200ms var(--ease-out);
+  overflow-wrap: anywhere;
+}
+
+.radio-primary:hover { background-size: 100% 1px; color: var(--flash); }
+
+.radio-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 600;
+  font-stretch: 108%;
+  color: var(--ink-soft);
+  transition: color 160ms var(--ease-out);
+}
+
+.radio-secondary:hover { color: var(--ink); }
+
+/* Drawn mark, one stroke weight — not a unicode arrow standing in for an icon. */
+.radio-out {
+  width: 0.7em;
+  height: 0.7em;
+  border: 1.5px solid currentColor;
+  border-left: none;
+  border-bottom: none;
+  transform: rotate(45deg) translate(-0.06em, 0.06em);
+  transition: transform 200ms var(--ease-out);
+}
+
+.radio-secondary:hover .radio-out { transform: rotate(45deg) translate(0.04em, -0.04em); }
+
+.radio-aside {
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line-hair);
+  max-width: 48ch;
+  font-family: Newsreader, Georgia, serif;
+  font-style: italic;
+  font-size: var(--fs-sub);
+  line-height: 1.35;
+  color: var(--ink-faint);
+}
+
+/* ── Flag (footer) ───────────────────────────────────────────────────────── */
+
+.flag {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--gutter);
+  background: var(--ground-sunk);
+  border-top: 1px solid var(--line);
+}
+
+.flag-note { color: var(--ink-soft); font-size: 0.9375rem; max-width: 56ch; }
+.flag-note b { color: var(--ink); font-weight: 600; }
+.flag-copy { color: var(--ink-faint); }
+
+/* ── Reduced motion ────────────────────────────────────────────────────────
+   Fewer and gentler, not none: the sector node still changes state, the
+   readout still updates, the trace still draws — instantly, in full. */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+  }
+
+  .radio-primary { transition-duration: 0ms !important; }
+}

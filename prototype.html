@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en-AU" data-act="1" data-beat="0">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Agentic Underwriting — live demo</title>
+<meta name="description" content="Stage prototype: a multi-agent underwriting cascade that reads a 120-page APS, prices the risk, and keeps the underwriter in the loop. Ten-minute live demo, synthetic data.">
+<link rel="preload" href="fonts/archivo-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+
+<noscript>
+  <p class="noscript">This is a live product demo — it runs on script. Please enable JavaScript to play it.</p>
+</noscript>
+
+<!-- ══ Presenter chrome ═══════════════════════════════════════════════════ -->
+<header class="bar">
+    <div class="bar-id">
+        <span class="bar-dot" aria-hidden="true"></span>
+        <span class="bar-title">Agentic Underwriting</span>
+        <span class="bar-flag" title="No real applicant data appears in this demo">Synthetic data</span>
+    </div>
+
+    <div class="bar-rail">
+        <ol class="acts" id="acts">
+            <li data-act="1"><span class="acts-time">0:00</span><span class="acts-name">The hook</span></li>
+            <li data-act="2"><span class="acts-time">2:00</span><span class="acts-name">Cascade</span></li>
+            <li data-act="3"><span class="acts-time">5:00</span><span class="acts-name">Human in the loop</span></li>
+            <li data-act="4"><span class="acts-time">8:00</span><span class="acts-name">Value</span></li>
+        </ol>
+        <div class="rail" aria-hidden="true"><i id="rail-fill"></i></div>
+    </div>
+
+    <div class="bar-transport">
+        <p class="clock"><span id="clock">0:00</span><span class="clock-total">/ 10:00</span></p>
+        <button type="button" class="tbtn" id="prev" aria-label="Previous beat">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 3 5.5 8 11 13M4.5 3v10"/></svg>
+        </button>
+        <button type="button" class="tbtn tbtn-play" id="play" aria-label="Play the demo" aria-pressed="false">
+            <svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.5 13 8l-8.5 5.5z"/></svg>
+            <svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3v10M11 3v10"/></svg>
+        </button>
+        <button type="button" class="tbtn" id="next" aria-label="Next beat">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l5.5 5L5 13M11.5 3v10"/></svg>
+        </button>
+        <button type="button" class="tbtn tbtn-wide" id="notes-toggle" aria-expanded="false" aria-controls="notes">Script</button>
+    </div>
+</header>
+
+<!-- ══ Screens ════════════════════════════════════════════════════════════ -->
+<main class="stage" id="stage">
+
+    <!-- ── Act 1 · The hook ──────────────────────────────────────────────── -->
+    <section class="screen screen-hook" data-screen="1" aria-labelledby="hook-h">
+        <div class="hook-grid">
+
+            <div class="hook-copy">
+                <p class="tag">Term life · $1.5M face value · Full underwriting</p>
+                <h1 class="hook-h" id="hook-h">Six weeks of<br>reading.</h1>
+                <p class="hook-sub">A $1.5M term policy sits in the underwriter queue while a human
+                expert reads several hundred pages of unstructured medical records. The applicant
+                waits. A third of them stop waiting.</p>
+
+                <dl class="hook-facts">
+                    <div><dt>In queue</dt><dd>1,284 policies</dd></div>
+                    <div><dt>Median read</dt><dd>3.5 hrs / file</dd></div>
+                    <div><dt>Pages this file</dt><dd>120</dd></div>
+                </dl>
+            </div>
+
+            <div class="hook-meter">
+                <div class="countdown" role="group" aria-label="Time to issue">
+                    <p class="countdown-n"><span id="countdown">45</span></p>
+                    <p class="countdown-l" id="countdown-l">Days to issue</p>
+                </div>
+                <div class="chart" aria-hidden="true">
+                    <p class="chart-cap">APS · Attending Physician Statement</p>
+                    <div class="sheets">
+                        <span class="sheet"></span><span class="sheet"></span><span class="sheet"></span>
+                        <div class="sheet sheet-face">
+                            <p class="sheet-h">Applicant A&#8209;2291 &middot; synthetic record</p>
+                            <span class="rule"></span><span class="rule"></span><span class="rule short"></span>
+                            <span class="rule"></span><span class="rule short"></span><span class="rule"></span>
+                            <span class="rule"></span><span class="rule short"></span>
+                        </div>
+                    </div>
+                    <p class="chart-count">120 pp</p>
+                </div>
+            </div>
+
+            <div class="drop" id="drop" data-state="idle">
+                <div class="drop-idle">
+                    <svg class="drop-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3v11M8 10.5l4 3.5 4-3.5M4 16v3.5h16V16"/>
+                    </svg>
+                    <p class="drop-label">Drag &amp; drop APS PDF</p>
+                    <p class="drop-hint">or press <kbd>&rarr;</kbd> to run the demo file</p>
+                </div>
+                <div class="drop-live">
+                    <p class="drop-file"><b>APS_A2291_120pp.pdf</b><span>4.7 MB · 120 pages</span></p>
+                    <div class="drop-track"><i id="drop-fill"></i></div>
+                    <p class="drop-status" id="drop-status">Uploading…</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ── Act 2 · The cascade ───────────────────────────────────────────── -->
+    <section class="screen screen-split" data-screen="2" aria-labelledby="cascade-h">
+        <h2 class="sr-only" id="cascade-h">The multi-agent cascade</h2>
+
+        <!-- Left: the document -->
+        <div class="doc" id="doc">
+            <div class="doc-head">
+                <p class="doc-name">APS_A2291_120pp.pdf</p>
+                <p class="doc-page">Page <span id="doc-page">1</span> <span class="doc-of">/ 120</span></p>
+            </div>
+            <div class="doc-body" id="doc-body">
+                <!-- pages injected by demo.js -->
+            </div>
+            <div class="doc-foot">
+                <p class="doc-scan" id="doc-scan">Idle</p>
+                <div class="doc-track"><i id="doc-fill"></i></div>
+            </div>
+        </div>
+
+        <!-- Right: the agent graph -->
+        <div class="graph">
+            <ol class="nodes">
+
+                <li class="node" data-node="1" data-state="idle">
+                    <div class="node-head">
+                        <span class="node-dot" aria-hidden="true"></span>
+                        <div>
+                            <p class="node-name">Parsing agent</p>
+                            <p class="node-role">Unstructured text &rarr; typed clinical entities</p>
+                            <p class="node-sum" hidden></p>
+                        </div>
+                        <p class="node-state"><span class="node-state-t">Queued</span></p>
+                    </div>
+                    <div class="node-body">
+                        <p class="node-cap">Live payload</p>
+                        <pre class="json" id="json-out" aria-live="off"></pre>
+                        <ul class="chips" id="entity-chips"></ul>
+                    </div>
+                </li>
+
+                <li class="node" data-node="2" data-state="idle">
+                    <div class="node-head">
+                        <span class="node-dot" aria-hidden="true"></span>
+                        <div>
+                            <p class="node-name">Reasoning agent</p>
+                            <p class="node-role">Interaction &amp; comorbidity detection</p>
+                            <p class="node-sum" hidden></p>
+                        </div>
+                        <p class="node-state"><span class="node-state-t">Queued</span></p>
+                    </div>
+                    <div class="node-body">
+                        <ul class="findings">
+                            <li class="finding" data-reveal="1">
+                                <p class="finding-k">Hypertension, stage 2</p>
+                                <p class="finding-v">BP 148/92 <a class="xref" href="#" data-page="8" data-para="2">p.8 &para;2</a></p>
+                            </li>
+                            <li class="finding" data-reveal="2">
+                                <p class="finding-k">Type 2 diabetes, controlled</p>
+                                <p class="finding-v">HbA1c 6.8% <a class="xref" href="#" data-page="8" data-para="4">p.8 &para;4</a></p>
+                            </li>
+                            <li class="finding finding-alert" data-reveal="3">
+                                <p class="finding-k">Interaction detected</p>
+                                <p class="finding-v">Elevated BP &times; T2DM &mdash; compounding cardiovascular risk</p>
+                            </li>
+                        </ul>
+                        <p class="multiplier" data-reveal="4">
+                            <span class="multiplier-l">Risk multiplier applied</span>
+                            <b class="multiplier-n">1.15&times;</b>
+                        </p>
+                    </div>
+                </li>
+
+                <li class="node" data-node="3" data-state="idle">
+                    <div class="node-head">
+                        <span class="node-dot" aria-hidden="true"></span>
+                        <div>
+                            <p class="node-name">Actuarial agent</p>
+                            <p class="node-role">Rate placement &amp; pricing</p>
+                            <p class="node-sum" hidden></p>
+                        </div>
+                        <p class="node-state"><span class="node-state-t">Queued</span></p>
+                    </div>
+                    <div class="node-body">
+                        <ol class="price">
+                            <li data-reveal="1">
+                                <span class="price-k">Base rate, standard</span>
+                                <span class="price-v">$<span class="tally" data-to="1240" data-group="1">1,240</span></span>
+                            </li>
+                            <li data-reveal="2">
+                                <span class="price-k">Comorbidity multiplier</span>
+                                <span class="price-v price-mid">1.15&times;</span>
+                            </li>
+                            <li data-reveal="3">
+                                <span class="price-k">Table placement</span>
+                                <span class="price-v price-mid">Table B</span>
+                            </li>
+                            <li class="price-total" data-reveal="4">
+                                <span class="price-k">Annual premium, offered</span>
+                                <span class="price-v">$<span class="tally" data-to="1860" data-group="1">1,860</span></span>
+                            </li>
+                        </ol>
+                        <p class="price-note" data-reveal="4">Placement is table-driven; the multiplier
+                        is one input to it, not a factor on the base rate.</p>
+                    </div>
+                </li>
+
+            </ol>
+        </div>
+    </section>
+
+    <!-- ── Act 3 · Human in the loop ─────────────────────────────────────── -->
+    <section class="screen screen-split" data-screen="3" aria-labelledby="edge-h">
+        <h2 class="sr-only" id="edge-h">Edge cases and human in the loop</h2>
+
+        <!-- Left: the same document, driven by cross-references -->
+        <div class="doc" id="doc-2">
+            <div class="doc-head">
+                <p class="doc-name">APS_A2291_120pp.pdf</p>
+                <p class="doc-page">Page <span id="doc-page-2">12</span> <span class="doc-of">/ 120</span></p>
+            </div>
+            <div class="doc-body" id="doc-body-2"></div>
+            <div class="doc-foot">
+                <p class="doc-scan" id="doc-scan-2">Hover any debit to jump to its source</p>
+            </div>
+        </div>
+
+        <!-- Right: the flag, the outreach, the memo -->
+        <div class="panels">
+
+            <section class="panel panel-flag" data-reveal="1" aria-labelledby="flag-h">
+                <header class="panel-head">
+                    <span class="panel-mark" aria-hidden="true">
+                        <svg viewBox="0 0 16 16"><path d="M8 1.8 15 14H1zM8 6.4v3.2M8 11.6v.6"/></svg>
+                    </span>
+                    <h3 class="panel-h" id="flag-h">Missing data</h3>
+                    <p class="panel-tag">Blocking</p>
+                </header>
+                <p class="panel-line">Cholesterol panel not on file. Applicant declined the draw at
+                collection.</p>
+                <p class="panel-src"><a class="xref" href="#" data-page="12" data-para="3">p.12 &para;3</a>
+                &ldquo;Patient declined lipid panel; advised of implications.&rdquo;</p>
+                <p class="panel-alt">Legacy path: decline, or stall the file for 11 days awaiting
+                clarification.</p>
+            </section>
+
+            <section class="panel panel-draft" data-reveal="2" aria-labelledby="draft-h">
+                <header class="panel-head">
+                    <h3 class="panel-h" id="draft-h">Drafted request</h3>
+                    <div class="seg" role="tablist" aria-label="Channel">
+                        <button type="button" role="tab" id="tab-sms" aria-selected="true" aria-controls="draft-sms">SMS</button>
+                        <button type="button" role="tab" id="tab-email" aria-selected="false" aria-controls="draft-email">Email</button>
+                    </div>
+                </header>
+
+                <div class="draft" id="draft-sms" role="tabpanel" aria-labelledby="tab-sms">
+                    <p class="draft-meta">To applicant A&#8209;2291 · 160 characters</p>
+                    <p class="draft-body">Hi — one item is outstanding on your life cover application:
+                    a lipid panel. Any Sonic or QML collection centre, no appointment, no cost to you.
+                    Book: <span class="draft-link">apply.example/lipid</span></p>
+                </div>
+
+                <div class="draft" id="draft-email" role="tabpanel" aria-labelledby="tab-email" hidden>
+                    <p class="draft-meta">To applicant A&#8209;2291 · Subject: One outstanding item on your application</p>
+                    <p class="draft-body">Your application is progressing and nothing is being declined.
+                    One test — a lipid panel — was not completed at your collection appointment. You can
+                    have it done at any Sonic or QML centre without an appointment, at no cost to you.
+                    Once the result reaches us your file resumes automatically.</p>
+                </div>
+
+                <div class="draft-actions">
+                    <button type="button" class="btn btn-send" id="send">Send request</button>
+                    <button type="button" class="btn btn-ghost" id="edit-draft">Edit</button>
+                    <p class="draft-sent" id="draft-sent" hidden>
+                        <span class="tick" aria-hidden="true"></span>
+                        Sent 14:02 · file held open, not declined · auto-resumes on result
+                    </p>
+                </div>
+            </section>
+
+            <section class="panel panel-memo" data-reveal="3" aria-labelledby="memo-h">
+                <header class="panel-head">
+                    <h3 class="panel-h" id="memo-h">Audit memo</h3>
+                    <p class="panel-tag panel-tag-quiet">Every debit cites its page</p>
+                </header>
+                <ol class="debits">
+                    <li><a class="debit xref" href="#" data-page="8" data-para="2">
+                        <span class="debit-k">Blood pressure 148/92</span>
+                        <span class="debit-v">+2 debits</span>
+                        <span class="debit-src">p.8 &para;2</span></a></li>
+                    <li><a class="debit xref" href="#" data-page="8" data-para="4">
+                        <span class="debit-k">HbA1c 6.8%</span>
+                        <span class="debit-v">+3 debits</span>
+                        <span class="debit-src">p.8 &para;4</span></a></li>
+                    <li><a class="debit xref" href="#" data-page="13" data-para="1">
+                        <span class="debit-k">BMI 31.2</span>
+                        <span class="debit-v">+2 debits</span>
+                        <span class="debit-src">p.13 &para;1</span></a></li>
+                    <li><a class="debit xref debit-open" href="#" data-page="12" data-para="3">
+                        <span class="debit-k">Lipid panel outstanding</span>
+                        <span class="debit-v">Held</span>
+                        <span class="debit-src">p.12 &para;3</span></a></li>
+                </ol>
+            </section>
+
+        </div>
+    </section>
+
+    <!-- ── Act 4 · The value ─────────────────────────────────────────────── -->
+    <section class="screen screen-value" data-screen="4" aria-labelledby="value-h">
+        <div class="value-grid">
+            <h2 class="value-h" id="value-h">Same file.<br>Same underwriter.</h2>
+
+            <table class="compare">
+                <caption class="sr-only">Traditional underwriting compared with the agentic cascade</caption>
+                <thead>
+                    <tr>
+                        <th scope="col"><span class="sr-only">Measure</span></th>
+                        <th scope="col" class="col-old">Traditional</th>
+                        <th scope="col" class="col-new">Agentic</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-reveal="1">
+                        <th scope="row">Time to issue</th>
+                        <td class="col-old">45 <span class="unit">days</span></td>
+                        <td class="col-new">30 <span class="unit">seconds</span></td>
+                    </tr>
+                    <tr data-reveal="2">
+                        <th scope="row">Processing cost</th>
+                        <td class="col-old">$<span class="tally" data-to="650">650</span></td>
+                        <td class="col-new">$<span class="tally" data-to="12">12</span></td>
+                    </tr>
+                    <tr data-reveal="3">
+                        <th scope="row">Abandonment</th>
+                        <td class="col-old"><span class="tally" data-to="30">30</span>%</td>
+                        <td class="col-new">Near&#8209;zero</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <blockquote class="closing" data-reveal="4">
+                <p>Agentic AI doesn't replace the underwriter. It gives them a team of clinical, risk,
+                and administrative specialists running at machine speed — so they can sign off on
+                complex policies in seconds.</p>
+            </blockquote>
+        </div>
+    </section>
+
+</main>
+
+<!-- ══ Presenter script ═══════════════════════════════════════════════════ -->
+<aside class="notes" id="notes" hidden aria-label="Presenter script">
+    <header class="notes-head">
+        <p class="notes-title">Presenter script</p>
+        <button type="button" class="notes-close" id="notes-close" aria-label="Close script">&times;</button>
+    </header>
+    <ol class="notes-list" id="notes-list"></ol>
+    <footer class="notes-foot">
+        <p><kbd>Space</kbd> play / pause · <kbd>&larr;</kbd><kbd>&rarr;</kbd> step beat ·
+        <kbd>1</kbd>&ndash;<kbd>4</kbd> jump act · <kbd>R</kbd> restart · <kbd>S</kbd> script</p>
+    </footer>
+</aside>
+
+<script src="demo.js"></script>
+</body>
+</html>

@@ -69,3 +69,41 @@ The site is static, so anything that serves files will host it. A GitHub Pages
 workflow is included at `.github/workflows/pages.yml` — enable it under
 repository Settings → Pages by setting the source to "GitHub Actions", and every
 push to `main` will publish.
+
+## Prototypes
+
+Two visual explorations live alongside the site. Neither is linked from
+`index.html`, and neither changes it.
+
+```
+prototype.html      Agentic Underwriting — a ten-minute stage demo
+demo.css / demo.js  its design system and playback engine
+
+prototype-lap.html  "The lap" — the CV read as a single timed F1 lap
+prototype-lap.css / prototype-lap.js
+```
+
+### Agentic Underwriting
+
+A live product demo built to a ten-minute stage script: the hook, a
+three-agent cascade reading a 120-page attending physician statement, the
+missing-data edge case with a human in the loop, and the closing value
+comparison. Every figure on screen is synthetic — there is no real applicant
+and no real medical record anywhere in it.
+
+It plays two ways, because a stage needs both. Press play and the clock runs,
+firing each beat on its own timecode; or step it with the arrow keys, and the
+clock snaps to the beat you land on, so a presenter who is talking long never
+gets overtaken by their own demo.
+
+```
+Space   play / pause          1–4  jump to act
+← →     step beat             R    restart
+S       presenter script      Esc  close the script
+```
+
+### Fonts
+
+Both prototypes self-host their faces from `fonts/`: Newsreader for display,
+Archivo for interface, JetBrains Mono for anything measured. The live site
+still loads Fraunces and Inter from Google Fonts.
