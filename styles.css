@@ -850,6 +850,15 @@ h6 {
   margin-bottom: 0.75rem;
 }
 
+.case-title a {
+  border-bottom: 2px solid var(--accent);
+  transition: color 0.2s ease;
+}
+
+.case-title a:hover {
+  color: var(--accent);
+}
+
 .case-text {
   font-size: 1rem;
   line-height: 1.65;

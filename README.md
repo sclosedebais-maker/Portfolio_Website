@@ -33,6 +33,36 @@ Accessibility: single `h1`, ordered headings, a skip link, visible focus rings o
 every interactive element, AA contrast in both themes, and a
 `prefers-reduced-motion` path that disables all animation.
 
+## Prototypes
+
+`prototypes/accelerated-underwriting.html` is a self-contained working demo:
+**Accelerated Medical Underwriting & APS Synthesis**. It simulates an agentic
+life insurance pipeline end to end.
+
+An eighty-page Attending Physician Statement is triaged page by page, the two
+material pages are deep-read with the extracted values highlighted in the raw
+text stream, and eight clinical entities land in a structured medical graph —
+every one of them carrying the page it came from. Four agents run in sequence:
+document parsing, medical reasoning (ICD-10 mapping, debits, comorbidity
+detection), requirements drafting, and actuarial pricing. It ends on a
+conditional offer, an audit memo where every debit links back to its source
+page, and a human sign-off gate. Nothing issues until a person presses the
+button.
+
+The whole run takes about 24 seconds of wall clock against an industry
+benchmark of 30 to 45 days. A turbo toggle runs it at 4× for impatient
+audiences; the timer always shows real elapsed time, never a faked one. Click
+any `p.12 ↗` citation to jump to that page in the document pane.
+
+The drawer at the bottom shows each agent's system prompt and its input and
+output JSON payload, so the contract between agents is visible rather than
+implied. The applicant, the APS and the rate basis are all synthetic — it is a
+prototype, not a quote.
+
+It is one file with no dependencies and no build step. Open it directly, or
+follow the link from the Selected work section of the site. It is deliberately
+not part of `sonya-close-debais.html`, which stays a single self-contained page.
+
 ## Just open it
 
 `sonya-close-debais.html` is the whole site in one file: CSS and JavaScript are

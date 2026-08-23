@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Accelerated Medical Underwriting &amp; APS Synthesis — Prototype</title>
+<meta name="description" content="An agentic underwriting prototype: an 80-page Attending Physician Statement disaggregated in real time into a structured medical graph, risk rating, and a bindable quote in under 30 seconds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   ACCELERATED MEDICAL UNDERWRITING — prototype
+   Design system inherited from the Black Cockatoo portfolio palette.
+   ========================================================================= */
+
+*{ box-sizing: border-box; }
+
+:root {
+  --bg: #faf8f5;
+  --bg-raised: #ffffff;
+  --bg-sunk: #f1ede7;
+  --ink: #16151a;
+  --ink-soft: #5c5c66;
+  --accent: #b7202e;
+  --accent-soft: #d84d2a;
+  --olive: #5c6b4a;
+  --chilli: #e85a2a;
+  --line: rgba(0,0,0,0.12);
+  --line-bold: rgba(0,0,0,0.24);
+  --scan: rgba(232,90,42,0.18);
+  --hit: rgba(183,32,46,0.16);
+  --shadow: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.06);
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Fraunces', Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111013;
+    --bg-raised: #1a1820;
+    --bg-sunk: #0b0a0d;
+    --ink: #f2efe9;
+    --ink-soft: #d4cfc7;
+    --accent: #e2564f;
+    --accent-soft: #f07548;
+    --olive: #8ea070;
+    --chilli: #f07548;
+    --line: rgba(255,255,255,0.14);
+    --line-bold: rgba(255,255,255,0.28);
+    --scan: rgba(240,117,72,0.22);
+    --hit: rgba(226,86,79,0.20);
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111013;
+  --bg-raised: #1a1820;
+  --bg-sunk: #0b0a0d;
+  --ink: #f2efe9;
+  --ink-soft: #d4cfc7;
+  --accent: #e2564f;
+  --accent-soft: #f07548;
+  --olive: #8ea070;
+  --chilli: #f07548;
+  --line: rgba(255,255,255,0.14);
+  --line-bold: rgba(255,255,255,0.28);
+  --scan: rgba(240,117,72,0.22);
+  --hit: rgba(226,86,79,0.20);
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3,h4,p,ul,ol,figure { margin: 0; padding: 0; }
+ul { list-style: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--chilli); outline-offset: 2px; border-radius: 2px; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 99;
+  background: var(--ink); color: var(--bg); padding: .6rem 1rem;
+}
+.skip:focus { left: 0; }
+
+/* ---------- shared bits ---------- */
+.eyebrow {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.mono { font-family: var(--mono); }
+.cite {
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .04em;
+  color: var(--accent); border-bottom: 1px dotted currentColor; cursor: pointer;
+  background: none; border-top: 0; border-left: 0; border-right: 0; padding: 0;
+}
+.cite:hover { background: var(--hit); }
+
+.panel {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.panel-head {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .7rem .9rem; border-bottom: 1px solid var(--line);
+}
+.panel-head h2 { font-size: .8rem; font-weight: 600; letter-spacing: .01em; }
+.panel-head .eyebrow { margin-left: auto; }
+.panel-body { padding: .9rem; overflow: auto; min-height: 0; }
+
+.tag {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .08em;
+  text-transform: uppercase; padding: .18rem .42rem; border-radius: 3px;
+  border: 1px solid var(--line-bold); color: var(--ink-soft); white-space: nowrap;
+}
+.tag.is-idle   { opacity: .55; }
+.tag.is-run    { color: var(--chilli); border-color: var(--chilli); }
+.tag.is-done   { color: var(--olive); border-color: var(--olive); }
+.tag.is-alert  { color: var(--accent); border-color: var(--accent); background: var(--hit); }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .75rem 1.25rem;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; flex-direction: column; line-height: 1.2; }
+.brand strong { font-family: var(--display); font-size: 1.02rem; font-weight: 700; }
+.topbar-spacer { margin-left: auto; }
+.btn {
+  border: 1px solid var(--line-bold); background: transparent; color: var(--ink);
+  padding: .45rem .85rem; border-radius: 6px; font-size: .8rem; font-weight: 500;
+  transition: background .15s ease, border-color .15s ease, transform .1s ease;
+}
+.btn:hover { border-color: var(--ink); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+.seg { display: inline-flex; border: 1px solid var(--line-bold); border-radius: 6px; overflow: hidden; }
+.seg button {
+  background: transparent; border: 0; padding: .42rem .7rem;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em;
+  color: var(--ink-soft);
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+.clock {
+  display: flex; align-items: baseline; gap: .3rem;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+}
+.clock .val { font-size: 1.6rem; font-weight: 500; letter-spacing: -.02em; }
+.clock .unit { font-size: .7rem; color: var(--ink-soft); }
+.clock.is-run .val { color: var(--chilli); }
+.clock.is-done .val { color: var(--olive); }
+.clock.is-over .val { color: var(--accent); }
+
+/* ---------- applicant strip ---------- */
+.strip {
+  display: flex; gap: 0; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); background: var(--bg-sunk);
+  padding: .55rem 1.25rem;
+}
+.strip .f { padding: .1rem 1.1rem .1rem 0; margin-right: 1.1rem; border-right: 1px solid var(--line); }
+.strip .f:last-child { border-right: 0; }
+.strip .k { font-family: var(--mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); display: block; }
+.strip .v { font-size: .82rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* ---------- layout ---------- */
+.stage {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(300px, 1.05fr) minmax(340px, 1.35fr);
+  gap: 1rem; padding: 1rem 1.25rem 1.25rem;
+  align-items: start;
+}
+@media (max-width: 1180px) { .stage { grid-template-columns: 1fr 1fr; } .col-out { grid-column: 1 / -1; } }
+@media (max-width: 780px)  { .stage { grid-template-columns: 1fr; } .col-out { grid-column: auto; } }
+.col { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+</style>
+<style>
+/* ---------- document ingestion ---------- */
+.pagegrid {
+  display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px;
+}
+.pg {
+  position: relative; aspect-ratio: 3/4; border-radius: 2px;
+  background: var(--bg-sunk); border: 1px solid var(--line);
+  overflow: hidden; padding: 2px;
+}
+.pg::before, .pg::after {
+  content: ""; display: block; height: 1px; margin: 1px 1px 2px;
+  background: var(--line-bold); opacity: .5;
+}
+.pg::after { width: 60%; }
+.pg.is-scan { background: var(--scan); border-color: var(--chilli); }
+.pg.is-read { background: color-mix(in srgb, var(--olive) 22%, var(--bg-raised)); border-color: color-mix(in srgb, var(--olive) 55%, var(--line)); }
+.pg.is-corr { background: color-mix(in srgb, var(--chilli) 16%, var(--bg-raised)); border-color: color-mix(in srgb, var(--chilli) 55%, var(--line)); }
+.pg.is-hit  { background: var(--hit); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.pg.is-focus { outline: 2px solid var(--chilli); outline-offset: 1px; }
+.pg .n {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: var(--mono); font-size: .5rem; color: var(--accent); font-weight: 500;
+}
+.pg:not(.is-hit) .n { display: none; }
+
+.ingest-stats { display: flex; gap: 1.1rem; flex-wrap: wrap; margin-top: .8rem; }
+.stat .k { font-family: var(--mono); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); display: block; }
+.stat .v { font-family: var(--mono); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+.ocr {
+  font-family: var(--mono); font-size: .68rem; line-height: 1.7;
+  background: var(--bg-sunk); border: 1px solid var(--line); border-radius: 6px;
+  padding: .6rem .7rem; height: 132px; overflow: hidden; position: relative;
+}
+.ocr .ln { color: var(--ink-soft); white-space: pre-wrap; word-break: break-word; }
+.ocr .ln.cur { color: var(--ink); }
+.ocr mark {
+  background: var(--hit); color: var(--ink); padding: 0 .12em;
+  border-bottom: 1px solid var(--accent);
+}
+.ocr .cursor {
+  display: inline-block; width: .5em; height: 1em; background: var(--chilli);
+  vertical-align: text-bottom; animation: blink .9s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ---------- agent pipeline ---------- */
+.pipe { display: flex; flex-direction: column; gap: .45rem; }
+.node {
+  border: 1px solid var(--line); border-radius: 8px; padding: .6rem .7rem;
+  background: var(--bg-raised); transition: border-color .2s ease, background .2s ease;
+}
+.node.is-run { border-color: var(--chilli); background: color-mix(in srgb, var(--chilli) 7%, var(--bg-raised)); }
+.node.is-done { border-color: color-mix(in srgb, var(--olive) 50%, var(--line)); }
+.node-top { display: flex; align-items: center; gap: .5rem; }
+.node-idx {
+  font-family: var(--mono); font-size: .62rem; color: var(--ink-soft);
+  border: 1px solid var(--line-bold); border-radius: 50%;
+  width: 1.35rem; height: 1.35rem; display: grid; place-items: center; flex: none;
+}
+.node.is-run .node-idx { border-color: var(--chilli); color: var(--chilli); }
+.node.is-done .node-idx { border-color: var(--olive); color: var(--olive); }
+.node-name { font-size: .82rem; font-weight: 600; }
+.node-top .tag { margin-left: auto; }
+.node-task { font-size: .72rem; color: var(--ink-soft); margin-top: .18rem; min-height: 1.1rem; }
+.bar { height: 3px; background: var(--line); border-radius: 2px; margin-top: .45rem; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--chilli); transition: width .18s linear; }
+.node.is-done .bar span { background: var(--olive); }
+.node-meta {
+  display: flex; gap: .8rem; margin-top: .4rem;
+  font-family: var(--mono); font-size: .6rem; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.wire { height: 16px; margin: 0 0 0 .65rem; position: relative; }
+.wire::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+  background: var(--line-bold);
+}
+.wire .dot {
+  position: absolute; left: -2.5px; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--chilli); opacity: 0;
+}
+.wire.is-flow .dot { animation: flow 1s linear infinite; opacity: 1; }
+.wire.is-flow .dot:nth-child(2) { animation-delay: .33s; }
+.wire.is-flow .dot:nth-child(3) { animation-delay: .66s; }
+@keyframes flow { from { top: -4px; } to { top: 16px; } }
+
+.log {
+  font-family: var(--mono); font-size: .64rem; line-height: 1.75;
+  height: 190px; overflow-y: auto; background: var(--bg-sunk);
+  border: 1px solid var(--line); border-radius: 6px; padding: .5rem .6rem;
+}
+.log div { display: flex; gap: .5rem; }
+.log .t { color: var(--ink-soft); flex: none; font-variant-numeric: tabular-nums; }
+.log .m { color: var(--ink-soft); }
+.log .a1 .m { color: var(--ink); }
+.log .a2 .m { color: var(--chilli); }
+.log .a3 .m { color: var(--olive); }
+.log .a4 .m { color: var(--accent); }
+
+/* ---------- medical graph ---------- */
+.graph { width: 100%; min-width: 360px; height: auto; display: block; }
+.graph .gnode { opacity: 0; transition: opacity .35s ease; }
+.graph .gnode.on { opacity: 1; }
+.graph .gedge { opacity: 0; transition: opacity .35s ease; }
+.graph .gedge.on { opacity: 1; }
+.graph text { font-family: var(--sans); font-size: 8.5px; fill: var(--ink); }
+.graph text.sub { font-family: var(--mono); font-size: 7px; fill: var(--ink-soft); }
+.graph .box { fill: var(--bg-raised); stroke: var(--line-bold); stroke-width: 1; rx: 4; }
+.graph .box.dx { stroke: var(--accent); fill: var(--hit); }
+.graph .box.hub { fill: var(--ink); stroke: var(--ink); }
+.graph .box.flag { stroke: var(--accent); stroke-dasharray: 3 2; }
+.graph text.hub { fill: var(--bg); font-weight: 600; }
+.graph .gedge line { stroke: var(--line-bold); stroke-width: 1; }
+.graph .gedge.como line { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.graph .gedge text { font-size: 6.5px; fill: var(--accent); font-family: var(--mono); }
+
+/* ---------- tabs + output ---------- */
+.tabs { display: flex; gap: .2rem; border-bottom: 1px solid var(--line); padding: 0 .55rem; overflow-x: auto; }
+.tabs button {
+  background: none; border: 0; padding: .55rem .55rem .5rem;
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--ink-soft); border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs button .cnt { color: var(--accent); }
+.tabpanel[hidden] { display: none; }
+
+.rows { display: flex; flex-direction: column; gap: .4rem; }
+.row {
+  display: grid; grid-template-columns: 1fr auto; gap: .25rem .7rem;
+  border: 1px solid var(--line); border-left: 2px solid var(--line-bold);
+  border-radius: 6px; padding: .5rem .6rem;
+  animation: pop .3s ease both;
+}
+.row.alert { border-left-color: var(--accent); }
+.row.ok { border-left-color: var(--olive); }
+@keyframes pop { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .row { animation: none; } .wire.is-flow .dot { animation: none; } .ocr .cursor { animation: none; } }
+.row .lbl { font-size: .78rem; font-weight: 500; }
+.row .val { font-family: var(--mono); font-size: .82rem; font-variant-numeric: tabular-nums; text-align: right; }
+.row .sub { grid-column: 1 / -1; font-size: .68rem; color: var(--ink-soft); display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.trend { font-family: var(--mono); font-size: .62rem; color: var(--accent); }
+
+.memo {
+  border: 1px solid var(--line); border-radius: 8px; padding: .8rem;
+  background: var(--bg-sunk); font-size: .8rem; line-height: 1.65;
+}
+.memo h4 { font-family: var(--mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .4rem; }
+.quote-hero {
+  border: 1px solid var(--line-bold); border-radius: 8px; padding: .9rem;
+  display: grid; grid-template-columns: 1fr auto; gap: .3rem; align-items: end;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--olive) 12%, var(--bg-raised)), var(--bg-raised));
+}
+.quote-hero .big { font-family: var(--display); font-size: 2.1rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.price-lines { display: flex; flex-direction: column; gap: .25rem; margin: .7rem 0; }
+.price-lines div { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .74rem; }
+.price-lines .tot { border-top: 1px solid var(--line-bold); padding-top: .3rem; font-weight: 500; color: var(--ink); }
+.price-lines span:first-child { color: var(--ink-soft); }
+
+.letter {
+  font-size: .76rem; line-height: 1.7; border: 1px solid var(--line);
+  border-radius: 8px; padding: .8rem; background: var(--bg-raised);
+}
+.letter .hdr { font-family: var(--mono); font-size: .64rem; color: var(--ink-soft); margin-bottom: .5rem; }
+.letter .hdr b { color: var(--ink); font-weight: 500; }
+
+.empty { color: var(--ink-soft); font-size: .78rem; padding: 1.2rem .2rem; text-align: center; }
+
+/* ---------- json / prompt drawer ---------- */
+.drawer { padding: 0 1.25rem 2.5rem; }
+.drawer .panel-body { padding: 0; }
+pre.json {
+  margin: 0; padding: .85rem 1rem; overflow: auto; max-height: 420px;
+  font-family: var(--mono); font-size: .68rem; line-height: 1.6;
+  background: var(--bg-sunk); color: var(--ink-soft); white-space: pre;
+}
+pre.json .k { color: var(--accent); }
+pre.json .s { color: var(--olive); }
+pre.json .n { color: var(--chilli); }
+pre.json .b { color: var(--ink); }
+.prompt {
+  margin: 0; padding: .85rem 1rem; overflow: auto; max-height: 420px;
+  font-family: var(--mono); font-size: .68rem; line-height: 1.65;
+  white-space: pre-wrap; background: var(--bg-sunk); color: var(--ink-soft);
+}
+footer.foot {
+  border-top: 1px solid var(--line); padding: 1.4rem 1.25rem 2.5rem;
+  color: var(--ink-soft); font-size: .74rem; display: flex; gap: 1rem; flex-wrap: wrap;
+}
+footer.foot a { border-bottom: 1px solid var(--line-bold); }
+.note { font-size: .72rem; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<a class="skip" href="#stage">Skip to the demo</a>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="eyebrow">Prototype · Agentic underwriting</span>
+    <strong>Accelerated Medical Underwriting &amp; APS Synthesis</strong>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="clock" id="clock" role="timer" aria-live="off">
+    <span class="val" id="clockVal">0.0</span><span class="unit">s elapsed / 30.0s SLA</span>
+  </div>
+  <div class="seg" role="group" aria-label="Playback speed">
+    <button id="spd1" aria-pressed="true">1×  REAL TIME</button>
+    <button id="spd4" aria-pressed="false">4×  TURBO</button>
+  </div>
+  <button class="btn" id="themeBtn" aria-label="Toggle colour theme">Theme</button>
+  <button class="btn" id="resetBtn" disabled>Reset</button>
+  <button class="btn btn-primary" id="runBtn">Run underwriting</button>
+</div>
+
+<div class="strip">
+  <div class="f"><span class="k">Applicant</span><span class="v">APP-884920 · Jane Doe</span></div>
+  <div class="f"><span class="k">Age / Sex</span><span class="v">44 · Female</span></div>
+  <div class="f"><span class="k">Product</span><span class="v">20-Yr Term</span></div>
+  <div class="f"><span class="k">Face amount</span><span class="v">$1,500,000</span></div>
+  <div class="f"><span class="k">Evidence</span><span class="v">APS_PDF · 80 pages · 3 sources</span></div>
+  <div class="f"><span class="k">Ruleset</span><span class="v">2026.1_US_STANDARD</span></div>
+  <div class="f"><span class="k">Manual benchmark</span><span class="v">30–45 days</span></div>
+</div>
+
+<main class="stage" id="stage">
+
+  <!-- ================= COLUMN 1 : INGESTION ================= -->
+  <div class="col">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Evidence ingestion</h2>
+        <span class="tag is-idle" id="ingestTag">Idle</span>
+      </div>
+      <div class="panel-body">
+        <p class="eyebrow" style="margin-bottom:.5rem">APS_884920_ThorneClinic.pdf · 80 pp</p>
+        <div class="pagegrid" id="pageGrid" aria-label="80 page document, scanned live"></div>
+        <div class="ingest-stats">
+          <div class="stat"><span class="k">Pages read</span><span class="v" id="sPages">0<span style="opacity:.4">/80</span></span></div>
+          <div class="stat"><span class="k">Material</span><span class="v" id="sHits">0</span></div>
+          <div class="stat"><span class="k">Entities</span><span class="v" id="sEnt">0</span></div>
+          <div class="stat"><span class="k">Tokens in</span><span class="v" id="sTok">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Raw text stream</h2>
+        <span class="eyebrow" id="ocrPage">—</span>
+      </div>
+      <div class="panel-body" style="padding:.6rem">
+        <div class="ocr" id="ocr"><p class="empty" style="padding:2.2rem 0">Waiting for ingestion.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= COLUMN 2 : AGENTS ================= -->
+  <div class="col">
+    <section class="panel">
+      <div class="panel-head"><h2>Agent pipeline</h2><span class="eyebrow">4 agents · 1 human gate</span></div>
+      <div class="panel-body">
+        <div class="pipe" id="pipe"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Trace</h2><span class="eyebrow">append-only</span></div>
+      <div class="panel-body" style="padding:.6rem">
+        <div class="log" id="log" aria-live="polite" aria-label="Agent trace"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= COLUMN 3 : OUTPUT ================= -->
+  <div class="col col-out">
+    <section class="panel">
+      <div class="panel-head"><h2>Structured medical graph</h2><span class="tag is-idle" id="graphTag">Empty</span></div>
+      <div class="panel-body" style="padding:.5rem">
+        <svg class="graph" id="graph" viewBox="0 0 428 232" role="img" aria-label="Medical graph built from the APS"></svg>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" id="tab-extract" aria-controls="p-extract" aria-selected="true">Extraction <span class="cnt" id="cExtract"></span></button>
+        <button role="tab" id="tab-risk" aria-controls="p-risk" aria-selected="false">Risk</button>
+        <button role="tab" id="tab-req" aria-controls="p-req" aria-selected="false">Requirements <span class="cnt" id="cReq"></span></button>
+        <button role="tab" id="tab-quote" aria-controls="p-quote" aria-selected="false">Quote</button>
+      </div>
+      <div class="panel-body" style="max-height:440px">
+        <div class="tabpanel" id="p-extract" role="tabpanel" aria-labelledby="tab-extract"></div>
+        <div class="tabpanel" id="p-risk" role="tabpanel" aria-labelledby="tab-risk" hidden></div>
+        <div class="tabpanel" id="p-req" role="tabpanel" aria-labelledby="tab-req" hidden></div>
+        <div class="tabpanel" id="p-quote" role="tabpanel" aria-labelledby="tab-quote" hidden></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ================= DRAWER : PAYLOADS & PROMPTS ================= -->
+<section class="drawer">
+  <div class="panel">
+    <div class="tabs" role="tablist" id="jtabs" style="padding:0 .55rem">
+      <button role="tab" id="jt-1" aria-controls="jp-1" aria-selected="true">Agent 1 · Clinical extraction</button>
+      <button role="tab" id="jt-2" aria-controls="jp-2" aria-selected="false">Agent 2 · Medical reasoning</button>
+      <button role="tab" id="jt-3" aria-controls="jp-3" aria-selected="false">Agent 3 · Requirements</button>
+      <button role="tab" id="jt-4" aria-controls="jp-4" aria-selected="false">Agent 4 · Actuarial decision</button>
+    </div>
+    <div class="panel-body">
+      <div class="tabpanel" id="jp-1" role="tabpanel" aria-labelledby="jt-1"></div>
+      <div class="tabpanel" id="jp-2" role="tabpanel" aria-labelledby="jt-2" hidden></div>
+      <div class="tabpanel" id="jp-3" role="tabpanel" aria-labelledby="jt-3" hidden></div>
+      <div class="tabpanel" id="jp-4" role="tabpanel" aria-labelledby="jt-4" hidden></div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <span>Prototype. Synthetic applicant, synthetic APS, illustrative rate basis — not a real quote and not medical advice.</span>
+  <a href="../index.html">← Back to portfolio</a>
+</footer>
+<script>
+(function () {
+'use strict';
+var $ = function (s, r) { return (r || document).querySelector(s); };
+var el = function (t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
+
+/* ==========================================================================
+   1. THE EVIDENCE — an 80-page Attending Physician Statement
+   Pages 12 and 14 carry the material findings; the other 78 are the reason
+   a human underwriter loses a week. « » marks a span the parser will hit.
+   ========================================================================== */
+var FILLER = [
+  'Administrative cover sheet. Release of information authorisation on file.',
+  'Practice demographics. Insured verified by driver licence. No change of address.',
+  'Immunisation record. Influenza 2025. Tdap 2019. No adverse reactions noted.',
+  'Telephone triage log. Sinus congestion, advised OTC antihistamine. No follow-up.',
+  'Billing ledger. CPT 99213 office visit, established patient, level 3.',
+  'Referral log. Dermatology, benign seborrheic keratosis, excision declined.',
+  'Nursing note. Vitals within prior baseline. Patient ambulatory, in no distress.',
+  'Insurance correspondence. Prior carrier records request, duplicate.',
+  'Radiology. Screening mammogram, BI-RADS 1, negative. Routine recall 24 months.',
+  'Allergy list. NKDA. No documented drug intolerance.',
+  'Consent form, signed. Witness initials illegible.',
+  'Fax transmission header. 3 pages received, legible.'
+];
+var PAGES = [];
+for (var p = 1; p <= 80; p++) PAGES.push({ n: p, material: false, text: 'Page ' + p + ': ' + FILLER[(p * 7) % FILLER.length] });
+
+PAGES[11] = { n: 12, material: true, text:
+  'Page 12: Dr. Aris Thorne, «14/10/2025». Patient Jane Doe (44yo).\n' +
+  'Routine follow-up. BP today «138/88 mmHg».\n' +
+  'HbA1c testing shows «6.8%» (up from «6.4%» last year).\n' +
+  'Prescribed «Metformin 500mg BID». Patient reports «mild fatigue».\n' +
+  '«Refused cholesterol panel».' };
+PAGES[13] = { n: 14, material: true, text:
+  'Page 14: Lab Result «02/01/2026»: Fasting Glucose «132 mg/dL». BMI «29.4».' };
+/* pages the triage sweep reads closely but that change nothing */
+[3, 7, 31, 58].forEach(function (n) { PAGES[n - 1].corroborating = true; });
+
+var MATERIAL = [12, 14];
+
+/* ==========================================================================
+   2. AGENTS
+   ========================================================================== */
+var AGENTS = [
+  { id: 1, name: 'Document Parsing Agent',      role: 'APS PDF, EHR export and lab reports → structured medical graph' },
+  { id: 2, name: 'Medical Reasoning Agent',     role: 'ICD-10 mapping, guideline evaluation, comorbidity detection' },
+  { id: 3, name: 'Requirements Agent',          role: 'Drafts targeted requests to the physician and the applicant' },
+  { id: 4, name: 'Actuarial Risk & Pricing Agent', role: 'Mortality score, premium loading, audit memo for sign-off' }
+];
+
+var PROMPTS = {
+1: 'You are a Clinical Extraction AI for Life Insurance Underwriting. Your objective is to extract\n' +
+   'all medical conditions, vital signs, lab results, medications, and clinical notes from\n' +
+   'unstructured Attending Physician Statements (APS) into a standardized schema.\n\n' +
+   'Rules:\n' +
+   '1. Extract exact values, dates, and page citations.\n' +
+   '2. Map all diagnosed conditions to standard ICD-10 codes.\n' +
+   '3. Flag any ambiguous handwriting or low-confidence extractions with a warning tag.\n' +
+   '4. Output strict JSON matching the required payload structure.',
+2: 'You are a Senior Life Insurance Medical Underwriter. Synthesize the extracted medical payload\n' +
+   'against company underwriting guidelines.\n\n' +
+   'Rules:\n' +
+   '1. Calculate individual risk debits according to mortality rating tables.\n' +
+   '2. Identify comorbidity interactions (e.g., Diabetes + Elevated BP).\n' +
+   '3. Determine if missing data requires an attending physician query or applicant disclosure.\n' +
+   '4. Output structured risk ratings, comorbidity factors, and guideline justifications.',
+3: 'You are a Requirements Agent for Life Insurance New Business. For every gap the underwriting\n' +
+   'agent flagged, draft the single cheapest, fastest request that closes it.\n\n' +
+   'Rules:\n' +
+   '1. Address each request to the party who actually holds the information — attending physician,\n' +
+   '   laboratory, or applicant. Never ask the applicant for something the chart already contains.\n' +
+   '2. Cite the source page and the reason the gap exists, in plain language.\n' +
+   '3. Mark each requirement blocking or non-blocking for bind, and set an SLA.\n' +
+   '4. Never request a new paramed or APS where an existing record or a single lab will do.\n' +
+   '5. Output strict JSON plus a ready-to-send draft for each requirement.',
+4: 'You are an Actuarial Decision Engine. Calculate the final offer, premium loading, and generate\n' +
+   'a human-in-the-loop audit summary memo.\n\n' +
+   'Rules:\n' +
+   '1. Apply mortality loadings to base mortality rates for the target age cohort.\n' +
+   '2. Draft an audit memo citing exact source evidence for every debit.\n' +
+   '3. Determine auto-bind eligibility (e.g., Auto-bind if Face Value <= $2M and Rating <= Table B).'
+};
+
+/* ---- payloads: input and output for each agent ---- */
+var PAYLOAD_IN = {
+1: { applicant_id: 'APP-884920', document_type: 'APS_PDF',
+     raw_text_stream: 'Page 12: Dr. Aris Thorne, 14/10/2025. Patient Jane Doe (44yo). Routine follow-up. BP today 138/88 mmHg. HbA1c testing shows 6.8% (up from 6.4% last year). Prescribed Metformin 500mg BID. Patient reports mild fatigue. Refused cholesterol panel. Page 14: Lab Result 02/01/2026: Fasting Glucose 132 mg/dL. BMI 29.4.' },
+2: { applicant_id: 'APP-884920',
+     requested_coverage: { product: '20-Yr Term', face_amount: 1500000 },
+     parsed_medical_data: '/* Output from Agent 1 */',
+     underwriting_ruleset_version: '2026.1_US_STANDARD' },
+3: { applicant_id: 'APP-884920',
+     open_gaps: [{ item: 'Lipid Panel', reason: 'Patient refused test', severity: 'High', source_page: 12 },
+                 { item: 'Handwritten margin note', reason: 'OCR confidence 0.62', severity: 'Low', source_page: 12 }],
+     risk_assessment: '/* Output from Agent 2 */' },
+4: { applicant_id: 'APP-884920', age: 44, gender: 'Female',
+     risk_assessment: '/* Output from Agent 2 */' }
+};
+
+var PAYLOAD_OUT = {
+1: {
+  applicant_id: 'APP-884920',
+  extracted_vitals: [
+    { metric: 'Blood Pressure', value: '138/88', unit: 'mmHg', date: '2025-10-14', source_page: 12 },
+    { metric: 'BMI', value: 29.4, unit: 'kg/m2', date: '2026-01-02', source_page: 14 }
+  ],
+  lab_results: [
+    { test: 'HbA1c', value: 6.8, unit: '%', trend: 'Increasing', source_page: 12 },
+    { test: 'Fasting Glucose', value: 132, unit: 'mg/dL', source_page: 14 }
+  ],
+  diagnoses: [
+    { condition: 'Type 2 Diabetes Mellitus', icd10: 'E11.9', status: 'Active', source_page: 12 }
+  ],
+  medications: [
+    { name: 'Metformin', dose: '500mg', frequency: 'BID', indication_icd10: 'E11.9', source_page: 12 }
+  ],
+  clinical_notes: [
+    { note: 'Patient reports mild fatigue', confidence: 0.62, warning: 'LOW_CONFIDENCE_HANDWRITING', source_page: 12 }
+  ],
+  missing_data_flags: [
+    { item: 'Lipid Panel', reason: 'Patient refused test', severity: 'High', source_page: 12 }
+  ]
+},
+2: {
+  applicant_id: 'APP-884920',
+  risk_assessment: {
+    base_rating: 'Standard',
+    debits: [
+      { condition: 'HbA1c 6.8%', debit_points: '+25 (Table B equivalent)', rule_ref: 'UW-GL-302' },
+      { condition: 'Elevated Blood Pressure', debit_points: '+10', rule_ref: 'UW-GL-104' }
+    ],
+    comorbidity_multiplier: 1.15,
+    total_mortality_rating: 'Table B (+50% loading)',
+    action_required: {
+      type: 'Targeted_Requirement',
+      recipient: 'Applicant',
+      request: 'Recent Lipid Profile / Fasting Cholesterols'
+    }
+  }
+},
+3: {
+  applicant_id: 'APP-884920',
+  requirements: [
+    { requirement_id: 'REQ-884920-01', item: 'Fasting Lipid Profile', recipient: 'Applicant',
+      channel: 'Secure email + paramed lab order', blocking_for_bind: true, sla_days: 10,
+      reason: 'Cholesterol panel refused at 14/10/2025 visit', source_page: 12 },
+    { requirement_id: 'REQ-884920-02', item: 'Clarification of handwritten margin note',
+      recipient: 'Dr. Aris Thorne, Thorne Family Medicine', channel: 'Provider portal query',
+      blocking_for_bind: false, sla_days: 14,
+      reason: 'Extraction confidence 0.62 on handwritten note', source_page: 12 }
+  ],
+  new_aps_ordered: false,
+  case_status: 'Pended pending REQ-884920-01'
+},
+4: {
+  applicant_id: 'APP-884920',
+  decision: 'Conditional Offer',
+  pricing: {
+    base_annual_premium: '$1,240.00',
+    rating_loading: '+$620.00 (Table B)',
+    final_annual_premium: '$1,860.00'
+  },
+  auto_bind_status: 'Approved pending missing lipid requirement',
+  audit_memo: 'Proposed Table B rating driven by HbA1c of 6.8% (p. 12) compounded by BP 138/88 (p. 12). Auto-binding approved upon receipt of satisfactory Lipid Panel.'
+}
+};
+
+/* ==========================================================================
+   3. MEDICAL GRAPH MODEL — hand-laid out so the reveal reads left to right
+   ========================================================================== */
+var C1 = 138, C2 = 252, W = 100, H = 24;
+var GNODES = [
+  { id: 'hub',   x: 8,  y: 100, w: 112, h: 32, t: 'Jane Doe · 44F', s: 'APP-884920', cls: 'hub' },
+  { id: 'bp',    x: C1, y: 8,   t: 'BP 138/88',      s: 'mmHg · p.12' },
+  { id: 'bmi',   x: C1, y: 40,  t: 'BMI 29.4',       s: 'kg/m2 · p.14' },
+  { id: 'a1c',   x: C1, y: 72,  t: 'HbA1c 6.8%',     s: '↑ from 6.4 · p.12' },
+  { id: 'glu',   x: C1, y: 104, t: 'Glucose 132',    s: 'mg/dL · p.14' },
+  { id: 'rx',    x: C1, y: 136, t: 'Metformin 500',  s: 'BID · p.12' },
+  { id: 'note',  x: C1, y: 168, t: 'Mild fatigue',   s: 'conf 0.62 ⚠ · p.12' },
+  { id: 'gap',   x: C1, y: 200, t: 'Lipid panel',    s: 'REFUSED · p.12', cls: 'flag' },
+  { id: 'htn',   x: C2, y: 24,  t: 'Elevated BP',    s: 'UW-GL-104 · +10', cls: 'dx' },
+  { id: 'dm',    x: C2, y: 88,  t: 'T2DM  E11.9',    s: 'UW-GL-302 · +25', cls: 'dx' },
+  { id: 'tbl',   x: C2, y: 144, t: 'Table B',        s: '+50% loading', cls: 'dx' },
+  { id: 'req',   x: C2, y: 200, t: 'REQ-…-01',       s: 'to applicant', cls: 'flag' }
+];
+var GEDGES = [
+  ['hub', 'bp'], ['hub', 'bmi'], ['hub', 'a1c'], ['hub', 'glu'], ['hub', 'rx'], ['hub', 'note'], ['hub', 'gap'],
+  ['bp', 'htn'], ['a1c', 'dm'], ['glu', 'dm'], ['bmi', 'dm'], ['rx', 'dm'],
+  ['dm', 'tbl'], ['htn', 'tbl'], ['gap', 'req']
+];
+var COMO = ['dm', 'htn'];
+
+var gIndex = {};
+function buildGraph() {
+  var svg = $('#graph'); svg.innerHTML = ''; gIndex = {};
+  var NS = 'http://www.w3.org/2000/svg';
+  var byId = {};
+  GNODES.forEach(function (n) { n.w = n.w || W; n.h = n.h || H; byId[n.id] = n; });
+
+  function mk(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  GEDGES.forEach(function (e) {
+    var a = byId[e[0]], b = byId[e[1]];
+    var g = mk('g', { class: 'gedge' });
+    if (a.x === b.x) {
+      /* same column: route through the gutter so the line never crosses a box */
+      var gx = a.x - 7, ay = a.y + a.h / 2, by = b.y + b.h / 2;
+      g.appendChild(mk('line', { x1: a.x, y1: ay, x2: gx, y2: ay }));
+      g.appendChild(mk('line', { x1: gx, y1: ay, x2: gx, y2: by }));
+      g.appendChild(mk('line', { x1: gx, y1: by, x2: b.x, y2: by }));
+    } else {
+      g.appendChild(mk('line', { x1: a.x + a.w, y1: a.y + a.h / 2, x2: b.x, y2: b.y + b.h / 2 }));
+    }
+    svg.appendChild(g);
+    gIndex['e:' + e[0] + '>' + e[1]] = g;
+  });
+
+  /* the comorbidity link is the money shot — it is drawn as a bracket */
+  var d = byId[COMO[0]], h = byId[COMO[1]];
+  var cg = mk('g', { class: 'gedge como' });
+  var mx = d.x + d.w + 14;
+  cg.appendChild(mk('line', { x1: d.x + d.w, y1: d.y + d.h / 2, x2: mx, y2: d.y + d.h / 2 }));
+  cg.appendChild(mk('line', { x1: mx, y1: d.y + d.h / 2, x2: mx, y2: h.y + h.h / 2 }));
+  cg.appendChild(mk('line', { x1: mx, y1: h.y + h.h / 2, x2: h.x + h.w, y2: h.y + h.h / 2 }));
+  var lt = mk('text', { x: mx + 5, y: (d.y + h.y) / 2 + 10 }); lt.textContent = '×1.15';
+  var lt2 = mk('text', { x: mx + 5, y: (d.y + h.y) / 2 + 19 }); lt2.textContent = 'comorbidity';
+  cg.appendChild(lt); cg.appendChild(lt2);
+  svg.appendChild(cg);
+  gIndex['como'] = cg;
+
+  GNODES.forEach(function (n) {
+    var g = mk('g', { class: 'gnode' });
+    g.appendChild(mk('rect', { class: 'box ' + (n.cls || ''), x: n.x, y: n.y, width: n.w, height: n.h, rx: 4 }));
+    var t1 = mk('text', { x: n.x + 7, y: n.y + (n.s ? 11 : 15), class: n.cls === 'hub' ? 'hub' : '' });
+    t1.textContent = n.t; g.appendChild(t1);
+    if (n.s) { var t2 = mk('text', { x: n.x + 7, y: n.y + 20, class: 'sub' + (n.cls === 'hub' ? ' hub' : '') }); t2.textContent = n.s; g.appendChild(t2); }
+    svg.appendChild(g);
+    gIndex[n.id] = g;
+  });
+}
+function gOn(id) { var g = gIndex[id]; if (g) g.classList.add('on'); }
+function gEdgeOn(a, b) { var g = gIndex['e:' + a + '>' + b]; if (g) g.classList.add('on'); }
+function gNodeAnd(id) { gOn(id); GEDGES.forEach(function (e) { if (e[1] === id && gIndex[e[0]].classList.contains('on')) gEdgeOn(e[0], e[1]); }); }
+
+/* ==========================================================================
+   4. DOM SCAFFOLD
+   ========================================================================== */
+var grid = $('#pageGrid'), pgEls = [];
+function buildPages() {
+  grid.innerHTML = ''; pgEls = [];
+  PAGES.forEach(function (p) {
+    var d = el('div', 'pg'); d.title = 'Page ' + p.n;
+    d.appendChild(el('span', 'n', String(p.n)));
+    grid.appendChild(d); pgEls.push(d);
+  });
+}
+
+var nodeEls = [];
+function buildPipe() {
+  var pipe = $('#pipe'); pipe.innerHTML = ''; nodeEls = [];
+  AGENTS.forEach(function (a, i) {
+    if (i > 0) {
+      var w = el('div', 'wire', '<span class="dot"></span><span class="dot"></span><span class="dot"></span>');
+      pipe.appendChild(w);
+    }
+    var n = el('div', 'node');
+    n.innerHTML =
+      '<div class="node-top"><span class="node-idx">' + a.id + '</span>' +
+      '<span class="node-name">' + a.name + '</span><span class="tag is-idle">Idle</span></div>' +
+      '<p class="node-task">' + a.role + '</p>' +
+      '<div class="bar"><span></span></div>' +
+      '<div class="node-meta"><span class="mIn">ctx 0 tok</span><span class="mOut">out —</span><span class="mT">—</span></div>';
+    pipe.appendChild(n);
+    nodeEls.push({ node: n, tag: $('.tag', n), task: $('.node-task', n), bar: $('.bar span', n),
+                   mIn: $('.mIn', n), mOut: $('.mOut', n), mT: $('.mT', n),
+                   wire: i > 0 ? pipe.children[pipe.children.length - 2] : null });
+  });
+}
+
+function setAgent(i, state, task) {
+  var a = nodeEls[i];
+  a.node.classList.remove('is-run', 'is-done');
+  a.tag.className = 'tag';
+  if (state === 'run')  { a.node.classList.add('is-run');  a.tag.classList.add('is-run');  a.tag.textContent = 'Running'; }
+  if (state === 'done') { a.node.classList.add('is-done'); a.tag.classList.add('is-done'); a.tag.textContent = 'Complete'; }
+  if (state === 'idle') { a.tag.classList.add('is-idle'); a.tag.textContent = 'Idle'; }
+  if (state === 'gate') { a.tag.classList.add('is-alert'); a.tag.textContent = 'Human gate'; }
+  if (task != null) a.task.textContent = task;
+  if (a.wire) a.wire.classList.toggle('is-flow', state === 'run');
+}
+
+/* ---- trace log ---- */
+function log(agent, msg, wall) {
+  var box = $('#log');
+  var d = el('div', 'a' + agent);
+  d.innerHTML = '<span class="t">' + wall.toFixed(1).padStart(4, ' ') + 's</span>' +
+                '<span class="m">' + msg + '</span>';
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+/* ==========================================================================
+   5. OUTPUT RENDERERS
+   ========================================================================== */
+function cite(page) { return '<button class="cite" data-page="' + page + '">p.' + page + ' ↗</button>'; }
+
+var extractGroups = {};
+function addExtract(group, lbl, val, sub, tone) {
+  var host = $('#p-extract');
+  if (!extractGroups[group]) {
+    var h = el('p', 'eyebrow'); h.textContent = group; h.style.margin = '.6rem 0 .35rem';
+    if (!host.children.length) h.style.marginTop = '0';
+    var rows = el('div', 'rows');
+    host.appendChild(h); host.appendChild(rows);
+    extractGroups[group] = rows;
+  }
+  var r = el('div', 'row' + (tone ? ' ' + tone : ''));
+  r.innerHTML = '<span class="lbl">' + lbl + '</span><span class="val">' + val + '</span>' +
+                (sub ? '<span class="sub">' + sub + '</span>' : '');
+  extractGroups[group].appendChild(r);
+  $('#cExtract').textContent = '· ' + (+($('#cExtract').textContent.replace(/\D/g, '') || 0) + 1);
+}
+
+function renderRisk() {
+  var r = PAYLOAD_OUT[2].risk_assessment;
+  var h = '<div class="rows">';
+  h += '<div class="row"><span class="lbl">Base rating</span><span class="val">' + r.base_rating + '</span>' +
+       '<span class="sub">Ruleset 2026.1_US_STANDARD · 20-Yr Term · $1,500,000</span></div>';
+  r.debits.forEach(function (d) {
+    h += '<div class="row alert"><span class="lbl">' + d.condition + '</span><span class="val">' + d.debit_points + '</span>' +
+         '<span class="sub">' + d.rule_ref + ' · ' + (d.rule_ref === 'UW-GL-302'
+           ? 'Diabetic, A1c 6.5–7.0, oral agent only, dx &lt; 2 yr' + ' ' + cite(12)
+           : 'Untreated BP 130–139 / 85–89 at age 40–49 ' + cite(12)) + '</span></div>';
+  });
+  h += '<div class="row alert"><span class="lbl">Comorbidity interaction</span><span class="val">×' + r.comorbidity_multiplier + '</span>' +
+       '<span class="sub">Diabetes + elevated BP compound mortality; UW-GL-511 ' + cite(12) + '</span></div>';
+  h += '<div class="row alert"><span class="lbl">Total mortality rating</span><span class="val">' + r.total_mortality_rating + '</span>' +
+       '<span class="sub">(35 debits × 1.15) → 40.25 → nearest table above = Table B</span></div>';
+  h += '<div class="row"><span class="lbl">Credits applied</span><span class="val">−0</span>' +
+       '<span class="sub">Non-smoker credit withheld: tobacco history not evidenced in this APS</span></div>';
+  h += '</div>';
+  h += '<p class="eyebrow" style="margin:.9rem 0 .35rem">Action required</p><div class="rows">' +
+       '<div class="row alert"><span class="lbl">' + r.action_required.type.replace(/_/g, ' ') + ' → ' + r.action_required.recipient + '</span>' +
+       '<span class="val">Open</span><span class="sub">' + r.action_required.request + '</span></div></div>';
+  $('#p-risk').innerHTML = h;
+}
+
+function renderRequirements() {
+  var reqs = PAYLOAD_OUT[3].requirements;
+  var h = '';
+  h += '<div class="letter"><p class="hdr">To: <b>Jane Doe</b> · Secure email + paramed lab order · SLA 10 days · <b>blocking for bind</b></p>' +
+    'Dear Ms Doe,<br><br>To finalise your 20-year term application (APP-884920) we need one outstanding result. ' +
+    'Your physician\'s record of <b>14 October 2025</b> notes that a cholesterol panel was offered and declined ' + cite(12) + '. ' +
+    'Because your file already shows an HbA1c of 6.8%, a current lipid profile is the single test that decides whether ' +
+    'your offer holds at its present rating or improves.<br><br>' +
+    'A paramedical order has been placed with your nearest collection centre — fasting, 9–12 hours, no appointment needed. ' +
+    'No new medical exam is required. On receipt of a satisfactory result your cover binds automatically.<br><br>' +
+    'Underwriting Operations · REQ-884920-01</div>';
+  h += '<div class="letter" style="margin-top:.6rem"><p class="hdr">To: <b>Dr. Aris Thorne, Thorne Family Medicine</b> · Provider portal query · SLA 14 days · non-blocking</p>' +
+    'Dear Dr. Thorne,<br><br>Re: Jane Doe, DOB on file. Two narrow questions on the statement you supplied — no new examination is sought.<br><br>' +
+    '1. A handwritten margin note on page 12 was read as “patient reports mild fatigue” at 62% confidence ' + cite(12) + '. Please confirm the wording and whether it was investigated.<br>' +
+    '2. Please confirm the date of first diagnosis of type 2 diabetes mellitus, and that Metformin 500mg BID remains monotherapy.<br><br>' +
+    'Underwriting Operations · REQ-884920-02</div>';
+  h += '<p class="note" style="margin-top:.7rem">No new APS ordered. Both gaps close from records already in hand or a single lab draw — ' +
+       'the requirement that historically adds three weeks to this case is not raised.</p>';
+  $('#p-req').innerHTML = h;
+  $('#cReq').textContent = '· ' + reqs.length;
+}
+
+function renderQuote() {
+  var q = PAYLOAD_OUT[4];
+  var h = '';
+  h += '<div class="quote-hero"><div><p class="eyebrow">Final annual premium · Conditional Offer</p>' +
+       '<p class="big">' + q.pricing.final_annual_premium + '</p></div>' +
+       '<span class="tag is-done">Table B</span></div>';
+  h += '<div class="price-lines">' +
+       '<div><span>Base annual premium · 44F NS 20-Yr Term $1.5M</span><span>' + q.pricing.base_annual_premium + '</span></div>' +
+       '<div><span>Mortality loading</span><span>' + q.pricing.rating_loading + '</span></div>' +
+       '<div class="tot"><span>Total annual</span><span>' + q.pricing.final_annual_premium + '</span></div>' +
+       '<div><span>Modal monthly equivalent</span><span>$162.75</span></div></div>';
+  h += '<div class="rows"><div class="row ok"><span class="lbl">Auto-bind eligibility</span><span class="val">Approved*</span>' +
+       '<span class="sub">Face $1.5M ≤ $2M cap · Table B ≤ Table B cap · *binds on receipt of REQ-884920-01</span></div></div>';
+  h += '<div class="memo" style="margin-top:.7rem"><h4>Audit memo — for human sign-off</h4>' +
+       'Proposed <b>Table B</b> rating driven by HbA1c of 6.8% ' + cite(12) + ', trending up from 6.4%, compounded by BP 138/88 ' + cite(12) + '. ' +
+       'Type 2 diabetes mellitus (E11.9) evidenced by Metformin 500mg BID ' + cite(12) + ' and fasting glucose 132 mg/dL ' + cite(14) + '; BMI 29.4 ' + cite(14) + ' noted, no separate build debit at this height/weight. ' +
+       'Comorbidity multiplier 1.15 applied under UW-GL-511. Lipid panel refused ' + cite(12) + ' — requirement issued to applicant, not to the physician, as the chart does not hold the result. ' +
+       'One extraction below confidence threshold (handwritten note, 0.62) does not bear on the rating. ' +
+       'Auto-binding approved upon receipt of satisfactory Lipid Panel.' +
+       '<p class="note" style="margin-top:.6rem">Every debit above links to the page it came from. 2 of 80 pages carry the material evidence and 4 more corroborate it; all 80 are triaged and retained for audit.</p></div>';
+  h += '<div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">' +
+       '<button class="btn btn-primary" id="signBtn">Sign off &amp; issue conditional offer</button>' +
+       '<button class="btn" id="referBtn">Refer to senior underwriter</button></div>' +
+       '<p class="note" id="signMsg" style="margin-top:.5rem"></p>';
+  $('#p-quote').innerHTML = h;
+  $('#signBtn').addEventListener('click', function () {
+    $('#signMsg').innerHTML = '<b>Signed off ' + new Date().toLocaleString('en-AU') + '.</b> Conditional offer issued to applicant, ' +
+      'REQ-884920-01 dispatched, policy queued to bind automatically on a satisfactory lipid result. Decision, prompts, payloads and page citations written to the audit store.';
+    $('#signBtn').disabled = true; $('#referBtn').disabled = true;
+    setAgent(3, 'done', 'Signed off by human underwriter — case closed to bind queue.');
+  });
+  $('#referBtn').addEventListener('click', function () {
+    $('#signMsg').textContent = 'Referred. Full trace, extraction payload and both requirement drafts handed to the senior underwriter queue — nothing is re-keyed.';
+    $('#signBtn').disabled = true; $('#referBtn').disabled = true;
+  });
+}
+
+/* ---- JSON pretty printer ---- */
+function jsonHTML(o) {
+  var s = JSON.stringify(o, null, 2);
+  return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; })
+    .replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*")(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+      function (m, str, _a, colon, bool) {
+        if (str) return colon ? '<span class="k">' + str + '</span>' + colon : '<span class="s">' + str + '</span>';
+        if (bool) return '<span class="b">' + m + '</span>';
+        return '<span class="n">' + m + '</span>';
+      });
+}
+function renderDrawer() {
+  [1, 2, 3, 4].forEach(function (i) {
+    var host = $('#jp-' + i);
+    host.innerHTML =
+      '<p class="eyebrow" style="padding:.7rem 1rem .3rem">System prompt</p>' +
+      '<pre class="prompt">' + PROMPTS[i].replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }) + '</pre>' +
+      '<p class="eyebrow" style="padding:.9rem 1rem .3rem">Input payload</p>' +
+      '<pre class="json">' + jsonHTML(PAYLOAD_IN[i]) + '</pre>' +
+      '<p class="eyebrow" style="padding:.9rem 1rem .3rem">Output payload <span id="jstat-' + i + '" style="color:var(--ink-soft)">· pending</span></p>' +
+      '<pre class="json" id="jout-' + i + '" style="opacity:.35">' + jsonHTML(PAYLOAD_OUT[i]) + '</pre>';
+  });
+}
+function drawerDone(i) {
+  var o = $('#jout-' + i); if (o) o.style.opacity = '1';
+  var s = $('#jstat-' + i); if (s) { s.textContent = '· emitted'; s.style.color = 'var(--olive)'; }
+}
+
+/* ==========================================================================
+   6. RAW TEXT STREAM (typewriter with live highlight)
+   ========================================================================== */
+function chars(text) {
+  var out = [], on = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (c === '«') { on = true; continue; }
+    if (c === '»') { on = false; continue; }
+    out.push([c, on]);
+  }
+  return out;
+}
+function esc(s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
+function renderOCR(cs, n, cursor) {
+  var html = '', run = '', cur = false;
+  function flush() { if (!run) return; html += cur ? '<mark>' + esc(run).replace(/\n/g, '<br>') + '</mark>' : esc(run).replace(/\n/g, '<br>'); run = ''; }
+  for (var i = 0; i < n && i < cs.length; i++) {
+    if (cs[i][1] !== cur) { flush(); cur = cs[i][1]; }
+    run += cs[i][0];
+  }
+  flush();
+  $('#ocr').innerHTML = '<p class="ln cur">' + html + (cursor ? '<span class="cursor"></span>' : '') + '</p>';
+  $('#ocr').scrollTop = $('#ocr').scrollHeight;
+}
+function showPage(n) {
+  var p = PAGES[n - 1];
+  $('#ocrPage').textContent = 'page ' + n + (p.material ? ' · material' : ' · non-material');
+  renderOCR(chars(p.text), 9999, false);
+  pgEls.forEach(function (e) { e.classList.remove('is-focus'); });
+  pgEls[n - 1].classList.add('is-focus');
+  pgEls[n - 1].scrollIntoView({ block: 'nearest' });
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('.cite'); if (!b) return;
+  showPage(+b.dataset.page);
+});
+
+/* ==========================================================================
+   7. TIMELINE
+   ========================================================================== */
+var events = [], tickers = [], spans = {}, entCount = 0;
+function ev(at, fn) { events.push({ at: at * 1000, fn: fn }); }
+function tick(from, to, fn) { tickers.push({ from: from * 1000, to: to * 1000, fn: fn, done: false }); }
+function ent(n) { entCount += n; $('#sEnt').textContent = entCount; }
+
+function buildTimeline() {
+  events = []; tickers = []; entCount = 0;
+  spans = { 0: [0.2, 9.0], 1: [9.3, 14.2], 2: [14.5, 17.6], 3: [17.9, 23.6] };
+
+  /* ---- Agent 1 : parsing ---- */
+  ev(0.2, function (w) {
+    setAgent(0, 'run', 'Triaging 80 pages: layout, OCR, section classification.');
+    $('#ingestTag').className = 'tag is-run'; $('#ingestTag').textContent = 'Scanning';
+    $('#graphTag').className = 'tag is-run'; $('#graphTag').textContent = 'Building';
+    gOn('hub');
+    log(1, 'APS_884920_ThorneClinic.pdf accepted · 80 pp · 3 source systems', w);
+  });
+
+  var lastK = -1, hits = 0, corr = 0;
+  tick(0.4, 4.8, function (p) {
+    var k = Math.floor(p * 80);
+    for (var i = lastK + 1; i < k; i++) {
+      var pg = PAGES[i];
+      pgEls[i].classList.remove('is-scan');
+      pgEls[i].classList.add(pg.material ? 'is-hit' : (pg.corroborating ? 'is-corr' : 'is-read'));
+      if (pg.material) { hits++; $('#sHits').textContent = hits; }
+      if (pg.corroborating) { corr++; }
+    }
+    if (k < 80) { pgEls[k].classList.add('is-scan'); }
+    lastK = k - 1;
+    $('#sPages').innerHTML = k + '<span style="opacity:.4">/80</span>';
+    $('#sTok').textContent = Math.round(p * 214860).toLocaleString('en-US');
+    nodeEls[0].mIn.textContent = 'ctx ' + Math.round(p * 214860 / 1000) + 'k tok';
+  });
+  ev(2.1, function (w) { log(1, 'p.12 flagged material — clinical narrative, 6 candidate entities', w); });
+  ev(2.6, function (w) { log(1, 'p.14 flagged material — structured lab table', w); });
+  ev(4.85, function (w) {
+    pgEls.forEach(function (e) { e.classList.remove('is-scan'); });
+    $('#sPages').innerHTML = '80<span style="opacity:.4">/80</span>';
+    $('#ingestTag').className = 'tag is-done'; $('#ingestTag').textContent = 'Read';
+    log(1, '80/80 read · 2 pages material · ' + corr + ' corroborating · 74 filler, retained for audit', w);
+    setAgent(0, 'run', 'Deep extraction on material pages — exact values, dates, citations.');
+  });
+
+  /* deep read of page 12 then 14 */
+  var c12 = chars(PAGES[11].text), c14 = chars(PAGES[13].text);
+  ev(5.0, function () { $('#ocrPage').textContent = 'page 12 · deep read'; pgEls[11].classList.add('is-focus'); });
+  tick(5.0, 7.6, function (p) { renderOCR(c12, Math.ceil(p * c12.length), p < 1); });
+  ev(7.65, function () { pgEls[11].classList.remove('is-focus'); pgEls[13].classList.add('is-focus'); $('#ocrPage').textContent = 'page 14 · deep read'; });
+  tick(7.7, 8.6, function (p) { renderOCR(c14, Math.ceil(p * c14.length), p < 1); });
+
+  ev(5.75, function (w) {
+    addExtract('Vitals', 'Blood Pressure', '138/88 <span style="color:var(--ink-soft)">mmHg</span>', '2025-10-14 ' + cite(12), 'alert');
+    gNodeAnd('bp'); ent(1); log(1, 'vital → Blood Pressure 138/88 mmHg · 2025-10-14 · p.12', w);
+  });
+  ev(6.45, function (w) {
+    addExtract('Lab results', 'HbA1c', '6.8 <span style="color:var(--ink-soft)">%</span>', '<span class="trend">▲ increasing from 6.4% (prior year)</span> ' + cite(12), 'alert');
+    gNodeAnd('a1c'); ent(1); log(1, 'lab → HbA1c 6.8% · trend Increasing · p.12', w);
+  });
+  ev(6.9, function (w) {
+    addExtract('Medications', 'Metformin', '500mg <span style="color:var(--ink-soft)">BID</span>', 'Indication E11.9 ' + cite(12));
+    gNodeAnd('rx'); ent(1); log(1, 'rx → Metformin 500mg BID · p.12', w);
+  });
+  ev(7.2, function (w) {
+    addExtract('Clinical notes', 'Patient reports mild fatigue', '<span class="tag is-alert">conf 0.62</span>',
+      '⚠ LOW_CONFIDENCE_HANDWRITING — margin note, referred to Requirements Agent ' + cite(12), 'alert');
+    gNodeAnd('note'); ent(1); log(1, 'note → “mild fatigue” · confidence 0.62 · warning tag raised', w);
+  });
+  ev(7.5, function (w) {
+    addExtract('Gaps', 'Lipid Panel', '<span class="tag is-alert">Missing</span>', 'Patient refused test · severity High ' + cite(12), 'alert');
+    gNodeAnd('gap'); ent(1); log(1, 'gap → Lipid Panel absent: “Refused cholesterol panel” · severity High', w);
+  });
+  ev(8.2, function (w) {
+    addExtract('Lab results', 'Fasting Glucose', '132 <span style="color:var(--ink-soft)">mg/dL</span>', '2026-01-02 ' + cite(14), 'alert');
+    gNodeAnd('glu'); ent(1); log(1, 'lab → Fasting Glucose 132 mg/dL · p.14', w);
+  });
+  ev(8.5, function (w) {
+    addExtract('Vitals', 'BMI', '29.4 <span style="color:var(--ink-soft)">kg/m2</span>', '2026-01-02 ' + cite(14));
+    gNodeAnd('bmi'); ent(1); log(1, 'vital → BMI 29.4 kg/m2 · p.14', w);
+  });
+  ev(8.75, function (w) {
+    addExtract('Diagnoses', 'Type 2 Diabetes Mellitus', '<span class="mono">E11.9</span>',
+      'Status Active · inferred from HbA1c + fasting glucose + Metformin ' + cite(12), 'alert');
+    gNodeAnd('dm'); ent(1); log(1, 'dx → Type 2 Diabetes Mellitus · ICD-10 E11.9 · Active · p.12', w);
+  });
+  ev(9.0, function (w) {
+    setAgent(0, 'done', '8 entities extracted from 80 pages, every one page-cited.');
+    nodeEls[0].mOut.textContent = 'out 8 entities'; nodeEls[0].mT.textContent = w.toFixed(1) + 's';
+    drawerDone(1);
+    log(1, 'emit → parsed_medical_data (strict JSON, schema valid)', w);
+  });
+
+  /* ---- Agent 2 : medical reasoning ---- */
+  ev(9.3, function (w) {
+    setAgent(1, 'run', 'Evaluating entities against ruleset 2026.1_US_STANDARD.');
+    nodeEls[1].mIn.textContent = 'ctx 3.1k tok';
+    log(2, 'load ruleset 2026.1_US_STANDARD · product 20-Yr Term · face $1,500,000', w);
+  });
+  ev(10.2, function (w) {
+    gEdgeOn('bmi', 'dm'); gEdgeOn('rx', 'dm');
+    log(2, 'E11.9 confirmed against ruleset · oral monotherapy, no end-organ damage documented', w);
+  });
+  ev(11.2, function (w) {
+    gNodeAnd('htn');
+    log(2, 'debit +25 UW-GL-302 (HbA1c 6.8%) · debit +10 UW-GL-104 (BP 138/88)', w);
+  });
+  ev(12.3, function (w) {
+    gOn('como');
+    log(2, 'comorbidity → diabetes × elevated BP · multiplier 1.15 (UW-GL-511)', w);
+  });
+  ev(13.3, function (w) {
+    gNodeAnd('tbl'); gEdgeOn('htn', 'tbl');
+    $('#graphTag').className = 'tag is-done'; $('#graphTag').textContent = '12 nodes';
+    log(2, '35 debits × 1.15 = 40.25 → Table B (+50% loading)', w);
+  });
+  ev(13.6, function (w) { renderRisk(); log(2, 'missing lipid panel → applicant disclosure, not physician query', w); });
+  ev(14.2, function (w) {
+    setAgent(1, 'done', 'Table B (+50%), one blocking gap, every debit rule-referenced.');
+    nodeEls[1].mOut.textContent = 'out 2 debits'; nodeEls[1].mT.textContent = w.toFixed(1) + 's';
+    drawerDone(2);
+  });
+
+  /* ---- Agent 3 : requirements ---- */
+  ev(14.5, function (w) {
+    setAgent(2, 'run', 'Routing each gap to the party that actually holds the answer.');
+    nodeEls[2].mIn.textContent = 'ctx 4.4k tok';
+    log(3, 'gap 1 lipid panel → chart does not hold it → address applicant', w);
+  });
+  ev(15.4, function (w) { log(3, 'gap 2 handwriting 0.62 → physician portal query, non-blocking', w); });
+  ev(16.3, function (w) { gNodeAnd('req'); log(3, 'suppressed: full re-APS order (redundant, +21 days, $180)', w); });
+  ev(17.0, function (w) { renderRequirements(); log(3, 'drafted REQ-884920-01 (SLA 10d, blocking) and -02 (SLA 14d)', w); });
+  ev(17.6, function (w) {
+    setAgent(2, 'done', '2 targeted requests drafted, ready to send. No new APS.');
+    nodeEls[2].mOut.textContent = 'out 2 requests'; nodeEls[2].mT.textContent = w.toFixed(1) + 's';
+    drawerDone(3);
+  });
+
+  /* ---- Agent 4 : pricing ---- */
+  ev(17.9, function (w) {
+    setAgent(3, 'run', 'Applying loading to the 44F non-smoker mortality basis.');
+    nodeEls[3].mIn.textContent = 'ctx 5.2k tok';
+    log(4, 'base 2017 CSO 44F NS · 20-Yr Term $1,500,000 → $1,240.00 p.a.', w);
+  });
+  ev(19.2, function (w) { log(4, 'Table B loading +50% → +$620.00 → final $1,860.00 p.a.', w); });
+  ev(20.6, function (w) { log(4, 'auto-bind test: face $1.5M ≤ $2M ✓ · rating Table B ≤ Table B ✓', w); });
+  ev(22.0, function (w) { log(4, 'audit memo drafted — 6 evidence citations, all page-linked', w); });
+  ev(23.2, function (w) { renderQuote(); selectTab('#tabs', 'quote'); log(4, 'emit → Conditional Offer, bindable on REQ-884920-01', w); });
+  ev(23.6, function (w) {
+    setAgent(3, 'gate', 'Conditional Offer ready. Awaiting human underwriter sign-off.');
+    nodeEls[3].mOut.textContent = 'out quote'; nodeEls[3].mT.textContent = w.toFixed(1) + 's';
+    drawerDone(4);
+    log(4, 'HUMAN GATE — nothing issues until an underwriter signs', w);
+  });
+  ev(24.0, function () { /* end marker */ });
+}
+
+/* ==========================================================================
+   8. ENGINE
+   ========================================================================== */
+var speed = 1, t0 = 0, idx = 0, raf = null, running = false;
+var END = 24.2 * 1000;
+
+function loop() {
+  var wall = (performance.now() - t0) / 1000;
+  var sim = wall * speed * 1000;
+
+  while (idx < events.length && events[idx].at <= sim) { events[idx].fn(wall); idx++; }
+
+  tickers.forEach(function (t) {
+    if (t.done) return;
+    if (sim < t.from) return;
+    var p = Math.min(1, (sim - t.from) / (t.to - t.from));
+    t.fn(p);
+    if (p >= 1) t.done = true;
+  });
+
+  for (var i = 0; i < 4; i++) {
+    var s = spans[i]; if (!s) continue;
+    var p = Math.max(0, Math.min(1, (sim / 1000 - s[0]) / (s[1] - s[0])));
+    nodeEls[i].bar.style.width = (p * 100) + '%';
+  }
+
+  var cv = $('#clockVal'); cv.textContent = wall.toFixed(1);
+  var clock = $('#clock');
+  clock.className = 'clock ' + (sim >= END ? (wall > 30 ? 'is-over' : 'is-done') : 'is-run');
+
+  if (sim < END) { raf = requestAnimationFrame(loop); }
+  else {
+    running = false;
+    log(4, 'PIPELINE COMPLETE in ' + wall.toFixed(1) + 's wall clock (industry benchmark: 30–45 days)', wall);
+    $('#runBtn').textContent = 'Completed';
+    $('#runBtn').disabled = true;
+    $('#resetBtn').disabled = false;
+  }
+}
+
+function reset() {
+  if (raf) cancelAnimationFrame(raf);
+  running = false; idx = 0;
+  buildPages(); buildPipe(); buildGraph(); renderDrawer();
+  extractGroups = {};
+  $('#p-extract').innerHTML = '<p class="empty">Nothing extracted yet. Run the pipeline.</p>';
+  $('#p-risk').innerHTML = '<p class="empty">Waiting on the Medical Reasoning Agent.</p>';
+  $('#p-req').innerHTML = '<p class="empty">Waiting on the Requirements Agent.</p>';
+  $('#p-quote').innerHTML = '<p class="empty">Waiting on the Actuarial Risk &amp; Pricing Agent.</p>';
+  $('#cExtract').textContent = ''; $('#cReq').textContent = '';
+  $('#log').innerHTML = '';
+  $('#ocr').innerHTML = '<p class="empty" style="padding:2.2rem 0">Waiting for ingestion.</p>';
+  $('#ocrPage').textContent = '—';
+  $('#sPages').innerHTML = '0<span style="opacity:.4">/80</span>';
+  $('#sHits').textContent = '0'; $('#sEnt').textContent = '0'; $('#sTok').textContent = '0';
+  $('#ingestTag').className = 'tag is-idle'; $('#ingestTag').textContent = 'Idle';
+  $('#graphTag').className = 'tag is-idle'; $('#graphTag').textContent = 'Empty';
+  $('#clockVal').textContent = '0.0'; $('#clock').className = 'clock';
+  [0, 1, 2, 3].forEach(function (i) { setAgent(i, 'idle', AGENTS[i].role); });
+  $('#runBtn').disabled = false; $('#runBtn').textContent = 'Run underwriting';
+  $('#resetBtn').disabled = true;
+  selectTab('#tabs', 'extract');
+  buildTimeline();
+}
+
+function run() {
+  if (running) return;
+  reset();
+  running = true;
+  $('#runBtn').disabled = true; $('#runBtn').textContent = 'Running…';
+  $('#resetBtn').disabled = false;
+  t0 = performance.now();
+  raf = requestAnimationFrame(loop);
+}
+
+/* ==========================================================================
+   9. TABS, THEME, WIRING
+   ========================================================================== */
+function selectTab(group, key) {
+  var host = $(group);
+  Array.prototype.forEach.call(host.children, function (b) {
+    var on = b.getAttribute('aria-controls').split('-').slice(1).join('-') === key;
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+    $('#' + b.getAttribute('aria-controls')).hidden = !on;
+  });
+}
+['#tabs', '#jtabs'].forEach(function (g) {
+  $(g).addEventListener('click', function (e) {
+    var b = e.target.closest('button[role="tab"]'); if (!b) return;
+    selectTab(g, b.getAttribute('aria-controls').split('-').slice(1).join('-'));
+  });
+});
+
+$('#runBtn').addEventListener('click', run);
+$('#resetBtn').addEventListener('click', reset);
+$('#spd1').addEventListener('click', function () { speed = 1; $('#spd1').setAttribute('aria-pressed', 'true'); $('#spd4').setAttribute('aria-pressed', 'false'); });
+$('#spd4').addEventListener('click', function () { speed = 4; $('#spd4').setAttribute('aria-pressed', 'true'); $('#spd1').setAttribute('aria-pressed', 'false'); });
+
+(function theme() {
+  var saved = null;
+  try { saved = localStorage.getItem('scd-theme'); } catch (e) {}
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+  $('#themeBtn').addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme');
+    if (!cur) cur = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('scd-theme', next); } catch (e) {}
+  });
+})();
+
+reset();
+})();
+</script>
+</body>
+</html>
