@@ -720,13 +720,15 @@ kbd {
   top: calc(var(--s-5) * -1);
   left: var(--s-6);
   width: 1px;
-  height: 0;
+  height: var(--s-5);
   background: var(--flash);
-  transition: height 420ms var(--ease-out);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 420ms var(--ease-out);
 }
 
 .node[data-state="running"]::after,
-.node[data-state="done"]::after { height: var(--s-5); }
+.node[data-state="done"]::after { transform: scaleY(1); }
 
 .node[data-state="idle"] { opacity: 0.5; }
 
@@ -783,19 +785,24 @@ kbd {
 /* Collapsed until the agent is live. max-height rather than a grid-row trick:
    the body has several children, so a 0fr track would only clip the first. */
 .node-body {
-  overflow: hidden;
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
   opacity: 0;
+  transition: grid-template-rows 460ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+
+.node-inner {
+  min-height: 0;
+  overflow: hidden;
   padding-inline: var(--s-4);
-  transition: max-height 460ms var(--ease-out), opacity 300ms var(--ease-out),
-              padding-bottom 460ms var(--ease-out);
 }
 
 .node[data-open="true"] .node-body {
-  max-height: 34rem;
+  grid-template-rows: 1fr;
   opacity: 1;
-  padding-bottom: var(--s-4);
 }
+
+.node[data-open="true"] .node-inner { padding-bottom: var(--s-4); }
 
 /* A finished agent folds to its result line so the next one stays on screen. */
 .node-sum {
