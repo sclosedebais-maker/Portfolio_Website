@@ -42,7 +42,7 @@ browser. You can email it, put it on a USB stick, or drop it on any web host as-
 It is generated from the three source files, so edit those and regenerate rather
 than editing the bundle by hand.
 
-## AI Value Assay
+## AI Value Assessment
 
 `ai-value-calculator.html` is a standalone tool for building the business case
 behind an AI use case. It is self-contained — one file, no build step, no

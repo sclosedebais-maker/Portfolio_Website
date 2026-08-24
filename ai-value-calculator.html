@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark light">
-<title>AI Value Assay</title>
-<meta name="description" content="Build the business case for an AI proof of concept or a full AI solution. Quick assay for POCs, full assay for detailed solutions.">
+<title>AI Value Assessment</title>
+<meta name="description" content="Build the business case for an AI proof of concept or a full AI solution. Quick assessment for POCs, full assessment for detailed solutions.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* ==========================================================================
-   AI VALUE ASSAY — design tokens
+   AI VALUE ASSESSMENT — design tokens
    Furnace palette: a case that carries heat is worth funding. Warm near-black
    ground, flame accent, ash for anything with no heat in it.
    ========================================================================== */
@@ -771,10 +771,10 @@ tfoot td.out { color: var(--flame); font-size: 14px; }
   line-height: 1.6;
 }
 
-/* Assay strip — the heat reading, 0 to 5 composite */
-.assay { margin-top: 24px; }
+/* Assessment strip — the heat reading, 0 to 5 composite */
+.assessment { margin-top: 24px; }
 
-.assay-track {
+.assessment-track {
   position: relative;
   height: 12px;
   border-radius: 999px;
@@ -786,7 +786,7 @@ tfoot td.out { color: var(--flame); font-size: 14px; }
   opacity: .28;
 }
 
-.assay-fill {
+.assessment-fill {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 999px;
@@ -794,15 +794,15 @@ tfoot td.out { color: var(--flame); font-size: 14px; }
   opacity: 0;
 }
 
-.assay-wrap { position: relative; }
+.assessment-wrap { position: relative; }
 
-.assay-live {
+.assessment-live {
   position: absolute;
   inset: 0;
   border-radius: 999px;
   overflow: hidden;
 }
-.assay-live i {
+.assessment-live i {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -816,7 +816,7 @@ tfoot td.out { color: var(--flame); font-size: 14px; }
   transition: clip-path .6s cubic-bezier(.22,1,.36,1);
 }
 
-.assay-pin {
+.assessment-pin {
   position: absolute;
   top: -6px;
   width: 3px;
@@ -828,7 +828,7 @@ tfoot td.out { color: var(--flame); font-size: 14px; }
   transition: left .6s cubic-bezier(.22,1,.36,1);
 }
 
-.assay-scale {
+.assessment-scale {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
@@ -1159,14 +1159,14 @@ svg.chart { display: block; width: 100%; height: auto; }
 <header class="top">
   <div class="mark">
     <span class="mark-flame" aria-hidden="true"></span>
-    <span>AI Value Assay
+    <span>AI Value Assessment
       <small>BUSINESS CASE INSTRUMENT</small>
     </span>
   </div>
 
   <div class="top-spacer"></div>
 
-  <div class="switch" role="group" aria-label="Assay depth">
+  <div class="switch" role="group" aria-label="Assessment depth">
     <button type="button" id="mode-simple" aria-pressed="true">Quick&nbsp;— POC</button>
     <button type="button" id="mode-full" aria-pressed="false">Full&nbsp;— Solution</button>
   </div>
@@ -1216,7 +1216,7 @@ svg.chart { display: block; width: 100%; height: auto; }
   <!-- ===================== RAIL ===================== -->
   <aside class="rail">
     <div class="rail-head">
-      <span class="label" id="rail-title">Quick assay</span>
+      <span class="label" id="rail-title">Quick assessment</span>
       <div class="meter"><i id="meter-fill" style="width:0%"></i></div>
       <span class="label" id="meter-text" style="letter-spacing:.06em">0% complete</span>
     </div>
@@ -1230,7 +1230,7 @@ svg.chart { display: block; width: 100%; height: auto; }
   <main class="work" id="work">
 
     <!-- ============ QUICK (POC) ============ -->
-    <section class="panel" data-panel="quick" data-active="true" aria-label="Quick assay">
+    <section class="panel" data-panel="quick" data-active="true" aria-label="Quick assessment">
 
       <div class="card">
         <div class="card-h">
@@ -1732,7 +1732,9 @@ svg.chart { display: block; width: 100%; height: auto; }
   }
 
   var S = defaults();
-  var KEY = "ai-value-assay-v1";
+  var KEY = "ai-value-assessment-v1";
+  var loadFailed = false;
+  var OLD_KEY = "ai-value-assay-v1";   /* the tool's former name — read once, then migrate */
 
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ }
@@ -1741,15 +1743,27 @@ svg.chart { display: block; width: 100%; height: auto; }
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
-      if (!raw) return;
+      if (!raw) {
+        raw = localStorage.getItem(OLD_KEY);
+        if (!raw) return;
+        localStorage.setItem(KEY, raw);
+        localStorage.removeItem(OLD_KEY);
+      }
       var d = JSON.parse(raw);
       if (d && d.full && d.quick) S = merge(defaults(), d);
-    } catch (e) { /* corrupt or blocked — start clean */ }
+    } catch (e) {
+      /* Unreadable or blocked. Start clean, but keep the stored copy so a
+         fixable problem never destroys someone's work. */
+      S = defaults();
+      loadFailed = true;
+    }
   }
 
   function merge(base, over) {
     if (over === null || over === undefined) return base;
-    if (Array.isArray(base) || typeof base !== "object") return over;
+    /* typeof null is "object", so null has to be ruled out before recursing —
+       otherwise every default-null number throws and the case is discarded. */
+    if (base === null || Array.isArray(base) || typeof base !== "object") return over;
     var out = {};
     Object.keys(base).forEach(function (k) { out[k] = merge(base[k], over[k]); });
     Object.keys(over).forEach(function (k) { if (!(k in out)) out[k] = over[k]; });
@@ -1808,7 +1822,7 @@ svg.chart { display: block; width: 100%; height: auto; }
   /* =========================================================================
      4. CALCULATION ENGINE
      One engine, both modes. Quick inputs are mapped onto the same structure
-     the full assay uses, so the two modes can never disagree.
+     the full assessment uses, so the two modes can never disagree.
      ========================================================================= */
 
   function quickToModel() {
@@ -2647,8 +2661,8 @@ svg.chart { display: block; width: 100%; height: auto; }
   function plainSummary(c) {
     var name = (S.mode === "quick" ? S.quick.name : S.full.profile.name) || "Untitled use case";
     var lines = [];
-    lines.push("AI VALUE ASSAY — " + name);
-    lines.push((S.mode === "quick" ? "Quick assay (POC)" : "Full assay (solution)") + " · " + new Date().toLocaleDateString("en-AU"));
+    lines.push("AI VALUE ASSESSMENT — " + name);
+    lines.push((S.mode === "quick" ? "Quick assessment (POC)" : "Full assessment (solution)") + " · " + new Date().toLocaleDateString("en-AU"));
     lines.push("");
     lines.push("RECOMMENDATION: " + c.verdict.word.toUpperCase() + " — " + c.verdict.sub);
     lines.push("");
@@ -2676,23 +2690,23 @@ svg.chart { display: block; width: 100%; height: auto; }
 
     /* --- Verdict hero --- */
     var hero = el("div", { class: "hero-verdict", style: "--heat:" + heat.toFixed(3) + ";--verdict-col:" + tone.col });
-    hero.appendChild(el("span", { class: "label", text: (S.mode === "quick" ? "Quick assay" : "Full assay") + " · Recommendation" }));
+    hero.appendChild(el("span", { class: "label", text: (S.mode === "quick" ? "Quick assessment" : "Full assessment") + " · Recommendation" }));
     hero.appendChild(el("h2", { text: c.verdict.word }));
     hero.appendChild(el("p", { class: "why", html: narrative(c) }));
 
-    var assay = el("div", { class: "assay" }, [
-      el("div", { class: "assay-wrap", style: "--fill:" + (heat * 100).toFixed(1) + "%" }, [
-        el("div", { class: "assay-track" }),
-        el("div", { class: "assay-live" }, [el("i", {})]),
-        el("div", { class: "assay-pin" })
+    var assessment = el("div", { class: "assessment" }, [
+      el("div", { class: "assessment-wrap", style: "--fill:" + (heat * 100).toFixed(1) + "%" }, [
+        el("div", { class: "assessment-track" }),
+        el("div", { class: "assessment-live" }, [el("i", {})]),
+        el("div", { class: "assessment-pin" })
       ]),
-      el("div", { class: "assay-scale" }, [
+      el("div", { class: "assessment-scale" }, [
         el("span", { text: "0 · no case" }),
         el("span", { text: "2.5 · conditional" }),
         el("span", { text: "5 · exceptional" })
       ])
     ]);
-    hero.appendChild(assay);
+    hero.appendChild(assessment);
     host.appendChild(hero);
 
     /* --- Headline numbers --- */
@@ -2780,7 +2794,7 @@ svg.chart { display: block; width: 100%; height: auto; }
       "Each driver moved through a realistic range, with everything else held still. The longest bar is where to spend your evidence budget.",
       { node: sens }));
 
-    /* --- Quality checks (full assay only) --- */
+    /* --- Quality checks (full assessment only) --- */
     if (S.mode === "full") {
       var checkBox = el("div", { class: "checks" });
       CHECKS.forEach(function (ch, i) {
@@ -2805,7 +2819,7 @@ svg.chart { display: block; width: 100%; height: auto; }
         el("button", { class: "btn", type: "button", onclick: function () { window.print(); } }, ["Print or save as PDF"]),
         el("button", { class: "btn ghost", type: "button", onclick: function () { copySummary(c); } }, ["Copy summary"]),
         S.mode === "quick"
-          ? el("button", { class: "btn ghost", type: "button", onclick: function () { setMode("full"); } }, ["Take it to the full assay"])
+          ? el("button", { class: "btn ghost", type: "button", onclick: function () { setMode("full"); } }, ["Take it to the full assessment"])
           : null
       ])
     ]);
@@ -2895,7 +2909,7 @@ svg.chart { display: block; width: 100%; height: auto; }
   }
 
   var RAIL_NOTES = {
-    quick: "<strong>Quick assay.</strong> Sized for a proof of concept: one page of inputs, a defensible answer, and a low/high range set automatically at ±40% of your base numbers. Move to the full assay once real money is on the table.",
+    quick: "<strong>Quick assessment.</strong> Sized for a proof of concept: one page of inputs, a defensible answer, and a low/high range set automatically at ±40% of your base numbers. Move to the full assessment once real money is on the table.",
     setup: "<strong>Set the bar before you see the answer.</strong> Thresholds decided after the fact are not thresholds.",
     usecase: "<strong>Write the story down.</strong> An assumption on paper can be challenged. One in someone's head gets approved.",
     financial: "<strong>Three numbers, not one.</strong> The spread between low and high is the most honest thing in the model.",
@@ -2907,7 +2921,7 @@ svg.chart { display: block; width: 100%; height: auto; }
   function renderRail() {
     var steps = $("#steps");
     steps.innerHTML = "";
-    $("#rail-title").textContent = S.mode === "quick" ? "Quick assay" : "Full assay";
+    $("#rail-title").textContent = S.mode === "quick" ? "Quick assessment" : "Full assessment";
 
     if (S.mode === "full") {
       STEPS.forEach(function (st, i) {
@@ -3093,7 +3107,8 @@ svg.chart { display: block; width: 100%; height: auto; }
      13. THEME
      ========================================================================= */
 
-  var TKEY = "ai-value-assay-theme";
+  var TKEY = "ai-value-assessment-theme";
+  var OLD_TKEY = "ai-value-assay-theme";
 
   function applyTheme(t) {
     if (t === "system") document.documentElement.removeAttribute("data-theme");
@@ -3109,7 +3124,7 @@ svg.chart { display: block; width: 100%; height: auto; }
 
   function initTheme() {
     var saved = null;
-    try { saved = localStorage.getItem(TKEY); } catch (e) { /* ignore */ }
+    try { saved = localStorage.getItem(TKEY) || localStorage.getItem(OLD_TKEY); } catch (e) { /* ignore */ }
     if (saved) applyTheme(saved);
     $("#theme-btn").addEventListener("click", function () {
       applyTheme(currentTheme() === "dark" ? "light" : "dark");
@@ -3122,7 +3137,7 @@ svg.chart { display: block; width: 100%; height: auto; }
      ========================================================================= */
 
   function download() {
-    var name = (S.mode === "quick" ? S.quick.name : S.full.profile.name) || "ai-value-assay";
+    var name = (S.mode === "quick" ? S.quick.name : S.full.profile.name) || "ai-value-assessment";
     var blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
     var a = el("a", { href: url, download: name.replace(/[^\w\-]+/g, "-").toLowerCase() + ".json" });
@@ -3143,7 +3158,7 @@ svg.chart { display: block; width: 100%; height: auto; }
         setMode(S.mode || "quick");
         toast("Case loaded");
       } catch (e) {
-        toast("That file is not an AI Value Assay case");
+        toast("That file is not an AI Value Assessment case");
       }
     };
     r.readAsText(file);
@@ -3236,7 +3251,7 @@ svg.chart { display: block; width: 100%; height: auto; }
   }
 
   function reset() {
-    if (!window.confirm("Clear every input in both the quick and full assay? This cannot be undone.")) return;
+    if (!window.confirm("Clear every input in both the quick and full assessment? This cannot be undone.")) return;
     var mode = S.mode;
     S = defaults();
     S.mode = mode;
@@ -3292,6 +3307,7 @@ svg.chart { display: block; width: 100%; height: auto; }
     }
 
     setMode(S.mode || "quick");
+    if (loadFailed) toast("A saved case could not be read — starting from blank inputs");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
