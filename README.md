@@ -42,6 +42,71 @@ browser. You can email it, put it on a USB stick, or drop it on any web host as-
 It is generated from the three source files, so edit those and regenerate rather
 than editing the bundle by hand.
 
+## AI Value Assay
+
+`ai-value-calculator.html` is a standalone tool for building the business case
+behind an AI use case. It is self-contained — one file, no build step, no
+dependencies — so it opens by double-clicking it, the same as the rest of the
+site.
+
+It has two depths, switched in the header:
+
+- **Quick — POC.** One page of inputs, sized for deciding whether a proof of
+  concept is worth running. Time released is built up from people, hours, loaded
+  cost and realistic adoption; everything else is one honest number each. The
+  low and high cases are set automatically at ±40% of the base.
+- **Full — Solution.** Six steps for a real investment decision: governance
+  thresholds, the use case definition and evidence, low/base/high financials
+  across five benefit and six cost categories, eight weighted non-financial
+  dimensions, ten readiness and risk control areas, and a decision dashboard.
+
+Both depths run the same calculation engine, so the two modes can never
+disagree with each other.
+
+### What it works out
+
+Net present value, return on total cost, payback, and the annual cash-flow
+profile — each carried through the low, base and high case over a horizon you
+set. Benefits are ramped (year 1, year 2, year 3 onward), grown, and cut by an
+evidence-confidence haircut before any of it counts. Non-financial value,
+delivery readiness and residual risk are weighted 0–5 scores, where 0 means
+"not assessed" and is excluded rather than counted as a zero.
+
+On top of the numbers it produces the parts of a business case that usually get
+argued about:
+
+- **Decision gates** — every threshold tested individually, so a "no" comes with
+  the reason attached.
+- **Sensitivity** — each driver moved through a realistic range with everything
+  else held still, ranked by how far it swings the NPV, plus the annual benefit
+  needed to break even.
+- **Value profile** — financial value, broader value, readiness and risk control
+  on one radar, which is where a case with a hollow in it shows up.
+- **A written summary** generated from the inputs, ready to paste into a paper.
+
+Export sits in the header menu: print or save as PDF, copy the summary as plain
+text, or download the case as JSON and open it again later.
+
+### Notes
+
+The model is adapted from an AI Business Value Calculator workbook, with the
+same categories, weightings and gate logic. Two things were changed
+deliberately: payback is calculated from the cumulative position crossing zero
+and interpolated within the year, rather than dividing the investment by an
+average year; and the evaluation horizon is adjustable instead of fixed at five
+years.
+
+Everything typed in stays in the browser. Inputs are remembered in
+`localStorage` between visits — with one caveat: Chrome disables `localStorage`
+for pages opened directly from disk over `file://`, so if you want the tool to
+remember your work, serve it with `./serve.sh` rather than double-clicking it.
+The tool itself works either way.
+
+The palette is orange, black and white, and reads as heat: the stronger the
+case, the hotter the page runs. It follows the system light or dark setting,
+with a toggle in the header.
+
+
 ## Running it locally
 
 ```sh

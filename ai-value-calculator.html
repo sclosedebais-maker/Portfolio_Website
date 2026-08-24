@@ -1,0 +1,3303 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>AI Value Assay</title>
+<meta name="description" content="Build the business case for an AI proof of concept or a full AI solution. Quick assay for POCs, full assay for detailed solutions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* ==========================================================================
+   AI VALUE ASSAY — design tokens
+   Furnace palette: a case that carries heat is worth funding. Warm near-black
+   ground, flame accent, ash for anything with no heat in it.
+   ========================================================================== */
+
+:root {
+  /* Light theme is the base layer. Dark is defined further down. */
+  --ink:        #FFFFFF;
+  --surface:    #FAF7F3;
+  --surface-2:  #F3EDE6;
+  --raise:      #FFFFFF;
+  --line:       #E4DBD1;
+  --line-soft:  #EFE8E0;
+  --text:       #14110E;
+  --text-2:     #4A423A;
+  --muted:      #7A6E63;
+  --flame:      #D2510A;
+  --flame-hot:  #FF6A13;
+  --ember:      #E8862F;
+  --ash:        #8C8078;
+  --char:       #7A2D05;
+  --on-flame:   #FFFFFF;
+  --grid:       rgba(20,17,14,.07);
+  --shadow:     0 1px 2px rgba(20,17,14,.05), 0 8px 24px -12px rgba(20,17,14,.18);
+  --shadow-lg:  0 24px 60px -28px rgba(20,17,14,.35);
+  --glow:       none;
+
+  --f-display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --f-body:    "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --f-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --r-sm: 3px;
+  --r:    6px;
+  --r-lg: 10px;
+
+  --step: clamp(14px, 1.6vw, 18px);
+  --gut:  clamp(16px, 3vw, 32px);
+  --rail: 232px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:       #0C0B0A;
+    --surface:   #131010;
+    --surface-2: #1B1714;
+    --raise:     #211C18;
+    --line:      #332B24;
+    --line-soft: #251F1A;
+    --text:      #FBF7F2;
+    --text-2:    #D6CCC1;
+    --muted:     #A09386;
+    --flame:     #FF6A13;
+    --flame-hot: #FF8A3D;
+    --ember:     #FFA24D;
+    --ash:       #7A6E63;
+    --char:      #B4470C;
+    --on-flame:  #140D06;
+    --grid:      rgba(251,247,242,.06);
+    --shadow:    0 1px 0 rgba(255,255,255,.03), 0 10px 30px -18px rgba(0,0,0,.9);
+    --shadow-lg: 0 30px 80px -40px rgba(0,0,0,1);
+    --glow:      0 0 24px -6px rgba(255,106,19,.45);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ink:       #0C0B0A;
+  --surface:   #131010;
+  --surface-2: #1B1714;
+  --raise:     #211C18;
+  --line:      #332B24;
+  --line-soft: #251F1A;
+  --text:      #FBF7F2;
+  --text-2:    #D6CCC1;
+  --muted:     #A09386;
+  --flame:     #FF6A13;
+  --flame-hot: #FF8A3D;
+  --ember:     #FFA24D;
+  --ash:       #7A6E63;
+  --char:      #B4470C;
+  --on-flame:  #140D06;
+  --grid:      rgba(251,247,242,.06);
+  --shadow:    0 1px 0 rgba(255,255,255,.03), 0 10px 30px -18px rgba(0,0,0,.9);
+  --shadow-lg: 0 30px 80px -40px rgba(0,0,0,1);
+  --glow:      0 0 24px -6px rgba(255,106,19,.45);
+}
+
+/* ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body, h1, h2, h3, h4, p, ul, ol, li, figure, dl, dd {
+  margin: 0;
+  padding: 0;
+}
+ul, ol { list-style: none; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: var(--step);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--flame); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--flame-hot);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--flame);
+  color: var(--on-flame);
+  padding: 10px 16px;
+  z-index: 200;
+  font-weight: 700;
+}
+.skip:focus { left: 8px; top: 8px; }
+
+.vh {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ==========================================================================
+   TYPE
+   ========================================================================== */
+
+.label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+h2, h3 { text-wrap: balance; }
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px var(--gut);
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+.mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--f-display);
+  font-size: 15px;
+  letter-spacing: -.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mark-flame {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 2px 8px 2px 8px;
+  background: linear-gradient(160deg, var(--flame-hot), var(--char));
+  box-shadow: var(--glow);
+}
+
+.mark small {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.top-spacer { flex: 1 1 auto; }
+
+/* Mode switch — the single most important control on the page. */
+.switch {
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.switch button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease;
+}
+.switch button:hover { color: var(--text); }
+.switch button[aria-pressed="true"] {
+  background: var(--flame);
+  color: var(--on-flame);
+  box-shadow: var(--glow);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color .18s ease, color .18s ease, background .18s ease;
+}
+.icon-btn:hover { border-color: var(--flame); color: var(--text); }
+.icon-btn svg { width: 15px; height: 15px; flex: none; }
+
+.menu-wrap { position: relative; }
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 232px;
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  display: none;
+  z-index: 80;
+}
+.menu[data-open="true"] { display: block; }
+
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 9px 11px;
+  border-radius: var(--r);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.menu button:hover { background: var(--surface-2); color: var(--text); }
+.menu hr { border: 0; border-top: 1px solid var(--line-soft); margin: 6px 4px; }
+.menu .danger:hover { color: var(--flame-hot); }
+
+/* ==========================================================================
+   READOUT BAR — always-live instrument strip under the header
+   ========================================================================== */
+
+.readout {
+  position: sticky;
+  top: 61px;
+  z-index: 55;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--surface);
+}
+
+.verdict {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 11px var(--gut);
+  border-right: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Heat wash behind the verdict, intensity driven by --heat (0–1). */
+.verdict::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--flame) calc(var(--heat, 0) * 34%), transparent),
+    transparent 78%);
+  pointer-events: none;
+  transition: background .5s ease;
+}
+
+.verdict > * { position: relative; }
+
+.verdict-word {
+  font-family: var(--f-display);
+  font-size: clamp(15px, 1.9vw, 20px);
+  letter-spacing: -.015em;
+  line-height: 1.05;
+  color: var(--verdict-col, var(--text));
+}
+
+.verdict-sub { font-size: 11.5px; color: var(--muted); }
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding: 11px 16px;
+  border-right: 1px solid var(--line-soft);
+  min-width: 0;
+}
+.stat:last-child { border-right: 0; }
+
+.stat-k {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-v {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(15px, 1.7vw, 19px);
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+.stat-v.pos { color: var(--flame); }
+.stat-v.neg { color: var(--ash); }
+
+/* ==========================================================================
+   SHELL
+   ========================================================================== */
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--gut);
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: var(--gut);
+}
+
+.rail { position: sticky; top: 148px; }
+
+.rail-head { margin-bottom: 10px; }
+
+.steps { display: flex; flex-direction: column; gap: 2px; }
+
+.steps button {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 9px 10px;
+  border-radius: var(--r);
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  position: relative;
+  transition: background .16s ease, color .16s ease;
+}
+.steps button:hover { background: var(--surface-2); color: var(--text); }
+
+.steps button[aria-current="true"] {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--flame);
+}
+
+.step-i {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .05em;
+  color: var(--ash);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+.steps button[aria-current="true"] .step-i {
+  border-color: var(--flame);
+  color: var(--flame);
+}
+.steps button[data-done="true"] .step-i {
+  background: var(--flame);
+  border-color: var(--flame);
+  color: var(--on-flame);
+}
+
+.rail-note {
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.rail-note strong { color: var(--text-2); font-weight: 600; }
+
+/* Completion meter */
+.meter {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin: 10px 0 4px;
+}
+.meter i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--char), var(--flame-hot));
+  transition: width .45s cubic-bezier(.22,1,.36,1);
+}
+
+/* ==========================================================================
+   PANELS & CARDS
+   ========================================================================== */
+
+.work { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+
+.panel { display: none; flex-direction: column; gap: 18px; }
+.panel[data-active="true"] { display: flex; animation: rise .32s cubic-bezier(.22,1,.36,1); }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-h {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.card-h h2, .card-h h3 {
+  font-family: var(--f-body);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.card-h p {
+  flex: 1 1 260px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.card-b { padding: 18px 20px 20px; }
+.card-b.flush { padding: 0; }
+
+.hint {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 68ch;
+}
+
+/* ==========================================================================
+   FIELDS
+   ========================================================================== */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(212px, 1fr));
+  gap: 14px 16px;
+}
+.grid.two { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid.wide { grid-template-columns: 1fr; }
+
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+.field > label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field .sub { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+
+.control {
+  display: flex;
+  align-items: center;
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.control:focus-within {
+  border-color: var(--flame);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--flame) 18%, transparent);
+}
+
+.control .affix {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 0 0 11px;
+  flex: none;
+}
+.control .affix.suffix { padding: 0 11px 0 0; }
+
+.control input,
+.control select,
+.control textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 9px 11px;
+  border-radius: var(--r);
+}
+.control input:focus, .control select:focus, .control textarea:focus { outline: none; }
+.control input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.control select { cursor: pointer; appearance: none; padding-right: 30px; }
+
+.control.select-wrap { position: relative; }
+.control.select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 6px; height: 6px;
+  border-right: 1.6px solid var(--muted);
+  border-bottom: 1.6px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+textarea { resize: vertical; min-height: 74px; line-height: 1.5; font-size: 14px; }
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+::placeholder { color: var(--ash); opacity: .75; }
+
+/* Segmented score control — 0..5, reads as a heat ladder */
+.score {
+  display: flex;
+  gap: 3px;
+}
+
+.score button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--muted);
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: background .14s ease, color .14s ease, border-color .14s ease, transform .14s ease;
+}
+.score button:hover { border-color: var(--ember); color: var(--text); transform: translateY(-1px); }
+.score button[aria-pressed="true"] {
+  background: var(--sc, var(--flame));
+  border-color: var(--sc, var(--flame));
+  color: var(--on-flame);
+  font-weight: 600;
+}
+.score button[data-zero="true"][aria-pressed="true"] {
+  background: var(--ash);
+  border-color: var(--ash);
+}
+
+/* ==========================================================================
+   TABLES
+   ========================================================================== */
+
+.tw { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; min-width: 620px; }
+
+thead th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+  font-size: 13.5px;
+}
+
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: color-mix(in srgb, var(--flame) 4%, transparent); }
+
+td.name { font-weight: 600; color: var(--text); min-width: 190px; }
+td.name .sub { display: block; font-weight: 400; margin-top: 2px; }
+
+td.n { width: 128px; }
+td.w { width: 96px; }
+td.sc { width: 230px; }
+td.ev { min-width: 200px; }
+
+td.out {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-2);
+}
+
+tfoot td {
+  padding: 11px 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface-2);
+}
+tfoot td.out { color: var(--flame); font-size: 14px; }
+
+.cellinput {
+  width: 100%;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--flame) 7%, transparent);
+  border-radius: var(--r-sm);
+  padding: 7px 9px;
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  text-align: right;
+  transition: border-color .14s ease, background .14s ease;
+}
+.cellinput:focus {
+  outline: none;
+  border-color: var(--flame);
+  background: var(--raise);
+}
+.cellinput.text { text-align: left; font-family: var(--f-body); background: transparent; border-color: var(--line-soft); }
+.cellinput.text:focus { background: var(--raise); }
+
+/* ==========================================================================
+   DASHBOARD
+   ========================================================================== */
+
+.hero-verdict {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: clamp(22px, 3.4vw, 38px);
+  box-shadow: var(--shadow);
+}
+
+.hero-verdict::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 150% at 4% 0%,
+      color-mix(in srgb, var(--flame) calc(var(--heat, 0) * 30%), transparent),
+      transparent 62%);
+  transition: background .6s ease;
+  pointer-events: none;
+}
+.hero-verdict > * { position: relative; }
+
+.hero-verdict h2 {
+  font-family: var(--f-display);
+  font-size: clamp(30px, 5.4vw, 58px);
+  line-height: .96;
+  letter-spacing: -.032em;
+  margin: 10px 0 12px;
+  color: var(--verdict-col, var(--text));
+}
+
+.hero-verdict .why {
+  font-size: clamp(14px, 1.5vw, 16.5px);
+  color: var(--text-2);
+  max-width: 66ch;
+  line-height: 1.6;
+}
+
+/* Assay strip — the heat reading, 0 to 5 composite */
+.assay { margin-top: 24px; }
+
+.assay-track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    var(--ash) 0%,
+    color-mix(in srgb, var(--ember) 55%, var(--ash)) 38%,
+    var(--ember) 62%,
+    var(--flame-hot) 100%);
+  opacity: .28;
+}
+
+.assay-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: inherit;
+  opacity: 0;
+}
+
+.assay-wrap { position: relative; }
+
+.assay-live {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.assay-live i {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    var(--ash) 0%,
+    color-mix(in srgb, var(--ember) 55%, var(--ash)) 38%,
+    var(--ember) 62%,
+    var(--flame-hot) 100%);
+  clip-path: inset(0 calc(100% - var(--fill, 0%)) 0 0 round 999px);
+  transition: clip-path .6s cubic-bezier(.22,1,.36,1);
+}
+
+.assay-pin {
+  position: absolute;
+  top: -6px;
+  width: 3px;
+  height: 24px;
+  border-radius: 2px;
+  background: var(--text);
+  left: var(--fill, 0%);
+  transform: translateX(-50%);
+  transition: left .6s cubic-bezier(.22,1,.36,1);
+}
+
+.assay-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* KPI grid */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.kpi {
+  background: var(--surface);
+  padding: 16px 18px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.kpi-k {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kpi-v {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(20px, 2.5vw, 27px);
+  font-weight: 600;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+}
+.kpi-v.pos { color: var(--flame); }
+.kpi-v.neg { color: var(--ash); }
+
+.kpi-n { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+
+/* Gate checklist */
+.gates { display: flex; flex-direction: column; }
+
+.gate {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 13.5px;
+}
+.gate:last-child { border-bottom: 0; }
+
+.gate-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.gate[data-pass="true"] .gate-dot {
+  background: var(--flame);
+  border-color: var(--flame);
+}
+.gate[data-pass="true"] .gate-dot::after {
+  content: "";
+  width: 8px; height: 4.5px;
+  border-left: 2px solid var(--on-flame);
+  border-bottom: 2px solid var(--on-flame);
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+.gate[data-pass="false"] .gate-dot { border-color: var(--ash); }
+.gate[data-pass="false"] .gate-dot::after {
+  content: "";
+  width: 8px;
+  height: 2px;
+  background: var(--ash);
+  border-radius: 1px;
+}
+
+.gate-name { color: var(--text-2); }
+.gate[data-pass="false"] .gate-name { color: var(--text); font-weight: 600; }
+
+.gate-val {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Narrative */
+.story {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-2);
+  max-width: 72ch;
+}
+.story strong { color: var(--text); font-weight: 600; }
+.story .fig { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--flame); font-weight: 600; }
+
+.story-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+/* Charts */
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+
+.chart-wrap { width: 100%; overflow-x: auto; }
+svg.chart { display: block; width: 100%; height: auto; }
+
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 11px; height: 11px; border-radius: 2px; display: block; }
+
+/* Sensitivity list */
+.sens { display: flex; flex-direction: column; gap: 12px; }
+
+.sens-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+}
+
+.sens-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+}
+.sens-top b { font-weight: 600; color: var(--text-2); }
+.sens-top .num { color: var(--text); font-size: 13px; }
+
+.sens-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.sens-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--char), var(--flame-hot));
+  transition: width .5s cubic-bezier(.22,1,.36,1);
+}
+
+/* Callout */
+.callout {
+  display: flex;
+  gap: 13px;
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--flame);
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--flame) 6%, var(--surface));
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.callout b { color: var(--text); }
+
+/* Checklist */
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+
+.check {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 11px;
+  align-items: start;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--raise);
+  cursor: pointer;
+  transition: border-color .16s ease;
+}
+.check:hover { border-color: var(--ember); }
+.check input { accent-color: var(--flame); width: 17px; height: 17px; margin-top: 2px; }
+.check b { display: block; font-size: 13.5px; font-weight: 600; }
+.check span { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--r);
+  border: 1px solid var(--flame);
+  background: var(--flame);
+  color: var(--on-flame);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .14s ease, box-shadow .16s ease, background .16s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: var(--glow); text-decoration: none; }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line);
+}
+.btn.ghost:hover { border-color: var(--flame); box-shadow: none; }
+
+.btn svg { width: 15px; height: 15px; }
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 34px 20px;
+  text-align: left;
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 60ch;
+}
+
+/* Range pill */
+.rangepill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+}
+.rangepill b { color: var(--text); font-weight: 600; }
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 1080px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; }
+  .steps {
+    flex-direction: row;
+    min-width: 0;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+  .steps button { width: auto; white-space: nowrap; flex: none; }
+  .rail-note { display: none; }
+  .readout { grid-template-columns: 1fr 1fr; }
+  .verdict { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--line); }
+  .stat:nth-child(even) { border-right: 0; }
+  .stat { border-bottom: 1px solid var(--line-soft); }
+}
+
+@media (max-width: 620px) {
+  .top { flex-wrap: wrap; gap: 10px; padding: 10px 16px; }
+  .top-spacer { display: none; }
+  .switch { order: 3; width: 100%; }
+  .switch button { flex: 1 1 0; }
+  .readout { top: 0; position: static; }
+  .stat-v { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* ==========================================================================
+   PRINT — the business-case one-pager
+   ========================================================================== */
+
+@media print {
+  :root {
+    --ink: #fff; --surface: #fff; --surface-2: #fff; --raise: #fff;
+    --line: #bbb; --line-soft: #ddd;
+    --text: #000; --text-2: #222; --muted: #555;
+    --flame: #C2410C; --on-flame: #fff;
+    --shadow: none; --shadow-lg: none; --glow: none;
+  }
+  .top, .readout, .rail, .story-actions, .no-print { display: none !important; }
+  .shell { display: block; padding: 0; max-width: none; }
+  .panel { display: flex !important; }
+  .panel:not([data-active="true"]) { display: none !important; }
+  .card, .hero-verdict, .kpis { break-inside: avoid; box-shadow: none; }
+  body { font-size: 11pt; }
+  .hero-verdict h2 { font-size: 30pt; }
+  a { color: #000; }
+  @page { margin: 14mm; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#work">Skip to the calculator</a>
+
+<header class="top">
+  <div class="mark">
+    <span class="mark-flame" aria-hidden="true"></span>
+    <span>AI Value Assay
+      <small>BUSINESS CASE INSTRUMENT</small>
+    </span>
+  </div>
+
+  <div class="top-spacer"></div>
+
+  <div class="switch" role="group" aria-label="Assay depth">
+    <button type="button" id="mode-simple" aria-pressed="true">Quick&nbsp;— POC</button>
+    <button type="button" id="mode-full" aria-pressed="false">Full&nbsp;— Solution</button>
+  </div>
+
+  <button type="button" class="icon-btn" id="theme-btn" aria-label="Switch colour theme">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M20 13.2A8.2 8.2 0 1 1 10.8 4a6.6 6.6 0 0 0 9.2 9.2Z" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <div class="menu-wrap">
+    <button type="button" class="icon-btn" id="menu-btn" aria-expanded="false" aria-haspopup="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Export
+    </button>
+    <div class="menu" id="menu" role="menu">
+      <button type="button" id="act-print" role="menuitem">Print / save as PDF</button>
+      <button type="button" id="act-copy" role="menuitem">Copy summary to clipboard</button>
+      <hr>
+      <button type="button" id="act-save" role="menuitem">Download this case (.json)</button>
+      <button type="button" id="act-load" role="menuitem">Open a saved case</button>
+      <hr>
+      <button type="button" id="act-demo" role="menuitem">Load worked example</button>
+      <button type="button" id="act-reset" role="menuitem" class="danger">Clear all inputs</button>
+    </div>
+    <input type="file" id="file-in" accept="application/json,.json" class="vh">
+  </div>
+</header>
+
+<!-- Live readout: never leaves the screen, so every keystroke has a consequence -->
+<div class="readout" id="readout" aria-live="polite">
+  <div class="verdict" id="verdict-cell">
+    <span class="label">Recommendation</span>
+    <span class="verdict-word" id="verdict-word">Awaiting inputs</span>
+    <span class="verdict-sub" id="verdict-sub">Enter benefits and costs to generate a reading</span>
+  </div>
+  <div class="stat"><span class="stat-k" id="k1-k">Net value (NPV)</span><span class="stat-v num" id="k1-v">—</span></div>
+  <div class="stat"><span class="stat-k" id="k2-k">Return on cost</span><span class="stat-v num" id="k2-v">—</span></div>
+  <div class="stat"><span class="stat-k" id="k3-k">Payback</span><span class="stat-v num" id="k3-v">—</span></div>
+  <div class="stat"><span class="stat-k" id="k4-k">Value score</span><span class="stat-v num" id="k4-v">—</span></div>
+</div>
+
+<div class="shell">
+
+  <!-- ===================== RAIL ===================== -->
+  <aside class="rail">
+    <div class="rail-head">
+      <span class="label" id="rail-title">Quick assay</span>
+      <div class="meter"><i id="meter-fill" style="width:0%"></i></div>
+      <span class="label" id="meter-text" style="letter-spacing:.06em">0% complete</span>
+    </div>
+
+    <nav class="steps" id="steps" aria-label="Sections"></nav>
+
+    <div class="rail-note" id="rail-note"></div>
+  </aside>
+
+  <!-- ===================== WORK ===================== -->
+  <main class="work" id="work">
+
+    <!-- ============ QUICK (POC) ============ -->
+    <section class="panel" data-panel="quick" data-active="true" aria-label="Quick assay">
+
+      <div class="card">
+        <div class="card-h">
+          <h2>The proof of concept</h2>
+          <p>Six minutes of inputs. Enough to decide whether a POC is worth running, and to defend that answer in a room.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid">
+            <div class="field">
+              <label for="q-name">Use case</label>
+              <div class="control"><input id="q-name" type="text" placeholder="e.g. Claims triage copilot"></div>
+            </div>
+            <div class="field">
+              <label for="q-owner">Business owner</label>
+              <div class="control"><input id="q-owner" type="text" placeholder="Who is accountable for the benefit"></div>
+            </div>
+            <div class="field">
+              <label for="q-stage">Stage</label>
+              <div class="control select-wrap">
+                <select id="q-stage">
+                  <option>Idea</option><option selected>Proof of concept</option>
+                  <option>Pilot</option><option>Scale</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="q-ccy">Currency</label>
+              <div class="control select-wrap">
+                <select id="q-ccy">
+                  <option value="$" selected>$ &nbsp;Dollar</option>
+                  <option value="£">£ &nbsp;Pound</option>
+                  <option value="€">€ &nbsp;Euro</option>
+                  <option value="¥">¥ &nbsp;Yen</option>
+                  <option value="₹">₹ &nbsp;Rupee</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Where the value comes from</h2>
+          <p>Time released is the benefit most AI POCs claim, so it gets built up from its parts. Everything else is a single honest number.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid">
+            <div class="field">
+              <label for="q-people">People doing this work</label>
+              <div class="control"><input id="q-people" type="number" min="0" step="1" placeholder="0"></div>
+              <span class="sub">Only those whose work actually changes.</span>
+            </div>
+            <div class="field">
+              <label for="q-hours">Hours saved each, per week</label>
+              <div class="control"><input id="q-hours" type="number" min="0" step="0.25" placeholder="0"></div>
+              <span class="sub">Measured or observed, not hoped for.</span>
+            </div>
+            <div class="field">
+              <label for="q-rate">Loaded hourly cost</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-rate" type="number" min="0" step="1" placeholder="0"></div>
+              <span class="sub">Salary plus on-costs, per hour.</span>
+            </div>
+            <div class="field">
+              <label for="q-adopt">Realistic adoption</label>
+              <div class="control"><input id="q-adopt" type="number" min="0" max="100" step="5" value="60"><span class="affix suffix">%</span></div>
+              <span class="sub">Share of the saving people actually take up.</span>
+            </div>
+          </div>
+
+          <div class="grid" style="margin-top:18px">
+            <div class="field">
+              <label for="q-cost-out">Cost removed each year</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-cost-out" type="number" min="0" step="1000" placeholder="0"></div>
+              <span class="sub">Spend that actually leaves the budget.</span>
+            </div>
+            <div class="field">
+              <label for="q-rev">Revenue or margin gained</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-rev" type="number" min="0" step="1000" placeholder="0"></div>
+              <span class="sub">Contribution, not gross revenue.</span>
+            </div>
+            <div class="field">
+              <label for="q-risk-av">Loss or risk avoided</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-risk-av" type="number" min="0" step="1000" placeholder="0"></div>
+              <span class="sub">Expected loss × reduction in likelihood.</span>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:18px">
+            <div><b>Released capacity is not cash.</b> If the hours saved are redeployed rather than removed from the cost base, say so in the case. Finance will ask, and the answer changes how the benefit is treated.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>What it costs</h2>
+          <p>Include the unglamorous parts: data preparation, controls, and the change effort that makes adoption real.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid">
+            <div class="field">
+              <label for="q-build">One-time build</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-build" type="number" min="0" step="1000" placeholder="0"></div>
+              <span class="sub">POC, engineering, data, integration, controls.</span>
+            </div>
+            <div class="field">
+              <label for="q-change">One-time change &amp; training</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-change" type="number" min="0" step="1000" placeholder="0"></div>
+              <span class="sub">Process redesign, comms, capability building.</span>
+            </div>
+            <div class="field">
+              <label for="q-run">Annual run cost</label>
+              <div class="control"><span class="affix ccy">$</span><input id="q-run" type="number" min="0" step="1000" placeholder="0"></div>
+              <span class="sub">Models, hosting, licences, monitoring, support.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>How much of this do you actually know?</h2>
+          <p>Scores of 0 mean not assessed and are left out of the reading — that is more honest than a guess.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid two">
+            <div class="field">
+              <label for="q-conf">Evidence confidence</label>
+              <div class="control select-wrap">
+                <select id="q-conf">
+                  <option value="1">Measured — benefits observed in this business</option>
+                  <option value="0.85" selected>Benchmarked — credible external or internal comparison</option>
+                  <option value="0.7">Estimated — reasoned assumption, no evidence yet</option>
+                  <option value="0.5">Speculative — vendor claim or first guess</option>
+                </select>
+              </div>
+              <span class="sub">Applies a haircut to every benefit before the numbers are run.</span>
+            </div>
+            <div class="field">
+              <label>Horizon for the numbers</label>
+              <div class="control select-wrap">
+                <select id="q-horizon">
+                  <option value="3" selected>3 years</option>
+                  <option value="5">5 years</option>
+                </select>
+              </div>
+              <span class="sub">POCs earn their keep quickly. Three years is the honest default.</span>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top:18px" id="q-scores"></div>
+        </div>
+      </div>
+
+      <div id="quick-result"></div>
+    </section>
+
+    <!-- ============ FULL: GOVERNANCE ============ -->
+    <section class="panel" data-panel="setup" aria-label="Governance">
+      <div class="card">
+        <div class="card-h">
+          <h2>Decision thresholds</h2>
+          <p>The bar this use case has to clear. Set these once for the organisation — not per use case, and not after seeing the answer.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid" id="setup-thresholds"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Portfolio weighting</h2>
+          <p>How the four value lenses combine into one comparable score, so this use case can be ranked against others.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid" id="setup-weights"></div>
+          <p class="hint" style="margin-top:14px" id="setup-weight-note"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>The 0–5 scale</h2>
+          <p>Used everywhere a judgement is scored. Evidence standard matters more than the number.</p>
+        </div>
+        <div class="card-b flush">
+          <div class="tw"><table id="scale-table"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FULL: USE CASE ============ -->
+    <section class="panel" data-panel="usecase" aria-label="Use case">
+      <div class="card">
+        <div class="card-h">
+          <h2>Profile</h2>
+          <p>Start with the business problem. A use case that opens with a technology has usually skipped a step.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid" id="uc-profile"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Value story and evidence</h2>
+          <p>Written down, an assumption can be challenged. Left in someone's head, it gets approved.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid wide" id="uc-story"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FULL: FINANCIAL ============ -->
+    <section class="panel" data-panel="financial" aria-label="Financial value">
+      <div class="card">
+        <div class="card-h">
+          <h2>Annual gross benefits</h2>
+          <p>Steady-state, in one currency. Give a low, base and high for each — the spread is the most informative thing on this page.</p>
+          <span class="rangepill" id="ben-pill">Base <b id="ben-pill-v">—</b></span>
+        </div>
+        <div class="card-b flush">
+          <div class="tw"><table id="benefit-table"></table></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Costs</h2>
+          <p>One-time investment sits at Year 0. Recurring cost runs for the whole horizon and grows with your cost assumption.</p>
+          <span class="rangepill" id="cost-pill">Base <b id="cost-pill-v">—</b></span>
+        </div>
+        <div class="card-b flush">
+          <div class="tw"><table id="cost-table"></table></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Cash-flow assumptions</h2>
+          <p>Benefits almost never land in full on day one. The ramp is where most optimistic business cases quietly break.</p>
+        </div>
+        <div class="card-b">
+          <div class="grid" id="fin-assumptions"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Calculated value</h2>
+          <p>Low, base and high carried all the way through. Decide on the base; stress-test on the low.</p>
+        </div>
+        <div class="card-b flush">
+          <div class="tw"><table id="calc-table"></table></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2>Net cash flow by year</h2>
+          <p>Year 0 is the investment. The line crossing zero is your payback.</p>
+        </div>
+        <div class="card-b">
+          <div class="chart-wrap" id="cashflow-chart"></div>
+          <div class="legend">
+            <span><i style="background:var(--flame)"></i>Base annual net cash flow</span>
+            <span><i style="background:var(--ash)"></i>Investment / negative year</span>
+            <span><i style="background:var(--text);height:3px;border-radius:2px"></i>Cumulative discounted value</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FULL: NON-FINANCIAL ============ -->
+    <section class="panel" data-panel="nonfin" aria-label="Broader value">
+      <div class="card">
+        <div class="card-h">
+          <h2>Broader value</h2>
+          <p>The value that never reaches a spreadsheet but decides whether the solution survives. Score only where you hold evidence — leave the rest at 0.</p>
+          <span class="rangepill">Weighted <b id="nf-pill-v">—</b></span>
+        </div>
+        <div class="card-b flush">
+          <div class="tw"><table id="nf-table"></table></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>Value profile</h2><p>Four lenses on one shape. A spike with a hollow beside it is a case with a story problem.</p></div>
+        <div class="card-b"><div class="chart-wrap" id="radar-chart"></div></div>
+      </div>
+    </section>
+
+    <!-- ============ FULL: RISK & READINESS ============ -->
+    <section class="panel" data-panel="risk" aria-label="Readiness and risk">
+      <div class="card">
+        <div class="card-h">
+          <h2>Readiness and residual risk</h2>
+          <p>Readiness: 5 is strongest, and score the state you are in today — not the one in the roadmap. Risk: 5 is the most exposed.</p>
+          <span class="rangepill">Ready <b id="rr-pill-r">—</b> · Risk <b id="rr-pill-x">—</b></span>
+        </div>
+        <div class="card-b flush">
+          <div class="tw"><table id="rr-table"></table></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>Where the exposure sits</h2><p>Readiness against residual risk, control area by control area. Anything low-and-hot is your critical path.</p></div>
+        <div class="card-b"><div class="chart-wrap" id="rr-chart"></div>
+          <div class="legend">
+            <span><i style="background:var(--flame)"></i>Residual risk exposure</span>
+            <span><i style="background:var(--ember);opacity:.45"></i>Delivery readiness</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FULL: DECISION ============ -->
+    <section class="panel" data-panel="decision" aria-label="Decision">
+      <div id="full-result"></div>
+    </section>
+
+  </main>
+</div>
+
+<footer style="border-top:1px solid var(--line); padding:22px var(--gut); color:var(--muted); font-size:12.5px; line-height:1.6">
+  <div style="max-width:1520px; margin:0 auto">
+    A decision aid, not an approval. Validate benefit ownership, avoid double counting, test adoption assumptions, and demand
+    stronger evidence as a use case moves from idea to POC to pilot to scale. Everything you type stays in this browser.
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================================
+     1. MODEL DEFINITIONS
+     Adapted from the AI Business Value Calculator workbook: the same benefit
+     and cost categories, the same 0–5 weighted scoring, the same gate logic.
+     ========================================================================= */
+
+  var BENEFITS = [
+    ["Productivity / capacity released", "Time saved × loaded cost, without double counting"],
+    ["Direct cost reduction",            "Spend removed, avoided or reduced"],
+    ["Revenue or margin contribution",   "Incremental contribution — not gross revenue"],
+    ["Risk / loss avoidance",            "Probability-weighted reduction in expected loss"],
+    ["Other quantified benefit",         "Any measurable benefit not captured above"]
+  ];
+
+  var COSTS = [
+    ["Discovery / POC",        "Experiment design, prototyping, evaluation", true],
+    ["Build / integration",    "Engineering, integration, testing, controls", true],
+    ["Data / platform setup",  "Data preparation, licences, initial infrastructure", true],
+    ["Change / training",      "Process redesign, communications, capability", true],
+    ["Run / support",          "Models, hosting, licences, monitoring, support", false],
+    ["Other recurring cost",   "Any recurring cost not captured above", false]
+  ];
+
+  var NF_DIMS = [
+    ["Strategic alignment",              0.15, "Contribution to priorities, differentiation or mission"],
+    ["Customer / citizen outcomes",      0.15, "Quality, access, personalisation, trust or time saved"],
+    ["Employee experience & capability", 0.10, "Safety, satisfaction, capability or reduced friction"],
+    ["Decision quality & speed",         0.10, "Accuracy, timeliness, consistency or explainability"],
+    ["Innovation & learning",            0.10, "Learning, option value, experimentation, new capability"],
+    ["Responsible AI & trust",           0.15, "Fairness, transparency, privacy, stakeholder confidence"],
+    ["Scalability & reuse",              0.15, "Reuse across products, functions, geographies, channels"],
+    ["Sustainability / social value",    0.10, "Environmental, inclusion or broader community outcomes"]
+  ];
+
+  var RR_DIMS = [
+    ["Business ownership",           0.10, "A named owner accountable for the benefit"],
+    ["Value baseline & measurement", 0.10, "Current state is documented and measurable"],
+    ["Data availability & quality",  0.10, "Data exists, is accessible and fit for purpose"],
+    ["Technology & integration",     0.10, "Platform, models and integration paths are proven"],
+    ["Security & privacy",           0.10, "Controls assessed and approved"],
+    ["Legal & regulatory",           0.10, "Obligations understood and satisfied"],
+    ["Responsible AI controls",      0.10, "Evaluation, oversight, transparency in place"],
+    ["Change & adoption",            0.10, "Users are engaged and the workflow is redesigned"],
+    ["Delivery capability",          0.10, "Team, skills and funding are secured"],
+    ["Operating model & support",    0.10, "Run, monitor and improve is owned after go-live"]
+  ];
+
+  var SCALE = [
+    [0, "Not assessed",       "No score entered — excluded from the weighted result"],
+    [1, "Very weak / adverse","Assumption only; material gaps"],
+    [2, "Weak",               "Limited evidence; significant gaps"],
+    [3, "Adequate / positive","Credible evidence; manageable gaps"],
+    [4, "Strong",             "Validated evidence; minor gaps"],
+    [5, "Exceptional",        "Measured, repeatable and well controlled"]
+  ];
+
+  var THRESHOLDS = [
+    ["roiHurdle",  "Return hurdle",            "pct", "Minimum base-case return over the horizon"],
+    ["minNf",      "Minimum broader value",    "sc",  "Required non-financial score, 0–5"],
+    ["minReady",   "Minimum readiness",        "sc",  "Required delivery confidence, 0–5"],
+    ["maxRisk",    "Maximum risk exposure",    "sc",  "Highest residual exposure you will accept"],
+    ["confidence", "Evidence confidence",      "pct", "Haircut applied to every benefit"]
+  ];
+
+  var WEIGHTS = [
+    ["wFin", "Financial value",     "NPV and return against the hurdle"],
+    ["wNf",  "Broader value",       "Strategic and stakeholder outcomes"],
+    ["wRd",  "Delivery readiness",  "Ability to build, land and operate it"],
+    ["wRc",  "Risk control",        "The inverse of residual exposure"]
+  ];
+
+  var PROFILE = [
+    ["id",       "Use case ID",       "text", "AI-014"],
+    ["name",     "Use case name",     "text", "Claims triage copilot"],
+    ["owner",    "Business owner",    "text", "Accountable for the benefit"],
+    ["sponsor",  "Executive sponsor", "text", "Accountable for the funding"],
+    ["unit",     "Business unit",     "text", ""],
+    ["stage",    "Lifecycle stage",   "select", ["Idea", "Proof of concept", "Pilot", "Scale", "In production"]],
+    ["type",     "AI solution type",  "select", ["Assistant / copilot", "Document & content intelligence", "Conversational agent", "Predictive model", "Classification / extraction", "Optimisation", "Autonomous / agentic workflow", "Search & knowledge retrieval", "Computer vision", "Other"]],
+    ["ccy",      "Currency",          "select", ["$", "£", "€", "¥", "₹"]],
+    ["date",     "Decision date",     "date", ""],
+    ["decision", "Decision sought",   "select", ["Fund a POC", "Fund a pilot", "Fund to scale", "Continue / stop", "Refresh the case"]]
+  ];
+
+  var STORY = [
+    ["problem",  "Problem or opportunity", "What is going wrong today, for whom, and at what cost?"],
+    ["baseline", "Current baseline",       "The measured starting point: volume, time, cost, quality or loss rate — and where that number came from."],
+    ["outcome",  "Intended outcome",       "What changes, by how much, by when, and how you will know."],
+    ["users",    "Users and workflow",     "Who uses it, where it sits in their day, and what they stop doing."],
+    ["deps",     "Dependencies and constraints", "Data, systems, approvals, skills, vendors, timing."],
+    ["evidence", "Evidence and assumptions",     "What the estimates rest on — and what would have to be true for them to hold."]
+  ];
+
+  var ASSUMPTIONS = [
+    ["discount",   "Discount rate",           "pct",  "Cost of capital used to discount future value"],
+    ["benGrowth",  "Annual benefit growth",   "pct",  "Growth in steady-state benefits"],
+    ["costGrowth", "Annual cost growth",      "pct",  "Inflation on recurring cost"],
+    ["r1",         "Year 1 realisation",      "pct",  "Share of steady-state benefit achieved in year 1"],
+    ["r2",         "Year 2 realisation",      "pct",  "Share achieved in year 2"],
+    ["r3",         "Year 3+ realisation",     "pct",  "Share achieved from year 3 onward"],
+    ["horizon",    "Evaluation horizon",      "years","Number of years assessed"]
+  ];
+
+  var QUICK_SCORES = [
+    ["strategic", "Strategic and customer value", "Beyond the money: does this matter to the strategy, the customer or the workforce?"],
+    ["readiness", "Delivery readiness",           "Data, skills, platform, owner and adoption plan — as things stand today."],
+    ["risk",      "Residual risk exposure",       "What is left after mitigation: privacy, accuracy, legal, reputational. 5 is most exposed."]
+  ];
+
+  var CHECKS = [
+    ["Baseline",    "The current cost, time, volume or loss rate is documented."],
+    ["Attribution", "The benefit is caused by this solution and is not already claimed elsewhere."],
+    ["Cashability", "Productivity is labelled correctly: released capacity, or removable cost."],
+    ["Adoption",    "Benefits are adjusted for the adoption and process change actually expected."],
+    ["Controls",    "Privacy, security, legal and responsible-AI work is in the cost and the timeline."],
+    ["Sensitivity", "The decision still holds in the low case and under a confidence haircut."]
+  ];
+
+  var STEPS = [
+    ["setup",      "Governance"],
+    ["usecase",    "Use case"],
+    ["financial",  "Financial value"],
+    ["nonfin",     "Broader value"],
+    ["risk",       "Readiness & risk"],
+    ["decision",   "Decision"]
+  ];
+
+  var WEEKS = 46; /* working weeks per person per year, allowing for leave */
+
+  /* =========================================================================
+     2. STATE
+     ========================================================================= */
+
+  function defaults() {
+    return {
+      mode: "quick",
+      step: "setup",
+      quick: {
+        name: "", owner: "", stage: "Proof of concept", ccy: "$",
+        people: null, hours: null, rate: null, adopt: 60,
+        costOut: null, rev: null, riskAv: null,
+        build: null, change: null, run: null,
+        conf: 0.85, horizon: 3,
+        strategic: 0, readiness: 0, risk: 0
+      },
+      full: {
+        setup: { roiHurdle: 0.20, minNf: 3, minReady: 3, maxRisk: 3, confidence: 1,
+                 wFin: 0.40, wNf: 0.25, wRd: 0.20, wRc: 0.15 },
+        profile: { ccy: "$", stage: "Idea", type: "Assistant / copilot", decision: "Fund a POC" },
+        story: {},
+        fin: {
+          benefits: BENEFITS.map(function () { return [null, null, null]; }),
+          costs:    COSTS.map(function () { return [null, null, null]; }),
+          discount: 0.10, benGrowth: 0, costGrowth: 0.03,
+          r1: 0.5, r2: 0.8, r3: 1, horizon: 5
+        },
+        nf: NF_DIMS.map(function (d) { return { w: d[1], score: 0, ev: "" }; }),
+        rr: RR_DIMS.map(function (d) { return { w: d[1], ready: 0, risk: 0, ev: "" }; }),
+        checks: CHECKS.map(function () { return false; })
+      }
+    };
+  }
+
+  var S = defaults();
+  var KEY = "ai-value-assay-v1";
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ }
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (d && d.full && d.quick) S = merge(defaults(), d);
+    } catch (e) { /* corrupt or blocked — start clean */ }
+  }
+
+  function merge(base, over) {
+    if (over === null || over === undefined) return base;
+    if (Array.isArray(base) || typeof base !== "object") return over;
+    var out = {};
+    Object.keys(base).forEach(function (k) { out[k] = merge(base[k], over[k]); });
+    Object.keys(over).forEach(function (k) { if (!(k in out)) out[k] = over[k]; });
+    return out;
+  }
+
+  /* =========================================================================
+     3. HELPERS
+     ========================================================================= */
+
+  var $  = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "html") n.innerHTML = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attrs[k]);
+      else if (attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+
+  function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function ccy() { return S.mode === "quick" ? S.quick.ccy : (S.full.profile.ccy || "$"); }
+
+  function money(v, compact) {
+    if (v === null || v === undefined || !isFinite(v)) return "—";
+    var sign = v < 0 ? "-" : "", a = Math.abs(v);
+    if (compact && a >= 1e9) return sign + ccy() + (a / 1e9).toFixed(1).replace(/\.0$/, "") + "b";
+    if (compact && a >= 1e6) return sign + ccy() + (a / 1e6).toFixed(a < 1e7 ? 2 : 1).replace(/\.?0+$/, "") + "m";
+    if (compact && a >= 1e4) return sign + ccy() + Math.round(a / 1e3) + "k";
+    return sign + ccy() + Math.round(a).toLocaleString("en-AU");
+  }
+
+  function pct(v, dp) {
+    if (v === null || v === undefined || !isFinite(v)) return "—";
+    return (v * 100).toFixed(dp === undefined ? 0 : dp) + "%";
+  }
+
+  function years(v) {
+    if (v === null || v === undefined || !isFinite(v)) return "Not within horizon";
+    if (v <= 0) return "Immediate";
+    if (v * 12 < 1.5) return "Under a month";
+    if (v < 1) return Math.round(v * 12) + " months";
+    return v.toFixed(1) + " years";
+  }
+
+  function score(v) { return (v > 0) ? v.toFixed(1) + "/5" : "—"; }
+
+  /* =========================================================================
+     4. CALCULATION ENGINE
+     One engine, both modes. Quick inputs are mapped onto the same structure
+     the full assay uses, so the two modes can never disagree.
+     ========================================================================= */
+
+  function quickToModel() {
+    var q = S.quick;
+    var timeValue = num(q.people) * num(q.hours) * WEEKS * num(q.rate) * (num(q.adopt) / 100);
+    var base = [timeValue, num(q.costOut), num(q.rev), num(q.riskAv), 0];
+    /* Quick mode brackets the base case at -40% / +40%: enough to show whether
+       the decision survives a bad day, without asking for nine more numbers. */
+    return {
+      setup: { roiHurdle: 0.20, minNf: 3, minReady: 3, maxRisk: 3, confidence: num(q.conf),
+               wFin: 0.40, wNf: 0.25, wRd: 0.20, wRc: 0.15 },
+      fin: {
+        benefits: base.map(function (b) { return [b * 0.6, b, b * 1.4]; }),
+        costs: [
+          [0, 0, 0],
+          [num(q.build) * 0.85, num(q.build), num(q.build) * 1.3],
+          [0, 0, 0],
+          [num(q.change) * 0.85, num(q.change), num(q.change) * 1.3],
+          [num(q.run) * 0.85, num(q.run), num(q.run) * 1.3],
+          [0, 0, 0]
+        ],
+        discount: 0.10, benGrowth: 0, costGrowth: 0.03,
+        r1: 0.7, r2: 1, r3: 1, horizon: num(q.horizon)
+      },
+      nf: [{ w: 1, score: num(q.strategic), ev: "" }],
+      rr: [{ w: 1, ready: num(q.readiness), risk: num(q.risk), ev: "" }],
+      timeValue: timeValue
+    };
+  }
+
+  function model() { return S.mode === "quick" ? quickToModel() : S.full; }
+
+  function rampAt(f, t) { return t === 1 ? f.r1 : (t === 2 ? f.r2 : f.r3); }
+
+  function runCase(m, i) {
+    var f = m.fin, conf = m.setup.confidence, N = Math.max(1, Math.round(f.horizon));
+    var gross = 0, oneTime = 0, recur = 0, t;
+
+    f.benefits.forEach(function (r) { gross += num(r[i]); });
+    f.costs.forEach(function (r, k) {
+      if (COSTS[k][2]) oneTime += num(r[i]); else recur += num(r[i]);
+    });
+
+    var cf = [-oneTime], grossTotal = 0, costTotal = oneTime;
+    for (t = 1; t <= N; t++) {
+      var b = gross * conf * Math.pow(1 + f.benGrowth, t - 1) * rampAt(f, t);
+      var c = recur * Math.pow(1 + f.costGrowth, t - 1);
+      grossTotal += b;
+      costTotal += c;
+      cf.push(b - c);
+    }
+
+    var npv = 0, netTotal = 0;
+    for (t = 0; t < cf.length; t++) {
+      netTotal += cf[t];
+      npv += cf[t] / Math.pow(1 + f.discount, t);
+    }
+
+    /* Payback: the year the cumulative position crosses zero, interpolated
+       within that year. Reported as "not within horizon" when it never does. */
+    var cum = 0, payback = null;
+    for (t = 0; t < cf.length; t++) {
+      var prev = cum;
+      cum += cf[t];
+      if (cum >= 0 && t > 0 && cf[t] > 0) { payback = (t - 1) + (-prev / cf[t]); break; }
+      if (cum >= 0 && t === 0) { payback = 0; break; }
+    }
+
+    var year1 = cf.length > 1 ? cf[1] : 0;
+
+    return {
+      gross: gross, oneTime: oneTime, recur: recur,
+      grossTotal: grossTotal,
+      costTotal: costTotal, netTotal: netTotal, npv: npv,
+      roi: costTotal > 0 ? netTotal / costTotal : null,
+      payback: payback, year1: year1, cf: cf, horizon: N
+    };
+  }
+
+  function weighted(rows, key) {
+    var top = 0, bot = 0;
+    rows.forEach(function (r) {
+      if (num(r[key]) > 0) { top += num(r.w) * num(r[key]); bot += num(r.w); }
+    });
+    return bot > 0 ? top / bot : 0;
+  }
+
+  function compute() {
+    var m = model();
+    var low = runCase(m, 0), base = runCase(m, 1), high = runCase(m, 2);
+
+    var nf = weighted(m.nf, "score");
+    var ready = weighted(m.rr, "ready");
+    var risk = weighted(m.rr, "risk");
+    var riskControl = risk > 0 ? 5 - risk : 0;
+
+    var hurdle = Math.max(0.0001, m.setup.roiHurdle);
+    /* Financial score on the same 0–5 language as everything else: hitting the
+       hurdle exactly reads as 3 ("adequate"), 1.67× the hurdle tops the scale. */
+    var finScore = (base.npv >= 0 && base.roi !== null) ? clamp((base.roi / hurdle) * 3, 0, 5) : 0;
+
+    var hasMoney = base.gross > 0 || base.oneTime > 0 || base.recur > 0;
+    var hasScores = nf > 0 || ready > 0 || risk > 0;
+
+    var lenses = [
+      { w: m.setup.wFin, v: hasMoney ? finScore : null },
+      { w: m.setup.wNf,  v: nf > 0 ? nf : null },
+      { w: m.setup.wRd,  v: ready > 0 ? ready : null },
+      { w: m.setup.wRc,  v: riskControl > 0 ? riskControl : null }
+    ];
+    var ct = 0, cb = 0;
+    lenses.forEach(function (l) { if (l.v !== null) { ct += l.w * l.v; cb += l.w; } });
+    var composite = cb > 0 ? ct / cb : 0;
+
+    var gates = [
+      { k: "Base case creates value",  pass: base.npv >= 0,             val: money(base.npv, true) + " NPV" },
+      { k: "Return clears the hurdle", pass: base.roi !== null && base.roi >= m.setup.roiHurdle,
+        val: (base.roi === null ? "no cost entered" : pct(base.roi)) + " vs " + pct(m.setup.roiHurdle) },
+      { k: "Broader value is proven",  pass: nf >= m.setup.minNf,       val: score(nf) + " vs " + m.setup.minNf.toFixed(1) },
+      { k: "We can deliver it",        pass: ready >= m.setup.minReady, val: score(ready) + " vs " + m.setup.minReady.toFixed(1) },
+      { k: "Risk is within tolerance", pass: risk > 0 && risk <= m.setup.maxRisk, val: score(risk) + " vs " + m.setup.maxRisk.toFixed(1) + " max" },
+      { k: "Low case still survives",  pass: low.npv >= 0,              val: money(low.npv, true) + " NPV" }
+    ];
+
+    var verdict;
+    if (!hasMoney && !hasScores) {
+      verdict = { word: "Awaiting inputs", tone: "idle", sub: "Enter benefits and costs to generate a reading" };
+    } else if (!hasMoney) {
+      verdict = { word: "Incomplete", tone: "idle", sub: "Scored, but no financial estimate yet" };
+    } else if (gates[0].pass && gates[1].pass && gates[2].pass && gates[3].pass && gates[4].pass) {
+      verdict = { word: "Proceed", tone: "hot", sub: "Clears every threshold you have set" };
+    } else if (base.npv >= 0 && nf >= 2.5) {
+      verdict = { word: "Refine and validate", tone: "warm", sub: "Credible value, unfinished evidence" };
+    } else {
+      verdict = { word: "Reassess", tone: "cold", sub: "Redesign the case, defer it, or stop" };
+    }
+
+    return {
+      m: m, low: low, base: base, high: high,
+      nf: nf, ready: ready, risk: risk, riskControl: riskControl,
+      finScore: finScore, composite: composite, hasMoney: hasMoney, hasScores: hasScores,
+      gates: gates, verdict: verdict
+    };
+  }
+
+  /* =========================================================================
+     5. INPUT CONTROLS
+     ========================================================================= */
+
+  function textField(label, sub, value, onInput, opts) {
+    opts = opts || {};
+    var input;
+    if (opts.area) {
+      input = el("textarea", { rows: opts.rows || 3, placeholder: opts.ph || "" });
+    } else if (opts.options) {
+      input = el("select", {});
+      opts.options.forEach(function (o) {
+        input.appendChild(el("option", { value: o, selected: o === value ? "selected" : null }, [o]));
+      });
+    } else {
+      input = el("input", { type: opts.type || "text", placeholder: opts.ph || "" });
+    }
+    if (!opts.options) input.value = value === null || value === undefined ? "" : value;
+    input.addEventListener("input", function () { onInput(input.value); });
+    if (opts.options) input.addEventListener("change", function () { onInput(input.value); });
+
+    var control = el("div", { class: "control" + (opts.options ? " select-wrap" : "") }, [
+      opts.prefix ? el("span", { class: "affix" + (opts.ccy ? " ccy" : ""), text: opts.prefix }) : null,
+      input,
+      opts.suffix ? el("span", { class: "affix suffix", text: opts.suffix }) : null
+    ]);
+
+    var id = "f-" + Math.random().toString(36).slice(2, 8);
+    input.id = id;
+    return el("div", { class: "field" }, [
+      el("label", { for: id, text: label }),
+      control,
+      sub ? el("span", { class: "sub", text: sub }) : null
+    ]);
+  }
+
+  function numberField(label, sub, value, onInput, opts) {
+    opts = opts || {};
+    opts.type = "number";
+    return textField(label, sub, value, function (v) { onInput(v === "" ? null : parseFloat(v)); }, opts);
+  }
+
+  /* Percent fields are stored as decimals but typed as whole percentages. */
+  function pctField(label, sub, value, onInput) {
+    return textField(label, sub, value === null ? "" : +(value * 100).toFixed(2), function (v) {
+      onInput(v === "" ? 0 : parseFloat(v) / 100);
+    }, { type: "number", suffix: "%" });
+  }
+
+  function scoreControl(value, onPick, opts) {
+    opts = opts || {};
+    var wrap = el("div", { class: "score", role: "group", "aria-label": opts.label || "Score 0 to 5" });
+    for (var i = 0; i <= 5; i++) {
+      (function (n) {
+        var col = n === 0 ? "var(--ash)" :
+          "color-mix(in srgb, var(--flame) " + Math.round(25 + n * 15) + "%, var(--ember))";
+        var b = el("button", {
+          type: "button",
+          "aria-pressed": String(num(value) === n),
+          "data-zero": n === 0 ? "true" : null,
+          style: "--sc:" + col,
+          title: SCALE[n][1],
+          onclick: function () { onPick(n); }
+        }, [String(n)]);
+        wrap.appendChild(b);
+      })(i);
+    }
+    return wrap;
+  }
+
+  function cellNumber(value, onInput, isText) {
+    var i = el("input", {
+      class: "cellinput" + (isText ? " text" : ""),
+      type: isText ? "text" : "number",
+      placeholder: isText ? "Evidence, KPI or mitigation" : "0"
+    });
+    i.value = value === null || value === undefined ? "" : value;
+    i.addEventListener("input", function () {
+      onInput(isText ? i.value : (i.value === "" ? null : parseFloat(i.value)));
+    });
+    return i;
+  }
+
+  /* =========================================================================
+     6. RENDER — QUICK MODE INPUTS
+     ========================================================================= */
+
+  function bindQuick() {
+    var map = [
+      ["q-name", "name"], ["q-owner", "owner"], ["q-stage", "stage"], ["q-ccy", "ccy"],
+      ["q-people", "people"], ["q-hours", "hours"], ["q-rate", "rate"], ["q-adopt", "adopt"],
+      ["q-cost-out", "costOut"], ["q-rev", "rev"], ["q-risk-av", "riskAv"],
+      ["q-build", "build"], ["q-change", "change"], ["q-run", "run"],
+      ["q-conf", "conf"], ["q-horizon", "horizon"]
+    ];
+    map.forEach(function (pair) {
+      var node = document.getElementById(pair[0]);
+      if (!node) return;
+      var isNum = node.type === "number" || pair[1] === "conf" || pair[1] === "horizon";
+      var apply = function () {
+        var v = node.value;
+        S.quick[pair[1]] = isNum ? (v === "" ? null : parseFloat(v)) : v;
+        refresh();
+      };
+      node.addEventListener("input", apply);
+      node.addEventListener("change", apply);
+    });
+
+    var box = $("#q-scores");
+    QUICK_SCORES.forEach(function (d) {
+      var field = el("div", { class: "field" }, [
+        el("label", { text: d[1] }),
+        scoreControl(S.quick[d[0]], function (n) { S.quick[d[0]] = n; refresh(); }, { label: d[1], invert: d[0] === "risk" }),
+        el("span", { class: "sub", text: d[2] })
+      ]);
+      field.setAttribute("data-score", d[0]);
+      box.appendChild(field);
+    });
+  }
+
+  function syncQuickInputs() {
+    var map = { "q-name": "name", "q-owner": "owner", "q-stage": "stage", "q-ccy": "ccy",
+      "q-people": "people", "q-hours": "hours", "q-rate": "rate", "q-adopt": "adopt",
+      "q-cost-out": "costOut", "q-rev": "rev", "q-risk-av": "riskAv",
+      "q-build": "build", "q-change": "change", "q-run": "run",
+      "q-conf": "conf", "q-horizon": "horizon" };
+    Object.keys(map).forEach(function (id) {
+      var n = document.getElementById(id);
+      var v = S.quick[map[id]];
+      if (n) n.value = v === null || v === undefined ? "" : v;
+    });
+    QUICK_SCORES.forEach(function (d) {
+      var f = $('[data-score="' + d[0] + '"] .score');
+      if (!f) return;
+      $$("button", f).forEach(function (b, i) { b.setAttribute("aria-pressed", String(num(S.quick[d[0]]) === i)); });
+    });
+    $$(".affix.ccy").forEach(function (n) { n.textContent = S.quick.ccy; });
+  }
+
+  /* =========================================================================
+     7. RENDER — FULL MODE INPUTS
+     ========================================================================= */
+
+  function renderSetup() {
+    var box = $("#setup-thresholds");
+    box.innerHTML = "";
+    THRESHOLDS.forEach(function (t) {
+      var key = t[0];
+      if (t[2] === "pct") {
+        box.appendChild(pctField(t[1], t[3], S.full.setup[key], function (v) { S.full.setup[key] = v; refresh(); }));
+      } else {
+        box.appendChild(numberField(t[1], t[3], S.full.setup[key], function (v) {
+          S.full.setup[key] = clamp(num(v), 0, 5); refresh();
+        }, { }));
+      }
+    });
+
+    var wbox = $("#setup-weights");
+    wbox.innerHTML = "";
+    WEIGHTS.forEach(function (w) {
+      wbox.appendChild(pctField(w[1], w[2], S.full.setup[w[0]], function (v) { S.full.setup[w[0]] = v; refresh(); }));
+    });
+
+    var total = WEIGHTS.reduce(function (a, w) { return a + num(S.full.setup[w[0]]); }, 0);
+    $("#setup-weight-note").innerHTML = "Weights total <b>" + pct(total) + "</b>. " +
+      (Math.abs(total - 1) < 0.005
+        ? "That is balanced — the portfolio score is directly comparable across use cases."
+        : "They do not add to 100%. The score still works — it is normalised — but comparisons across use cases are cleaner when they balance.");
+
+    var st = $("#scale-table");
+    st.innerHTML = "";
+    st.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", { text: "Score" }), el("th", { text: "Meaning" }), el("th", { text: "Evidence standard" })
+    ])]));
+    var tb = el("tbody", {});
+    SCALE.forEach(function (r) {
+      tb.appendChild(el("tr", {}, [
+        el("td", { class: "num", text: String(r[0]) }),
+        el("td", { class: "name", text: r[1] }),
+        el("td", { text: r[2] })
+      ]));
+    });
+    st.appendChild(tb);
+  }
+
+  function renderUseCase() {
+    var p = $("#uc-profile");
+    p.innerHTML = "";
+    PROFILE.forEach(function (f) {
+      var key = f[0];
+      if (f[2] === "select") {
+        p.appendChild(textField(f[1], null, S.full.profile[key], function (v) { S.full.profile[key] = v; refresh(); }, { options: f[3] }));
+      } else {
+        p.appendChild(textField(f[1], null, S.full.profile[key], function (v) { S.full.profile[key] = v; refresh(); },
+          { type: f[2], ph: f[3] }));
+      }
+    });
+
+    var s = $("#uc-story");
+    s.innerHTML = "";
+    STORY.forEach(function (f) {
+      s.appendChild(textField(f[1], null, S.full.story[f[0]], function (v) { S.full.story[f[0]] = v; save(); },
+        { area: true, rows: 3, ph: f[2] }));
+    });
+  }
+
+  function threeColTable(node, rows, defs, getter, setter, footLabel, footVals) {
+    node.innerHTML = "";
+    node.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", { text: defs.head }),
+      el("th", { text: "Low" }), el("th", { text: "Base" }), el("th", { text: "High" }),
+      el("th", { text: "What to include" })
+    ])]));
+    var tb = el("tbody", {});
+    rows.forEach(function (r, i) {
+      var cells = [0, 1, 2].map(function (c) {
+        return el("td", { class: "n" }, [cellNumber(getter(i, c), function (v) { setter(i, c, v); refreshNumbersOnly(); })]);
+      });
+      tb.appendChild(el("tr", {}, [
+        el("td", { class: "name" }, [
+          document.createTextNode(r[0]),
+          defs.tag ? el("span", { class: "sub", text: defs.tag(r) }) : null
+        ])
+      ].concat(cells, [el("td", { class: "sub", text: r[1] })])));
+    });
+    node.appendChild(tb);
+    node.appendChild(el("tfoot", {}, [el("tr", {}, [
+      el("td", { text: footLabel })
+    ].concat(footVals.map(function (v) { return el("td", { class: "out", text: v }); }), [el("td", {})]))]));
+  }
+
+  function renderFinancial() {
+    var f = S.full.fin;
+    var sums = [0, 1, 2].map(function (c) {
+      return f.benefits.reduce(function (a, r) { return a + num(r[c]); }, 0);
+    });
+    threeColTable($("#benefit-table"), BENEFITS, { head: "Benefit category" },
+      function (i, c) { return f.benefits[i][c]; },
+      function (i, c, v) { f.benefits[i][c] = v; },
+      "Annual gross benefit", sums.map(function (v) { return money(v); }));
+
+    var csums = [0, 1, 2].map(function (c) {
+      return f.costs.reduce(function (a, r) { return a + num(r[c]); }, 0);
+    });
+    threeColTable($("#cost-table"), COSTS,
+      { head: "Cost category", tag: function (r) { return r[2] ? "One-time" : "Recurring, annual"; } },
+      function (i, c) { return f.costs[i][c]; },
+      function (i, c, v) { f.costs[i][c] = v; },
+      "Total entered", csums.map(function (v) { return money(v); }));
+
+    var a = $("#fin-assumptions");
+    a.innerHTML = "";
+    ASSUMPTIONS.forEach(function (d) {
+      if (d[2] === "pct") {
+        a.appendChild(pctField(d[1], d[3], f[d[0]], function (v) { f[d[0]] = v; refresh(); }));
+      } else {
+        a.appendChild(numberField(d[1], d[3], f[d[0]], function (v) { f[d[0]] = clamp(num(v), 1, 10); refresh(); }, { suffix: "yrs" }));
+      }
+    });
+  }
+
+  function renderNf() {
+    var t = $("#nf-table");
+    t.innerHTML = "";
+    t.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", { text: "Dimension" }), el("th", { text: "Weight" }),
+      el("th", { text: "Score 0–5" }), el("th", { text: "Points" }),
+      el("th", { text: "Evidence or KPI" })
+    ])]));
+    var tb = el("tbody", {});
+    NF_DIMS.forEach(function (d, i) {
+      var row = S.full.nf[i];
+      tb.appendChild(el("tr", {}, [
+        el("td", { class: "name" }, [document.createTextNode(d[0]), el("span", { class: "sub", text: d[2] })]),
+        el("td", { class: "w" }, [cellNumber(+(row.w * 100).toFixed(1), function (v) { row.w = num(v) / 100; refreshNumbersOnly(); })]),
+        el("td", { class: "sc" }, [scoreControl(row.score, function (n) { row.score = n; refresh(); }, { label: d[0] })]),
+        el("td", { class: "out", text: row.score > 0 ? (row.w * row.score).toFixed(2) : "—" }),
+        el("td", { class: "ev" }, [cellNumber(row.ev, function (v) { row.ev = v; save(); }, true)])
+      ]));
+    });
+    t.appendChild(tb);
+
+    var tot = S.full.nf.reduce(function (a, r) { return a + num(r.w); }, 0);
+    var assessed = S.full.nf.reduce(function (a, r) { return a + (r.score > 0 ? num(r.w) : 0); }, 0);
+    t.appendChild(el("tfoot", {}, [el("tr", {}, [
+      el("td", { text: "Weighted broader value" }),
+      el("td", { class: "out", text: pct(tot) }),
+      el("td", { class: "sub", text: pct(assessed) + " of weight assessed" }),
+      el("td", { class: "out", text: score(weighted(S.full.nf, "score")) }),
+      el("td", {})
+    ])]));
+  }
+
+  function renderRr() {
+    var t = $("#rr-table");
+    t.innerHTML = "";
+    t.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", { text: "Control area" }), el("th", { text: "Weight" }),
+      el("th", { text: "Readiness 0–5" }), el("th", { text: "Risk 0–5" }),
+      el("th", { text: "Evidence or mitigation" })
+    ])]));
+    var tb = el("tbody", {});
+    RR_DIMS.forEach(function (d, i) {
+      var row = S.full.rr[i];
+      tb.appendChild(el("tr", {}, [
+        el("td", { class: "name" }, [document.createTextNode(d[0]), el("span", { class: "sub", text: d[2] })]),
+        el("td", { class: "w" }, [cellNumber(+(row.w * 100).toFixed(1), function (v) { row.w = num(v) / 100; refreshNumbersOnly(); })]),
+        el("td", { class: "sc" }, [scoreControl(row.ready, function (n) { row.ready = n; refresh(); }, { label: d[0] + " readiness" })]),
+        el("td", { class: "sc" }, [scoreControl(row.risk, function (n) { row.risk = n; refresh(); }, { label: d[0] + " risk", invert: true })]),
+        el("td", { class: "ev" }, [cellNumber(row.ev, function (v) { row.ev = v; save(); }, true)])
+      ]));
+    });
+    t.appendChild(tb);
+    t.appendChild(el("tfoot", {}, [el("tr", {}, [
+      el("td", { text: "Weighted result" }),
+      el("td", { class: "out", text: pct(S.full.rr.reduce(function (a, r) { return a + num(r.w); }, 0)) }),
+      el("td", { class: "out", text: score(weighted(S.full.rr, "ready")) }),
+      el("td", { class: "out", text: score(weighted(S.full.rr, "risk")) }),
+      el("td", {})
+    ])]));
+  }
+
+  /* =========================================================================
+     8. CHARTS
+     Hand-drawn SVG: small, dependency-free, and themed through the tokens.
+     ========================================================================= */
+
+  var NS = "http://www.w3.org/2000/svg";
+
+  function svg(w, h) {
+    var s = document.createElementNS(NS, "svg");
+    s.setAttribute("viewBox", "0 0 " + w + " " + h);
+    s.setAttribute("class", "chart");
+    s.setAttribute("role", "img");
+    return s;
+  }
+
+  function sel(tag, attrs, text) {
+    var n = document.createElementNS(NS, tag);
+    Object.keys(attrs).forEach(function (k) { if (attrs[k] !== null) n.setAttribute(k, attrs[k]); });
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function niceTicks(min, max, count) {
+    var span = (max - min) || 1;
+    var raw = span / count;
+    var mag = Math.pow(10, Math.floor(Math.log10(Math.abs(raw) || 1)));
+    var step = [1, 2, 2.5, 5, 10].map(function (m) { return m * mag; })
+      .filter(function (s) { return s >= raw; })[0] || mag * 10;
+    var out = [], v = Math.floor(min / step) * step;
+    for (; v <= max + step * 0.5; v += step) out.push(v);
+    return out;
+  }
+
+  function cashflowChart(host, r, compact) {
+    host.innerHTML = "";
+    var W = compact ? 560 : 760, H = compact ? 320 : 280;
+    var ml = 74, mr = 58, mt = 18, mb = 40;
+    var iw = W - ml - mr, ih = H - mt - mb;
+    var s = svg(W, H);
+    s.setAttribute("aria-label", "Net cash flow by year with cumulative discounted value");
+
+    var cum = [], run = 0;
+    r.cf.forEach(function (v, t) { run += v / Math.pow(1 + model().fin.discount, t); cum.push(run); });
+
+    var vals = r.cf.concat(cum);
+    var max = Math.max.apply(null, vals.concat([0]));
+    var min = Math.min.apply(null, vals.concat([0]));
+    if (max === min) { max = 1; min = -1; }
+    var pad = (max - min) * 0.12;
+    max += pad; min -= pad;
+
+    var y = function (v) { return mt + ih - ((v - min) / (max - min)) * ih; };
+    var n = r.cf.length;
+    var bw = Math.min(52, (iw / n) * 0.52);
+    var x = function (i) { return ml + (iw / n) * (i + 0.5); };
+
+    niceTicks(min, max, 5).forEach(function (t) {
+      if (t < min || t > max) return;
+      s.appendChild(sel("line", { x1: ml, x2: ml + iw, y1: y(t).toFixed(1), y2: y(t).toFixed(1),
+        stroke: "var(--grid)", "stroke-width": 1 }));
+      s.appendChild(sel("text", { x: ml - 10, y: (y(t) + 4).toFixed(1), "text-anchor": "end",
+        fill: "var(--muted)", "font-size": 10.5, "font-family": "var(--f-mono)" }, money(t, true)));
+    });
+
+    s.appendChild(sel("line", { x1: ml, x2: ml + iw, y1: y(0).toFixed(1), y2: y(0).toFixed(1),
+      stroke: "var(--line)", "stroke-width": 1.5 }));
+
+    r.cf.forEach(function (v, i) {
+      var top = v >= 0 ? y(v) : y(0);
+      var h = Math.max(1.5, Math.abs(y(v) - y(0)));
+      s.appendChild(sel("rect", {
+        x: (x(i) - bw / 2).toFixed(1), y: top.toFixed(1), width: bw.toFixed(1), height: h.toFixed(1),
+        rx: 2, fill: v >= 0 ? "var(--flame)" : "var(--ash)", opacity: v >= 0 ? 0.92 : 0.6
+      }));
+      s.appendChild(sel("text", { x: x(i).toFixed(1), y: H - 14, "text-anchor": "middle",
+        fill: "var(--muted)", "font-size": 10.5, "font-family": "var(--f-mono)" }, "Y" + i));
+    });
+
+    var d = cum.map(function (v, i) { return (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); }).join(" ");
+    s.appendChild(sel("path", { d: d, fill: "none", stroke: "var(--text)", "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round", opacity: .85 }));
+    cum.forEach(function (v, i) {
+      s.appendChild(sel("circle", { cx: x(i).toFixed(1), cy: y(v).toFixed(1), r: 3.2,
+        fill: "var(--surface)", stroke: "var(--text)", "stroke-width": 1.8 }));
+    });
+
+    var last = cum[cum.length - 1];
+    s.appendChild(sel("text", { x: ml + iw + 8, y: (y(last) + 4).toFixed(1), fill: "var(--text)",
+      "font-size": 11, "font-weight": 600, "font-family": "var(--f-mono)" }, money(last, true)));
+
+    host.appendChild(s);
+  }
+
+  function radarChart(host, c) {
+    host.innerHTML = "";
+    var W = 520, H = 340, cx = W / 2, cy = H / 2 + 2, R = 104;
+    var s = svg(W, H);
+    s.setAttribute("aria-label", "Value profile across financial value, broader value, readiness and risk control");
+
+    var axes = [
+      ["Financial", c.hasMoney ? c.finScore : 0],
+      ["Broader value", c.nf],
+      ["Readiness", c.ready],
+      ["Risk control", c.riskControl]
+    ];
+
+    var pt = function (i, v) {
+      var a = (Math.PI * 2 * i) / axes.length - Math.PI / 2;
+      var rr = (clamp(v, 0, 5) / 5) * R;
+      return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
+    };
+
+    [1, 2, 3, 4, 5].forEach(function (ring) {
+      var d = axes.map(function (_, i) {
+        var p = pt(i, ring);
+        return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1);
+      }).join(" ") + " Z";
+      s.appendChild(sel("path", { d: d, fill: "none", stroke: "var(--grid)", "stroke-width": ring === 5 ? 1.4 : 1 }));
+    });
+
+    axes.forEach(function (a, i) {
+      var p = pt(i, 5);
+      s.appendChild(sel("line", { x1: cx, y1: cy, x2: p[0].toFixed(1), y2: p[1].toFixed(1),
+        stroke: "var(--grid)", "stroke-width": 1 }));
+      var anchor = i === 1 ? "start" : (i === 3 ? "end" : "middle");
+      var lx = i === 1 ? cx + R + 16 : (i === 3 ? cx - R - 16 : cx);
+      var ly = i === 0 ? cy - R - 20 : (i === 2 ? cy + R + 28 : cy + 4);
+      var label = sel("text", {
+        x: lx.toFixed(1), y: ly.toFixed(1), "text-anchor": anchor,
+        fill: "var(--muted)", "font-size": 11.5, "font-weight": 600
+      });
+      label.appendChild(sel("tspan", {}, a[0] + "  "));
+      label.appendChild(sel("tspan", {
+        fill: a[1] > 0 ? "var(--flame)" : "var(--ash)", "font-family": "var(--f-mono)"
+      }, a[1] > 0 ? a[1].toFixed(1) : "—"));
+      s.appendChild(label);
+    });
+
+    var poly = axes.map(function (a, i) {
+      var p = pt(i, a[1]);
+      return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1);
+    }).join(" ") + " Z";
+
+    s.appendChild(sel("path", { d: poly, fill: "var(--flame)", "fill-opacity": .22,
+      stroke: "var(--flame)", "stroke-width": 2, "stroke-linejoin": "round" }));
+
+    axes.forEach(function (a, i) {
+      var p = pt(i, a[1]);
+      s.appendChild(sel("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: 4,
+        fill: "var(--flame)", stroke: "var(--surface)", "stroke-width": 2 }));
+    });
+
+    host.appendChild(s);
+  }
+
+  function rrChart(host) {
+    host.innerHTML = "";
+    var rows = RR_DIMS.length, rh = 30, ml = 178, mr = 44, mt = 24, mb = 8;
+    var W = 760, H = mt + rows * rh + mb, iw = W - ml - mr;
+    var s = svg(W, H);
+    s.setAttribute("aria-label", "Readiness and residual risk by control area");
+
+    [0, 1, 2, 3, 4, 5].forEach(function (t) {
+      var gx = ml + (iw * t) / 5;
+      s.appendChild(sel("line", { x1: gx.toFixed(1), x2: gx.toFixed(1), y1: mt - 6, y2: H - mb,
+        stroke: "var(--grid)", "stroke-width": 1 }));
+      s.appendChild(sel("text", { x: gx.toFixed(1), y: mt - 12, "text-anchor": "middle",
+        fill: "var(--muted)", "font-size": 10, "font-family": "var(--f-mono)" }, String(t)));
+    });
+
+    RR_DIMS.forEach(function (d, i) {
+      var row = S.full.rr[i];
+      var yTop = mt + i * rh;
+      s.appendChild(sel("text", { x: ml - 12, y: yTop + rh / 2 + 4, "text-anchor": "end",
+        fill: "var(--text-2)", "font-size": 11.5 }, d[0]));
+
+      var rw = (num(row.ready) / 5) * iw;
+      s.appendChild(sel("rect", { x: ml, y: yTop + 5, width: Math.max(0, rw).toFixed(1), height: 8, rx: 4,
+        fill: "var(--ember)", opacity: .45 }));
+
+      var xw = (num(row.risk) / 5) * iw;
+      s.appendChild(sel("rect", { x: ml, y: yTop + 16, width: Math.max(0, xw).toFixed(1), height: 8, rx: 4,
+        fill: "var(--flame)", opacity: .95 }));
+
+      if (row.ready > 0 && row.risk > 0 && row.ready < 3 && row.risk > 3) {
+        s.appendChild(sel("text", { x: W - mr + 8, y: yTop + rh / 2 + 4, fill: "var(--flame)",
+          "font-size": 10, "font-family": "var(--f-mono)", "font-weight": 600 }, "!"));
+      }
+    });
+
+    host.appendChild(s);
+  }
+
+  /* Range bar: low / base / high on one axis, so the spread is the message. */
+  function rangeBar(host, low, base, high, labelFn) {
+    host.innerHTML = "";
+    var W = 760, H = 96, ml = 16, mr = 16, mid = 52;
+    var iw = W - ml - mr;
+    var s = svg(W, H);
+    s.setAttribute("aria-label", "Low, base and high case range");
+
+    var lo = Math.min(low, base, high, 0), hi = Math.max(low, base, high, 0);
+    if (hi === lo) { hi = lo + 1; }
+    var padr = (hi - lo) * 0.1; lo -= padr; hi += padr;
+    var x = function (v) { return ml + ((v - lo) / (hi - lo)) * iw; };
+
+    s.appendChild(sel("line", { x1: ml, x2: ml + iw, y1: mid, y2: mid, stroke: "var(--line)", "stroke-width": 2, "stroke-linecap": "round" }));
+
+    if (lo < 0 && hi > 0) {
+      s.appendChild(sel("line", { x1: x(0).toFixed(1), x2: x(0).toFixed(1), y1: mid - 22, y2: mid + 22,
+        stroke: "var(--ash)", "stroke-width": 1, "stroke-dasharray": "3 3" }));
+      s.appendChild(sel("text", { x: x(0).toFixed(1), y: mid + 36, "text-anchor": "middle",
+        fill: "var(--muted)", "font-size": 10, "font-family": "var(--f-mono)" }, "break even"));
+    }
+
+    var a = Math.min(x(low), x(high)), b = Math.max(x(low), x(high));
+    s.appendChild(sel("rect", { x: a.toFixed(1), y: mid - 7, width: Math.max(2, b - a).toFixed(1), height: 14, rx: 7,
+      fill: "var(--flame)", opacity: .28 }));
+
+    [[low, "Low", "var(--ash)"], [high, "High", "var(--ember)"], [base, "Base", "var(--flame)"]].forEach(function (p, i) {
+      var px = x(p[0]);
+      var isBase = i === 2;
+      s.appendChild(sel("circle", { cx: px.toFixed(1), cy: mid, r: isBase ? 9 : 6,
+        fill: p[2], stroke: "var(--surface)", "stroke-width": isBase ? 3 : 2 }));
+      s.appendChild(sel("text", { x: px.toFixed(1), y: isBase ? mid - 20 : mid + 34, "text-anchor": "middle",
+        fill: "var(--muted)", "font-size": 10, "font-family": "var(--f-mono)", "letter-spacing": ".08em" }, p[1].toUpperCase()));
+      s.appendChild(sel("text", { x: px.toFixed(1), y: isBase ? mid - 34 : mid + 20, "text-anchor": "middle",
+        fill: isBase ? "var(--flame)" : "var(--text-2)", "font-size": isBase ? 14 : 11.5,
+        "font-weight": 600, "font-family": "var(--f-mono)" }, labelFn(p[0])));
+    });
+
+    host.appendChild(s);
+  }
+
+  /* =========================================================================
+     9. SENSITIVITY
+     ========================================================================= */
+
+  function npvWith(mod) {
+    var m = model();
+    var f = m.fin;
+    var clone = {
+      setup: Object.keys(m.setup).reduce(function (a, k) { a[k] = m.setup[k]; return a; }, {}),
+      fin: {
+        benefits: f.benefits.map(function (r) { return r.slice(); }),
+        costs: f.costs.map(function (r) { return r.slice(); }),
+        discount: f.discount, benGrowth: f.benGrowth, costGrowth: f.costGrowth,
+        r1: f.r1, r2: f.r2, r3: f.r3, horizon: f.horizon
+      }
+    };
+    mod(clone);
+    return runCase(clone, 1).npv;
+  }
+
+  function sensitivity() {
+    var drivers = [
+      ["Benefit size", function (k) { return function (c) { c.fin.benefits.forEach(function (r) { r[1] = num(r[1]) * k; }); }; }, 0.75, 1.25],
+      ["One-time investment", function (k) { return function (c) { c.fin.costs.forEach(function (r, i) { if (COSTS[i][2]) r[1] = num(r[1]) * k; }); }; }, 0.75, 1.25],
+      ["Run cost", function (k) { return function (c) { c.fin.costs.forEach(function (r, i) { if (!COSTS[i][2]) r[1] = num(r[1]) * k; }); }; }, 0.75, 1.25],
+      ["Adoption ramp", function (k) { return function (c) { c.fin.r1 = clamp(c.fin.r1 * k, 0, 1); c.fin.r2 = clamp(c.fin.r2 * k, 0, 1); c.fin.r3 = clamp(c.fin.r3 * k, 0, 1); }; }, 0.6, 1.15],
+      ["Evidence confidence", function (k) { return function (c) { c.setup.confidence = clamp(c.setup.confidence * k, 0, 1); }; }, 0.75, 1.15]
+    ];
+
+    var out = drivers.map(function (d) {
+      var lo = npvWith(d[1](d[2])), hi = npvWith(d[1](d[3]));
+      return { name: d[0], lo: Math.min(lo, hi), hi: Math.max(lo, hi), swing: Math.abs(hi - lo) };
+    }).sort(function (a, b) { return b.swing - a.swing; });
+
+    var max = Math.max.apply(null, out.map(function (o) { return o.swing; }).concat([1]));
+    out.forEach(function (o) { o.rel = o.swing / max; });
+    return out;
+  }
+
+  /* Annual benefit needed for the base case to break even. */
+  function breakeven() {
+    var m = model();
+    var current = m.fin.benefits.reduce(function (a, r) { return a + num(r[1]); }, 0);
+    if (current <= 0) {
+      var probe = npvWith(function (c) { c.fin.benefits[0][1] = 100000; });
+      var zero = npvWith(function (c) { c.fin.benefits.forEach(function (r) { r[1] = 0; }); });
+      var per = (probe - zero) / 100000;
+      return per > 0 ? -zero / per : null;
+    }
+    var npvNow = runCase(m, 1).npv;
+    var npvZero = npvWith(function (c) { c.fin.benefits.forEach(function (r) { r[1] = 0; }); });
+    var perUnit = (npvNow - npvZero) / current;
+    return perUnit > 0 ? -npvZero / perUnit : null;
+  }
+
+  /* =========================================================================
+     10. RENDER — RESULTS
+     ========================================================================= */
+
+  var TONE = {
+    hot:  { col: "var(--flame)", label: "Strong case" },
+    warm: { col: "var(--ember)", label: "Conditional" },
+    cold: { col: "var(--ash)",   label: "Weak case" },
+    idle: { col: "var(--muted)", label: "No reading yet" }
+  };
+
+  function card(title, sub, body, extra) {
+    return el("section", { class: "card" }, [
+      el("div", { class: "card-h" }, [
+        el("h2", { text: title }),
+        sub ? el("p", { text: sub }) : null,
+        extra || null
+      ]),
+      el("div", { class: body.flush ? "card-b flush" : "card-b" }, [body.node])
+    ]);
+  }
+
+  function kpi(k, v, note, tone) {
+    return el("div", { class: "kpi" }, [
+      el("span", { class: "kpi-k", text: k }),
+      el("span", { class: "kpi-v " + (tone || ""), text: v }),
+      note ? el("span", { class: "kpi-n", text: note }) : null
+    ]);
+  }
+
+  function narrative(c) {
+    var q = S.quick, p = S.full.profile;
+    var name = (S.mode === "quick" ? q.name : p.name) || "This use case";
+    var horizon = c.base.horizon;
+
+    if (!c.hasMoney) {
+      return "Give <strong>" + escapeHtml(name) + "</strong> a benefit and a cost estimate and this paragraph becomes the " +
+        "opening of your business case — written from your own numbers, ready to be argued with.";
+    }
+
+    var t = [];
+    t.push("<strong>" + escapeHtml(name) + "</strong> returns a base-case net present value of " +
+      '<span class="fig">' + money(c.base.npv) + "</span> over " + horizon + " years, a return of " +
+      '<span class="fig">' + pct(c.base.roi) + "</span> on total cost of " + money(c.base.costTotal) + ".");
+
+    t.push(c.base.payback !== null
+      ? "The investment pays back in <span class=\"fig\">" + years(c.base.payback) + "</span>."
+      : "It does not pay back within the " + horizon + "-year horizon on these assumptions.");
+
+    t.push("The range runs from " + money(c.low.npv) + " in the low case to " + money(c.high.npv) + " in the high case" +
+      (c.low.npv >= 0
+        ? ", so the decision holds even when everything lands badly."
+        : ", so a bad outcome is a loss — the low case is the one to plan against."));
+
+    if (c.nf > 0 || c.ready > 0 || c.risk > 0) {
+      var bits = [];
+      if (c.nf > 0) bits.push("broader value scores " + score(c.nf));
+      if (c.ready > 0) bits.push("delivery readiness " + score(c.ready));
+      if (c.risk > 0) bits.push("residual risk " + score(c.risk));
+      t.push("Beyond the money, " + bits.join(", ") + ".");
+    } else {
+      t.push("Nothing beyond the money has been scored yet, which is the weakest part of this case.");
+    }
+
+    var failed = c.gates.filter(function (g) { return !g.pass; });
+    t.push(failed.length === 0
+      ? "Every threshold is met. The remaining work is confirming benefit ownership and the funding path."
+      : "It falls short on " + failed.length + " of " + c.gates.length + " thresholds — " +
+        failed.map(function (g) { return g.k.toLowerCase(); }).join(", ") + ".");
+
+    return t.join(" ");
+  }
+
+  function escapeHtml(s) {
+    return String(s === null || s === undefined ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function plainSummary(c) {
+    var name = (S.mode === "quick" ? S.quick.name : S.full.profile.name) || "Untitled use case";
+    var lines = [];
+    lines.push("AI VALUE ASSAY — " + name);
+    lines.push((S.mode === "quick" ? "Quick assay (POC)" : "Full assay (solution)") + " · " + new Date().toLocaleDateString("en-AU"));
+    lines.push("");
+    lines.push("RECOMMENDATION: " + c.verdict.word.toUpperCase() + " — " + c.verdict.sub);
+    lines.push("");
+    lines.push("Base NPV        " + money(c.base.npv) + "  (low " + money(c.low.npv) + " / high " + money(c.high.npv) + ")");
+    lines.push("Return on cost  " + pct(c.base.roi) + "  against a " + pct(c.m.setup.roiHurdle) + " hurdle");
+    lines.push("Payback         " + years(c.base.payback));
+    lines.push("Annual benefit  " + money(c.base.gross) + " gross, before the confidence haircut");
+    lines.push("Total cost      " + money(c.base.costTotal) + " over " + c.base.horizon + " years");
+    lines.push("Value score     " + c.composite.toFixed(1) + "/5 composite");
+    lines.push("");
+    lines.push("GATES");
+    c.gates.forEach(function (g) { lines.push((g.pass ? "  [PASS] " : "  [FAIL] ") + g.k + " — " + g.val); });
+    lines.push("");
+    lines.push("SENSITIVITY (swing in NPV, largest first)");
+    sensitivity().forEach(function (d) {
+      lines.push("  " + d.name + ": " + money(d.lo) + " to " + money(d.hi));
+    });
+    return lines.join("\n");
+  }
+
+  function renderResult(host, c) {
+    host.innerHTML = "";
+    var tone = TONE[c.verdict.tone];
+    var heat = clamp(c.composite / 5, 0, 1);
+
+    /* --- Verdict hero --- */
+    var hero = el("div", { class: "hero-verdict", style: "--heat:" + heat.toFixed(3) + ";--verdict-col:" + tone.col });
+    hero.appendChild(el("span", { class: "label", text: (S.mode === "quick" ? "Quick assay" : "Full assay") + " · Recommendation" }));
+    hero.appendChild(el("h2", { text: c.verdict.word }));
+    hero.appendChild(el("p", { class: "why", html: narrative(c) }));
+
+    var assay = el("div", { class: "assay" }, [
+      el("div", { class: "assay-wrap", style: "--fill:" + (heat * 100).toFixed(1) + "%" }, [
+        el("div", { class: "assay-track" }),
+        el("div", { class: "assay-live" }, [el("i", {})]),
+        el("div", { class: "assay-pin" })
+      ]),
+      el("div", { class: "assay-scale" }, [
+        el("span", { text: "0 · no case" }),
+        el("span", { text: "2.5 · conditional" }),
+        el("span", { text: "5 · exceptional" })
+      ])
+    ]);
+    hero.appendChild(assay);
+    host.appendChild(hero);
+
+    /* --- Headline numbers --- */
+    var kpis = el("div", { class: "kpis" }, [
+      kpi("Net present value", money(c.base.npv, true), c.base.horizon + "-year base case, discounted at " + pct(c.m.fin.discount),
+        c.base.npv >= 0 ? "pos" : "neg"),
+      kpi("Return on cost", pct(c.base.roi), c.base.roi === null ? "Enter the cost side to get a return" : "Hurdle is " + pct(c.m.setup.roiHurdle),
+        c.base.roi !== null && c.base.roi >= c.m.setup.roiHurdle ? "pos" : "neg"),
+      kpi("Payback", c.base.payback === null ? "—" : years(c.base.payback),
+        c.base.payback === null ? "Not within the horizon" : "Cumulative position turns positive",
+        c.base.payback !== null && c.base.payback <= 2 ? "pos" : ""),
+      kpi("Annual benefit", money(c.base.gross, true), "Gross, before the " + pct(1 - c.m.setup.confidence) + " confidence haircut"),
+      kpi("Total cost", money(c.base.costTotal, true), money(c.base.oneTime, true) + " one-time + " + money(c.base.recur, true) + " a year"),
+      kpi("Value score", c.composite > 0 ? c.composite.toFixed(1) + "/5" : "—", "Financial, broader value, readiness and risk combined",
+        c.composite >= 3 ? "pos" : "")
+    ]);
+    host.appendChild(kpis);
+
+    /* --- Gates --- */
+    var gateBox = el("div", { class: "gates" });
+    c.gates.forEach(function (g) {
+      gateBox.appendChild(el("div", { class: "gate", "data-pass": String(!!g.pass) }, [
+        el("span", { class: "gate-dot" }),
+        el("span", { class: "gate-name", text: g.k }),
+        el("span", { class: "gate-val", text: g.val })
+      ]));
+    });
+    host.appendChild(card("Decision gates",
+      "Every threshold from your governance settings, tested against this case. A failed gate is the conversation to have.",
+      { node: gateBox, flush: true }));
+
+    /* --- Range --- */
+    var rangeHost = el("div", { class: "chart-wrap" });
+    host.appendChild(card("How wide is the range?",
+      "The spread between low and high says how much you actually know. A narrow range on no evidence is false precision.",
+      { node: rangeHost }));
+    rangeBar(rangeHost, c.low.npv, c.base.npv, c.high.npv, function (v) { return money(v, true); });
+
+    /* --- Charts --- */
+    var charts = el("div", { class: "charts" });
+
+    var cfCard = el("section", { class: "card" }, [
+      el("div", { class: "card-h" }, [el("h3", { text: "Cash flow by year" }),
+        el("p", { text: "Year 0 is the investment. The line is cumulative discounted value." })]),
+      el("div", { class: "card-b" }, [el("div", { class: "chart-wrap", id: "res-cf" })])
+    ]);
+    charts.appendChild(cfCard);
+
+    var radarCard = el("section", { class: "card" }, [
+      el("div", { class: "card-h" }, [el("h3", { text: "Value profile" }),
+        el("p", { text: "Four lenses at once. Hollows are where the case is thin." })]),
+      el("div", { class: "card-b" }, [el("div", { class: "chart-wrap", id: "res-radar" })])
+    ]);
+    charts.appendChild(radarCard);
+    host.appendChild(charts);
+    cashflowChart($("#res-cf", cfCard), c.base, true);
+    radarChart($("#res-radar", radarCard), c);
+
+    /* --- Sensitivity --- */
+    var sens = el("div", { class: "sens" });
+    if (c.hasMoney) {
+      sensitivity().forEach(function (d) {
+        sens.appendChild(el("div", { class: "sens-row" }, [
+          el("div", { class: "sens-top" }, [
+            el("b", { text: d.name }),
+            el("span", { class: "num", text: money(d.lo, true) + "  to  " + money(d.hi, true) })
+          ]),
+          el("div", { class: "sens-bar" }, [el("i", { style: "width:" + (d.rel * 100).toFixed(1) + "%" })])
+        ]));
+      });
+      var be = breakeven();
+      sens.appendChild(el("div", { class: "callout" }, [
+        el("div", { html: be === null
+          ? "<b>No break-even exists</b> on these assumptions — the cost side never gets covered, however large the benefit."
+          : "<b>Break-even needs " + money(be) + " of annual gross benefit.</b> You have estimated " +
+            money(c.base.gross) + ", which is " +
+            (c.base.gross >= be
+              ? "<b>" + (be > 0 ? Math.round(((c.base.gross - be) / be) * 100) : 0) + "% of headroom</b> above the line."
+              : "<b>" + money(be - c.base.gross) + " short</b>.") })
+      ]));
+    } else {
+      sens.appendChild(el("div", { class: "empty", text: "Enter benefits and costs to see which assumption the decision actually turns on." }));
+    }
+    host.appendChild(card("What the decision turns on",
+      "Each driver moved through a realistic range, with everything else held still. The longest bar is where to spend your evidence budget.",
+      { node: sens }));
+
+    /* --- Quality checks (full assay only) --- */
+    if (S.mode === "full") {
+      var checkBox = el("div", { class: "checks" });
+      CHECKS.forEach(function (ch, i) {
+        var input = el("input", { type: "checkbox" });
+        input.checked = !!S.full.checks[i];
+        input.addEventListener("change", function () { S.full.checks[i] = input.checked; refresh(); });
+        checkBox.appendChild(el("label", { class: "check" }, [
+          input,
+          el("span", {}, [el("b", { text: ch[0] }), el("span", { text: ch[1] })])
+        ]));
+      });
+      var done = S.full.checks.filter(Boolean).length;
+      host.appendChild(card("Quality checks before you decide",
+        done + " of " + CHECKS.length + " confirmed. These are the six questions an investment forum will ask.",
+        { node: checkBox }));
+    }
+
+    /* --- Narrative + actions --- */
+    var story = el("div", {}, [
+      el("p", { class: "story", html: narrative(c) }),
+      el("div", { class: "story-actions no-print" }, [
+        el("button", { class: "btn", type: "button", onclick: function () { window.print(); } }, ["Print or save as PDF"]),
+        el("button", { class: "btn ghost", type: "button", onclick: function () { copySummary(c); } }, ["Copy summary"]),
+        S.mode === "quick"
+          ? el("button", { class: "btn ghost", type: "button", onclick: function () { setMode("full"); } }, ["Take it to the full assay"])
+          : null
+      ])
+    ]);
+    host.appendChild(card("The case, in a paragraph",
+      "Written from your inputs. Paste it into a paper, a slide or an email.", { node: story }));
+  }
+
+  function copySummary(c) {
+    var text = plainSummary(c);
+    var done = function () { toast("Summary copied"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else { fallbackCopy(text, done); }
+  }
+
+  function fallbackCopy(text, done) {
+    var ta = el("textarea", { style: "position:fixed;opacity:0" });
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) { toast("Copy failed — select the text and copy it manually"); }
+    document.body.removeChild(ta);
+  }
+
+  var toastNode = null;
+  function toast(msg) {
+    if (!toastNode) {
+      toastNode = el("div", { style: "position:fixed;left:50%;bottom:26px;transform:translateX(-50%);" +
+        "background:var(--flame);color:var(--on-flame);padding:11px 20px;border-radius:999px;" +
+        "font-size:13.5px;font-weight:600;z-index:300;box-shadow:var(--shadow-lg);pointer-events:none;" +
+        "opacity:0;transition:opacity .2s ease" });
+      document.body.appendChild(toastNode);
+    }
+    toastNode.textContent = msg;
+    toastNode.style.opacity = "1";
+    clearTimeout(toastNode._t);
+    toastNode._t = setTimeout(function () { toastNode.style.opacity = "0"; }, 2200);
+  }
+
+  /* =========================================================================
+     11. RENDER — READOUT, RAIL, CALCULATED TABLE
+     ========================================================================= */
+
+  function renderReadout(c) {
+    var tone = TONE[c.verdict.tone];
+    var cell = $("#verdict-cell");
+    cell.style.setProperty("--heat", clamp(c.composite / 5, 0, 1).toFixed(3));
+    cell.style.setProperty("--verdict-col", tone.col);
+    $("#verdict-word").textContent = c.verdict.word;
+    $("#verdict-sub").textContent = c.verdict.sub;
+
+    var stats = [
+      ["Net value (NPV)", money(c.base.npv, true), c.base.npv > 0 ? "pos" : (c.hasMoney && c.base.npv < 0 ? "neg" : "")],
+      ["Return on cost", c.hasMoney ? pct(c.base.roi) : "—",
+        c.hasMoney && c.base.roi !== null && c.base.roi >= c.m.setup.roiHurdle ? "pos" : ""],
+      ["Payback", c.hasMoney ? (c.base.payback === null ? "None" : years(c.base.payback)) : "—", ""],
+      ["Value score", c.composite > 0 ? c.composite.toFixed(1) : "—", c.composite >= 3 ? "pos" : ""]
+    ];
+    stats.forEach(function (s, i) {
+      $("#k" + (i + 1) + "-k").textContent = s[0];
+      var v = $("#k" + (i + 1) + "-v");
+      v.textContent = c.hasMoney || i === 3 ? s[1] : "—";
+      v.className = "stat-v num " + s[2];
+    });
+  }
+
+  function completeness() {
+    if (S.mode === "quick") {
+      var q = S.quick;
+      var slots = [q.name, q.people, q.hours, q.rate, q.costOut || q.rev || q.riskAv || (q.people && q.hours && q.rate),
+        q.build || q.change, q.run, q.strategic, q.readiness, q.risk];
+      var done = slots.filter(function (v) { return v !== null && v !== undefined && v !== "" && v !== 0; }).length;
+      return done / slots.length;
+    }
+    var f = S.full;
+    var parts = [
+      f.profile.name ? 1 : 0,
+      Object.keys(f.story).filter(function (k) { return (f.story[k] || "").trim().length > 12; }).length / STORY.length,
+      f.fin.benefits.some(function (r) { return num(r[1]) > 0; }) ? 1 : 0,
+      f.fin.costs.some(function (r) { return num(r[1]) > 0; }) ? 1 : 0,
+      f.nf.filter(function (r) { return r.score > 0; }).length / f.nf.length,
+      f.rr.filter(function (r) { return r.ready > 0; }).length / f.rr.length,
+      f.rr.filter(function (r) { return r.risk > 0; }).length / f.rr.length,
+      f.checks.filter(Boolean).length / CHECKS.length
+    ];
+    return parts.reduce(function (a, b) { return a + b; }, 0) / parts.length;
+  }
+
+  var RAIL_NOTES = {
+    quick: "<strong>Quick assay.</strong> Sized for a proof of concept: one page of inputs, a defensible answer, and a low/high range set automatically at ±40% of your base numbers. Move to the full assay once real money is on the table.",
+    setup: "<strong>Set the bar before you see the answer.</strong> Thresholds decided after the fact are not thresholds.",
+    usecase: "<strong>Write the story down.</strong> An assumption on paper can be challenged. One in someone's head gets approved.",
+    financial: "<strong>Three numbers, not one.</strong> The spread between low and high is the most honest thing in the model.",
+    nonfin: "<strong>Score only what you can evidence.</strong> A 0 costs nothing — it is simply left out of the weighting.",
+    risk: "<strong>Score today, not the roadmap.</strong> Readiness you plan to have is not readiness you have.",
+    decision: "<strong>A decision aid, not an approval.</strong> Read the failed gates before the headline number."
+  };
+
+  function renderRail() {
+    var steps = $("#steps");
+    steps.innerHTML = "";
+    $("#rail-title").textContent = S.mode === "quick" ? "Quick assay" : "Full assay";
+
+    if (S.mode === "full") {
+      STEPS.forEach(function (st, i) {
+        var b = el("button", {
+          type: "button",
+          "aria-current": String(S.step === st[0]),
+          "data-done": String(stepDone(st[0])),
+          onclick: function () { S.step = st[0]; save(); renderPanels(); renderRail(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+        }, [el("span", { class: "step-i", text: String(i + 1) }), el("span", { text: st[1] })]);
+        steps.appendChild(b);
+      });
+    }
+
+    var pctDone = completeness();
+    $("#meter-fill").style.width = (pctDone * 100).toFixed(0) + "%";
+    $("#meter-text").textContent = Math.round(pctDone * 100) + "% complete";
+    $("#rail-note").innerHTML = S.mode === "quick" ? RAIL_NOTES.quick : (RAIL_NOTES[S.step] || "");
+  }
+
+  function stepDone(key) {
+    var f = S.full;
+    switch (key) {
+      case "setup": return true;
+      case "usecase": return !!f.profile.name && !!(f.story.problem || "").trim();
+      case "financial": return f.fin.benefits.some(function (r) { return num(r[1]) > 0; }) &&
+                               f.fin.costs.some(function (r) { return num(r[1]) > 0; });
+      case "nonfin": return f.nf.some(function (r) { return r.score > 0; });
+      case "risk": return f.rr.some(function (r) { return r.ready > 0; });
+      case "decision": return f.checks.every(Boolean);
+    }
+    return false;
+  }
+
+  function renderCalcTable(c) {
+    var t = $("#calc-table");
+    if (!t) return;
+    var rows = [
+      ["Annual gross benefit", function (r) { return money(r.gross); }, "Steady state, before ramp and haircut"],
+      ["One-time investment", function (r) { return money(r.oneTime); }, "Incurred at Year 0"],
+      ["Annual recurring cost", function (r) { return money(r.recur); }, "Steady-state run cost"],
+      ["Year 1 net position", function (r) { return money(r.year1); }, "Ramped benefit less run cost"],
+      ["Total benefit over horizon", function (r) { return money(r.grossTotal); }, "Ramp, growth and confidence applied"],
+      ["Total cost over horizon", function (r) { return money(r.costTotal); }, "One-time plus recurring"],
+      ["Net benefit", function (r) { return money(r.netTotal); }, "Undiscounted"],
+      ["Net present value", function (r) { return money(r.npv); }, "Discounted at " + pct(c.m.fin.discount)],
+      ["Return on cost", function (r) { return pct(r.roi, 1); }, "Net benefit ÷ total cost"],
+      ["Payback", function (r) { return r.payback === null ? "—" : years(r.payback); }, "Cumulative position turns positive"]
+    ];
+    t.innerHTML = "";
+    t.appendChild(el("thead", {}, [el("tr", {}, [
+      el("th", { text: "Metric" }), el("th", { text: "Low" }), el("th", { text: "Base" }),
+      el("th", { text: "High" }), el("th", { text: "What it means" })
+    ])]));
+    var tb = el("tbody", {});
+    rows.forEach(function (r) {
+      tb.appendChild(el("tr", {}, [
+        el("td", { class: "name", text: r[0] }),
+        el("td", { class: "out", text: r[1](c.low) }),
+        el("td", { class: "out", style: "color:var(--flame);font-weight:600", text: r[1](c.base) }),
+        el("td", { class: "out", text: r[1](c.high) }),
+        el("td", { class: "sub", text: r[2] })
+      ]));
+    });
+    t.appendChild(tb);
+  }
+
+  /* =========================================================================
+     12. REFRESH
+     ========================================================================= */
+
+  function renderPanels() {
+    $$(".panel").forEach(function (p) {
+      var key = p.getAttribute("data-panel");
+      var on = S.mode === "quick" ? key === "quick" : key === S.step;
+      p.setAttribute("data-active", String(on));
+    });
+  }
+
+  function refresh() {
+    var c = compute();
+    renderReadout(c);
+    renderRail();
+    document.body.setAttribute("data-mode", S.mode);
+
+    if (S.mode === "quick") {
+      renderResult($("#quick-result"), c);
+    } else {
+      renderCalcTable(c);
+      $("#ben-pill-v").textContent = money(c.base.gross, true);
+      $("#cost-pill-v").textContent = money(c.base.oneTime, true) + " + " + money(c.base.recur, true) + "/yr";
+      $("#nf-pill-v").textContent = score(c.nf);
+      $("#rr-pill-r").textContent = score(c.ready);
+      $("#rr-pill-x").textContent = score(c.risk);
+      cashflowChart($("#cashflow-chart"), c.base);
+      radarChart($("#radar-chart"), c);
+      rrChart($("#rr-chart"));
+      renderResult($("#full-result"), c);
+      renderNfFoot();
+    }
+    save();
+  }
+
+  /* Numbers changed inside a table: recompute everything except the table the
+     user is typing in, so the caret never jumps. */
+  function refreshNumbersOnly() {
+    var c = compute();
+    renderReadout(c);
+    renderRail();
+    if (S.mode === "full") {
+      renderCalcTable(c);
+      $("#ben-pill-v").textContent = money(c.base.gross, true);
+      $("#cost-pill-v").textContent = money(c.base.oneTime, true) + " + " + money(c.base.recur, true) + "/yr";
+      $("#nf-pill-v").textContent = score(c.nf);
+      $("#rr-pill-r").textContent = score(c.ready);
+      $("#rr-pill-x").textContent = score(c.risk);
+      cashflowChart($("#cashflow-chart"), c.base);
+      radarChart($("#radar-chart"), c);
+      rrChart($("#rr-chart"));
+      renderResult($("#full-result"), c);
+      renderTableFoots();
+    } else {
+      renderResult($("#quick-result"), c);
+    }
+    save();
+  }
+
+  function renderTableFoots() {
+    var f = S.full.fin;
+    var bt = $("#benefit-table tfoot tr");
+    if (bt) [0, 1, 2].forEach(function (col) {
+      bt.children[col + 1].textContent = money(f.benefits.reduce(function (a, r) { return a + num(r[col]); }, 0));
+    });
+    var ct = $("#cost-table tfoot tr");
+    if (ct) [0, 1, 2].forEach(function (col) {
+      ct.children[col + 1].textContent = money(f.costs.reduce(function (a, r) { return a + num(r[col]); }, 0));
+    });
+    renderNfFoot();
+  }
+
+  function renderNfFoot() {
+    var t = $("#nf-table");
+    if (!t) return;
+    var rows = $$("tbody tr", t);
+    S.full.nf.forEach(function (r, i) {
+      if (rows[i]) rows[i].children[3].textContent = r.score > 0 ? (r.w * r.score).toFixed(2) : "—";
+    });
+    var foot = $("#nf-table tfoot tr");
+    if (foot) {
+      var tot = S.full.nf.reduce(function (a, r) { return a + num(r.w); }, 0);
+      var assessed = S.full.nf.reduce(function (a, r) { return a + (r.score > 0 ? num(r.w) : 0); }, 0);
+      foot.children[1].textContent = pct(tot);
+      foot.children[2].textContent = pct(assessed) + " of weight assessed";
+      foot.children[3].textContent = score(weighted(S.full.nf, "score"));
+    }
+    var rfoot = $("#rr-table tfoot tr");
+    if (rfoot) {
+      rfoot.children[1].textContent = pct(S.full.rr.reduce(function (a, r) { return a + num(r.w); }, 0));
+      rfoot.children[2].textContent = score(weighted(S.full.rr, "ready"));
+      rfoot.children[3].textContent = score(weighted(S.full.rr, "risk"));
+    }
+  }
+
+  function renderAll() {
+    if (S.mode === "full") {
+      renderSetup(); renderUseCase(); renderFinancial(); renderNf(); renderRr();
+    } else {
+      syncQuickInputs();
+    }
+    renderPanels();
+    refresh();
+  }
+
+  function setMode(m) {
+    S.mode = m;
+    if (m === "full" && !STEPS.some(function (s) { return s[0] === S.step; })) S.step = "setup";
+    $("#mode-simple").setAttribute("aria-pressed", String(m === "quick"));
+    $("#mode-full").setAttribute("aria-pressed", String(m === "full"));
+    renderAll();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  /* =========================================================================
+     13. THEME
+     ========================================================================= */
+
+  var TKEY = "ai-value-assay-theme";
+
+  function applyTheme(t) {
+    if (t === "system") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem(TKEY, t); } catch (e) { /* ignore */ }
+  }
+
+  function currentTheme() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t) return t;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  function initTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem(TKEY); } catch (e) { /* ignore */ }
+    if (saved) applyTheme(saved);
+    $("#theme-btn").addEventListener("click", function () {
+      applyTheme(currentTheme() === "dark" ? "light" : "dark");
+      refresh(); /* charts read their colours from the tokens */
+    });
+  }
+
+  /* =========================================================================
+     14. SAVE, LOAD, EXAMPLE, RESET
+     ========================================================================= */
+
+  function download() {
+    var name = (S.mode === "quick" ? S.quick.name : S.full.profile.name) || "ai-value-assay";
+    var blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = el("a", { href: url, download: name.replace(/[^\w\-]+/g, "-").toLowerCase() + ".json" });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast("Case downloaded");
+  }
+
+  function openFile(file) {
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var d = JSON.parse(r.result);
+        if (!d || !d.full || !d.quick) throw new Error("not a case file");
+        S = merge(defaults(), d);
+        setMode(S.mode || "quick");
+        toast("Case loaded");
+      } catch (e) {
+        toast("That file is not an AI Value Assay case");
+      }
+    };
+    r.readAsText(file);
+  }
+
+  /* A worked example: a mid-size claims triage copilot. Numbers are plausible
+     rather than real — they exist to show what a finished case looks like. */
+  function example() {
+    var d = defaults();
+
+    d.quick = {
+      name: "Claims triage copilot", owner: "Head of Claims Operations",
+      stage: "Proof of concept", ccy: "$",
+      people: 40, hours: 3.5, rate: 68, adopt: 60,
+      costOut: 0, rev: 0, riskAv: 120000,
+      build: 210000, change: 65000, run: 96000,
+      conf: 0.85, horizon: 3,
+      strategic: 4, readiness: 3, risk: 3
+    };
+
+    d.full.profile = {
+      id: "AI-014", name: "Claims triage copilot", owner: "Head of Claims Operations",
+      sponsor: "Chief Operating Officer", unit: "Personal Injury Claims",
+      stage: "Proof of concept", type: "Assistant / copilot", ccy: "$",
+      date: new Date().toISOString().slice(0, 10), decision: "Fund a pilot"
+    };
+
+    d.full.story = {
+      problem: "Claims handlers spend the first hour of every complex claim assembling context from six systems before they can make a decision. Cycle time is 14 days against a 9-day target, and the backlog grows every quarter.",
+      baseline: "Q3 operational reporting: 40 handlers, 3.5 hours per handler per week on context assembly, average cycle time 14.2 days, 11% rework rate. Source: claims workforce study, September.",
+      outcome: "Cut context assembly by 60%, cycle time to 10 days within two quarters of go-live, and rework below 8%. Measured monthly from the existing claims dashboard.",
+      users: "40 personal injury handlers and 6 team leaders. The copilot sits in the existing claims workspace and drafts the case summary the handler currently writes by hand.",
+      deps: "Access to the policy and medical document stores, privacy impact assessment, and a human-review step for every summary before it reaches a customer.",
+      evidence: "Time saving benchmarked from a four-week shadow trial with 8 handlers. Risk avoidance is the reduction in expected regulatory findings, probability-weighted. Adoption assumed at 60%, deliberately below the trial result."
+    };
+
+    d.full.fin.benefits = [
+      [320000, 490000, 620000],
+      [0, 0, 60000],
+      [0, 0, 0],
+      [60000, 120000, 180000],
+      [0, 0, 0]
+    ];
+    d.full.fin.costs = [
+      [70000, 90000, 120000],
+      [140000, 190000, 260000],
+      [50000, 80000, 120000],
+      [45000, 65000, 95000],
+      [80000, 96000, 130000],
+      [0, 12000, 24000]
+    ];
+    d.full.setup.confidence = 0.85;
+
+    var nf = [4, 4, 4, 3, 3, 3, 4, 0];
+    var nfEv = [
+      "Named in the operations strategy as a top-three cycle-time initiative",
+      "Cycle time 14.2 → 10 days; complaints tracked monthly",
+      "Handler survey: context assembly ranked the most draining task",
+      "Summary quality reviewed against the existing QA rubric",
+      "First reusable retrieval pattern for the claims document store",
+      "Human review on every output; evaluation set of 200 claims",
+      "Pattern reusable across motor and property claims",
+      ""
+    ];
+    d.full.nf = NF_DIMS.map(function (dim, i) { return { w: dim[1], score: nf[i], ev: nfEv[i] }; });
+
+    var ready = [5, 4, 3, 4, 3, 3, 3, 2, 4, 2];
+    var risk  = [1, 2, 4, 2, 3, 3, 3, 4, 2, 4];
+    var rrEv = [
+      "Head of Claims Operations owns the benefit and the target",
+      "Baseline from Q3 workforce study; dashboard already reports cycle time",
+      "Medical document store is unindexed — remediation in the build estimate",
+      "Copilot pattern already live in two other business units",
+      "Privacy impact assessment underway; no customer data leaves the tenancy",
+      "Regulatory guidance on automated decision support reviewed with Legal",
+      "Human review mandated; evaluation set and drift monitoring designed",
+      "Handler consultation started late — change budget increased",
+      "Delivery squad funded through to pilot",
+      "No agreed run team after go-live. This is the open item."
+    ];
+    d.full.rr = RR_DIMS.map(function (dim, i) { return { w: dim[1], ready: ready[i], risk: risk[i], ev: rrEv[i] }; });
+
+    d.full.checks = [true, true, true, true, false, false];
+    d.mode = S.mode;
+    d.step = S.mode === "full" ? "decision" : S.step;
+
+    S = d;
+    setMode(S.mode);
+    toast("Worked example loaded");
+  }
+
+  function reset() {
+    if (!window.confirm("Clear every input in both the quick and full assay? This cannot be undone.")) return;
+    var mode = S.mode;
+    S = defaults();
+    S.mode = mode;
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    setMode(mode);
+    toast("Cleared");
+  }
+
+  /* =========================================================================
+     15. WIRING
+     ========================================================================= */
+
+  function initMenu() {
+    var btn = $("#menu-btn"), menu = $("#menu");
+    var close = function () { menu.setAttribute("data-open", "false"); btn.setAttribute("aria-expanded", "false"); };
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = menu.getAttribute("data-open") === "true";
+      menu.setAttribute("data-open", String(!open));
+      btn.setAttribute("aria-expanded", String(!open));
+    });
+    document.addEventListener("click", close);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+    menu.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    $("#act-print").addEventListener("click", function () { close(); window.print(); });
+    $("#act-copy").addEventListener("click", function () { close(); copySummary(compute()); });
+    $("#act-save").addEventListener("click", function () { close(); download(); });
+    $("#act-load").addEventListener("click", function () { close(); $("#file-in").click(); });
+    $("#act-demo").addEventListener("click", function () { close(); example(); });
+    $("#act-reset").addEventListener("click", function () { close(); reset(); });
+
+    $("#file-in").addEventListener("change", function (e) {
+      if (e.target.files && e.target.files[0]) openFile(e.target.files[0]);
+      e.target.value = "";
+    });
+  }
+
+  function init() {
+    load();
+    initTheme();
+    initMenu();
+    bindQuick();
+
+    $("#mode-simple").addEventListener("click", function () { setMode("quick"); });
+    $("#mode-full").addEventListener("click", function () { setMode("full"); });
+
+    if (window.matchMedia) {
+      var mq = window.matchMedia("(prefers-color-scheme: dark)");
+      var onChange = function () { refresh(); };
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    }
+
+    setMode(S.mode || "quick");
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+
+})();
+</script>
+</body>
+</html>
