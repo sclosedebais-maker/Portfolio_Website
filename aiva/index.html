@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>AIVA — Agentic AI Value Accelerator</title>
+  <meta name="description" content="AIVA, the Agentic AI Value Accelerator. Assess the business value of an AI or agentic workflow and generate an investment-grade business case. Executive dashboard, ROI, NPV, payback and a downloadable Word and PDF report.">
+  <link rel="stylesheet" href="aiva.css">
+</head>
+<body>
+  <a class="skip" href="#canvas">Skip to the assessment</a>
+
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="AIVA — Agentic AI Value Accelerator home">
+        <span class="brand-mark">AIVA</span>
+        <span>
+          <span class="brand-name">Agentic AI Value Accelerator</span>
+          <span class="brand-sub">Value Discovery &amp; Business Case Engine</span>
+        </span>
+      </a>
+      <span class="topbar-spacer"></span>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="topbar-sample" type="button">Worked example</button>
+        <button class="icon-btn" id="topbar-restart" type="button">Restart</button>
+        <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle colour theme"><span>Dark</span></button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <!-- Progress rail -->
+      <aside class="rail" aria-label="Assessment progress">
+        <div class="rail-head">
+          <h2>Progress</h2>
+          <span class="rail-pct" id="rail-pct">0%</span>
+        </div>
+        <div class="rail-track"><div class="rail-fill" id="rail-fill"></div></div>
+        <nav class="rail-steps" id="rail-steps"></nav>
+        <div class="rail-foot">
+          <button id="topbar-sample-2" type="button" hidden></button>
+        </div>
+      </aside>
+
+      <!-- Step canvas -->
+      <main class="canvas" id="canvas" tabindex="-1"></main>
+
+      <!-- Live value panel -->
+      <aside class="panel" aria-label="Live value summary" aria-live="polite">
+        <div class="panel-head">
+          <span class="panel-pulse" aria-hidden="true"></span>
+          <h2>Live results</h2>
+        </div>
+        <div class="panel-body" id="panel-body"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="schema.js"></script>
+  <script src="format.js"></script>
+  <script src="engine.js"></script>
+  <script src="reasoning.js"></script>
+  <script src="charts.js"></script>
+  <script src="export.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
