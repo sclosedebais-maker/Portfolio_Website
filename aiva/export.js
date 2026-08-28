@@ -91,6 +91,20 @@ window.AIVA = window.AIVA || {};
     /* Agentic AI opportunity (generated) */
     html += section(H3('Agentic AI opportunity') + paras(opportunity(state, analysis, r)));
 
+    /* Strategic alignment (from the strategy the user provided, plus success) */
+    const stratText = (state.discovery.strategyText || '').trim();
+    const successText = (state.discovery.success || '').trim();
+    if (stratText || successText || state.discovery.strategicAlignment >= 3) {
+      let inner = H3('Strategic alignment');
+      if (successText) inner += P(`<strong>Definition of success:</strong> ${esc(successText)}`);
+      if (stratText) {
+        inner += P('This workflow supports the organisation\'s stated strategy:');
+        inner += fmt().paragraphs(stratText).map((p) => P(esc(p))).join('');
+      }
+      inner += P(`Assessed strategic alignment: <strong>${['not on the agenda', 'loosely related', 'supports a stated priority', 'named in the strategic plan', 'a board-level priority'][Math.max(0, Math.min(4, state.discovery.strategicAlignment - 1))]}</strong>${state.discovery.strategyDocName ? ` (strategy reference: ${esc(state.discovery.strategyDocName)})` : ''}.`);
+      html += section(inner);
+    }
+
     /* Expected benefits table */
     const rows = r.ben.lines.filter((l) => l.on && l.value > 0)
       .map((l) => `<tr><td style="${w ? tdL(w) : ''}">${esc(l.label)}</td><td style="${tdR(w)}">${esc(fmt().money(l.value))}</td><td style="${tdL(w)}">${esc(l.basis)}</td></tr>`).join('');

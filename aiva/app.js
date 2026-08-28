@@ -15,6 +15,27 @@
   const fmt = A.fmt;
   const STORAGE_KEY = 'aiva.state.v2';
 
+  /* Browser speech-to-text, used for point-and-click dictation on text fields.
+     Absent on some browsers (notably Firefox); the mic buttons are simply not
+     rendered when it is unavailable. */
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  const SPEECH_OK = !!SpeechRec;
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  /* Which questions feed each derived fit dimension — shown in the spider
+     diagram's explanation so the link to the yes/no answers is explicit. */
+  const FIT_SOURCES = {
+    complexity: ['Rules/knowledge decisions', 'Repetitive analysis', 'Multiple sources', 'Pain level'],
+    systems: ['Number of systems', 'Multiple sources'],
+    handoffs: ['Number of handoffs', 'Work moves between people'],
+    decisions: ['Rules/knowledge decisions', 'Approvals', 'Repetitive analysis'],
+    knowledge: ['Rules/knowledge decisions', 'Multiple sources', 'Creates documents'],
+    docGeneration: ['Creates documents', 'Rules/knowledge decisions'],
+    multiStep: ['Multiple sources', 'Work moves between people', 'Number of handoffs'],
+    humanIntervention: ['Approvals', 'Outcomes checkable automatically (lowers this)']
+  };
+
   /* -------------------------------------------------------------------------
      State
      ---------------------------------------------------------------------- */
@@ -68,6 +89,15 @@
     refreshAnalysisLive();
     save();
   }
+
+  /* The live results are a blank slate on a fresh assessment. The moment the
+     user genuinely begins — reaches the current-state stage, or edits any
+     figure or driver — the panel and the floating orb come to life and start
+     building up. This is what makes each new discovery feel like a clean start. */
+  function markStarted() {
+    if (state.meta.pristine) { state.meta.pristine = false; save(); }
+  }
+  const isPristine = () => state.meta.pristine;
 
   /* Keep the discovery analysis card in step with the free text without
      re-rendering the whole canvas (which would drop focus from the textarea). */
@@ -136,6 +166,19 @@
     const rec = r.rec;
     const paybackTxt = fmt.months(r.fin.paybackMonths);
 
+    if (isPristine()) {
+      host.innerHTML = `
+        <div class="panel-blank">
+          <div class="panel-blank-orb" aria-hidden="true">
+            <svg viewBox="0 0 64 64" width="56" height="56"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--line)" stroke-width="6"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--brand)" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 200" transform="rotate(-90 32 32)"/></svg>
+          </div>
+          <p class="panel-blank-title">A blank slate</p>
+          <p class="panel-blank-note">Your results build here as you answer. Nothing is calculated yet — start the assessment and watch the value come together.</p>
+        </div>`;
+      updateOrb(true);
+      return;
+    }
+
     host.innerHTML = `
       <div class="stat">
         <span class="stat-label">Potential annual value</span>
@@ -161,7 +204,95 @@
         <span class="stat-value sm" style="font-size:1.05rem;color:${toneColor(rec.tone)}">${fmt.escapeHtml(rec.stage === 'Reshape' || rec.stage === 'Discovery' ? rec.verdict : 'Proceed to ' + rec.stage)}</span>
       </div>
       <div class="panel-flag">${fmt.escapeHtml(panelHint())}</div>`;
+    updateOrb(false);
   }
+
+  /* -------------------------------------------------------------------------
+     Floating value orb — a small, fixed summary that scrolls with the reader
+     the whole way down the page, counting up as the case comes together. It is
+     the "rewarding progress" companion to the side panel, and stays visible on
+     narrow screens where the side panel drops below the fold.
+     ---------------------------------------------------------------------- */
+
+  let orbEl = null;
+  let orbLastValue = 0;
+  function ensureOrb() {
+    if (orbEl) return orbEl;
+    orbEl = document.createElement('button');
+    orbEl.id = 'value-orb';
+    orbEl.className = 'value-orb';
+    orbEl.type = 'button';
+    orbEl.setAttribute('aria-label', 'Jump to results dashboard');
+    orbEl.innerHTML = `
+      <svg class="orb-ring" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true">
+        <circle cx="36" cy="36" r="31" fill="none" stroke="var(--line)" stroke-width="5"/>
+        <circle class="orb-ring-fill" cx="36" cy="36" r="31" fill="none" stroke="var(--brand)" stroke-width="5" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+      </svg>
+      <span class="orb-inner">
+        <span class="orb-label">Annual value</span>
+        <span class="orb-value" data-orb-value>—</span>
+        <span class="orb-sub" data-orb-sub>fit — · ROI —</span>
+      </span>`;
+    orbEl.addEventListener('click', () => { markStarted(); goto(indexOf('results')); });
+    document.body.appendChild(orbEl);
+    return orbEl;
+  }
+
+  function updateOrb(pristine) {
+    const orb = ensureOrb();
+    const stepId = STEPS[stepIndex] ? STEPS[stepIndex].id : '';
+    // The orb is redundant on welcome and on the results/output pages themselves.
+    const hide = stepId === 'welcome' || stepId === 'results' || stepId === 'output';
+    orb.classList.toggle('is-hidden', hide);
+    orb.setAttribute('aria-hidden', hide ? 'true' : 'false');
+    if (hide) return;
+
+    const ring = orb.querySelector('.orb-ring-fill');
+    const C = 2 * Math.PI * 31;
+    const valEl = orb.querySelector('[data-orb-value]');
+    const subEl = orb.querySelector('[data-orb-sub]');
+
+    if (pristine) {
+      ring.setAttribute('stroke-dasharray', `${(0.02 * C).toFixed(1)} ${C.toFixed(1)}`);
+      valEl.textContent = '—';
+      subEl.textContent = 'ready when you are';
+      orbLastValue = 0;
+      return;
+    }
+
+    const r = result;
+    const target = r.ben.annualBenefit;
+    const completion = Math.max(0.04, r.completeness || completionFraction());
+    ring.setAttribute('stroke-dasharray', `${(completion * C).toFixed(1)} ${C.toFixed(1)}`);
+    subEl.textContent = `fit ${Math.round(r.fit.score)} · ROI ${fmt.percent(r.fin.roi)}`;
+
+    if (target > orbLastValue + 1) {
+      orb.classList.remove('orb-reward'); void orb.offsetWidth; orb.classList.add('orb-reward');
+    }
+    countUp(valEl, orbLastValue, target);
+    orbLastValue = target;
+  }
+
+  /* Rough completion for the ring when the engine does not supply one. */
+  function completionFraction() {
+    const total = STEPS.length - 1;
+    return Math.min(1, Math.max(stepIndex, 1) / total);
+  }
+
+  let countRaf = null;
+  function countUp(node, from, to) {
+    if (prefersReducedMotion()) { node.textContent = fmt.moneyShort(to); return; }
+    const start = performance.now(), dur = 520;
+    if (countRaf) cancelAnimationFrame(countRaf);
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      node.textContent = fmt.moneyShort(from + (to - from) * eased);
+      if (p < 1) countRaf = requestAnimationFrame(tick);
+    };
+    countRaf = requestAnimationFrame(tick);
+  }
+  const prefersReducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function meter(label, score) {
     return `<div class="meter">
@@ -199,7 +330,10 @@
 
     switch (f.type) {
       case 'textarea':
-        control = `<textarea id="${id}" data-key="${f.key}" rows="${f.rows || 6}" placeholder="${fmt.escapeHtml(f.placeholder || '')}">${fmt.escapeHtml(val || '')}</textarea>`;
+        control = `<div class="ta-wrap">
+          <textarea id="${id}" data-key="${f.key}" rows="${f.rows || 6}" placeholder="${fmt.escapeHtml(f.placeholder || '')}">${fmt.escapeHtml(val || '')}</textarea>
+          <div class="field-tools">${micButton(id)}${f.attach ? attachButton(id, f.attach) : ''}</div>
+        </div>${f.liveHint ? liveHintSlot(f) : ''}`;
         break;
       case 'select':
         control = `<select id="${id}" data-key="${f.key}">${f.options.map((o) =>
@@ -225,16 +359,56 @@
           ${f.unit ? `<span class="affix affix-post">${fmt.escapeHtml(f.unit)}</span>` : ''}</div>`;
         break;
       default: /* text */
-        control = `<input id="${id}" data-key="${f.key}" type="text" value="${fmt.escapeHtml(val || '')}" placeholder="${fmt.escapeHtml(f.placeholder || '')}">`;
+        control = `<div class="input-wrap${SPEECH_OK ? ' has-mic' : ''}">
+          <input id="${id}" data-key="${f.key}" type="text" value="${fmt.escapeHtml(val || '')}" placeholder="${fmt.escapeHtml(f.placeholder || '')}">
+          ${micButton(id, true)}</div>`;
     }
 
     return `<div class="${wrapCls}" data-field="${f.key}">${labelHtml}${control}<span class="field-error" hidden></span>${help}</div>`;
   }
 
+  /* Point-and-click dictation button. Rendered only when the browser supports
+     speech recognition; otherwise typing is unaffected. */
+  function micButton(targetId, inline) {
+    if (!SPEECH_OK) return '';
+    return `<button type="button" class="dictate-btn${inline ? ' inline' : ''}" data-dictate="${targetId}" aria-label="Dictate this field" title="Click to dictate — speak and AIVA types it for you">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+      <span class="dictate-label">Dictate</span></button>`;
+  }
+
+  /* Attach a document (strategy). Text files are read straight into the field;
+     other files have their name noted. Nothing is uploaded. */
+  function attachButton(targetId, kind) {
+    return `<label class="attach-btn" title="Attach a document — its text is read into this field, in your browser only">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+      <span>Attach</span>
+      <input type="file" data-attach="${kind}" data-attach-target="${targetId}" accept=".txt,.md,.csv,.rtf,.json,.html,.docx,.pdf" hidden></label>`;
+  }
+
+  function liveHintSlot(f) {
+    return `<div class="live-hint" data-live-hint="${f.liveHint}" hidden></div>`;
+  }
+
   function sliderControl(f, id, val) {
-    return `<div class="slider-row">
-      <input id="${id}" data-key="${f.key}" type="range" min="${f.min}" max="${f.max}" step="${f.step || 1}" value="${val}">
-      <span class="slider-value" data-slider-out="${id}">${val}${f.unit || ''}</span></div>`;
+    return richSlider(f.key, val, { min: f.min, max: f.max, step: f.step || 1, unit: f.unit || '', id: id });
+  }
+
+  /* A slider with a filled track, a prominent live value and min/max ticks.
+     Shared by the schema sliders and the value-driver sliders. The fill width
+     is driven by the CSS var --pct, set here and kept in step on input. */
+  function richSlider(key, val, o) {
+    const min = o.min != null ? o.min : 0, max = o.max != null ? o.max : 100;
+    const unit = o.unit || '';
+    const pct = max > min ? ((val - min) / (max - min)) * 100 : 0;
+    const idAttr = o.id ? ` id="${o.id}"` : '';
+    const fmtEnd = (v) => (unit === '%' ? v + '%' : (o.currencyTicks ? fmt.moneyShort(v) : v + (unit ? ' ' + unit : '')));
+    return `<div class="slider" data-slider style="--pct:${pct.toFixed(1)}%">
+      <div class="slider-row">
+        <input${idAttr} data-key="${key}" type="range" min="${min}" max="${max}" step="${o.step || 1}" value="${val}" aria-valuetext="${val}${unit}">
+        <output class="slider-value" data-slider-out>${val}${unit}</output>
+      </div>
+      <div class="slider-scale"><span>${fmtEnd(min)}</span><span>${fmtEnd(max)}</span></div>
+    </div>`;
   }
 
   function scaleField(f, id, val, labelHtml, help, wrapCls) {
@@ -281,18 +455,19 @@
     host.addEventListener('input', (e) => {
       const t = e.target;
       if (t.dataset.key !== undefined && (t.type === 'range')) {
-        const out = host.querySelector(`[data-slider-out="${t.id}"]`);
-        const f = findField(t.dataset.key);
-        if (out) out.textContent = t.value + (f && f.unit ? f.unit : '');
+        updateSliderVisual(t);
         setValue(t.dataset.key, +t.value);
+        if (t.dataset.key.indexOf('drivers.') === 0) liveDriverRefresh();
       } else if (t.dataset.key !== undefined && t.tagName !== 'SELECT') {
         const raw = (t.type === 'number') ? (t.value === '' ? 0 : +t.value) : t.value;
         setValue(t.dataset.key, raw);
+        if (t.dataset.key.indexOf('drivers.') === 0) liveDriverRefresh();
       }
     });
 
     host.addEventListener('change', (e) => {
       const t = e.target;
+      if (t.dataset.attach !== undefined) { handleAttach(t); return; }
       if (t.tagName === 'SELECT' && t.dataset.key !== undefined) {
         setValue(t.dataset.key, t.value);
         const note = host.querySelector(`[data-note-for="${t.id}"]`);
@@ -303,6 +478,8 @@
     });
 
     host.addEventListener('click', (e) => {
+      const mic = e.target.closest('[data-dictate]');
+      if (mic) { startDictation(mic); return; }
       const scale = e.target.closest('[data-scale]');
       if (scale) { pickScale(scale); return; }
       const choice = e.target.closest('[data-choice]');
@@ -314,6 +491,48 @@
     });
   }
 
+  /* Keep a slider's filled track and readout in step as it moves. */
+  function updateSliderVisual(input) {
+    const f = findField(input.dataset.key);
+    const unit = (f && f.unit) || (input.closest('[data-slider]') ? inferUnit(input) : '');
+    const wrap = input.closest('.slider');
+    const min = +input.min, max = +input.max, v = +input.value;
+    if (wrap) wrap.style.setProperty('--pct', (max > min ? ((v - min) / (max - min)) * 100 : 0).toFixed(1) + '%');
+    const out = wrap ? wrap.querySelector('[data-slider-out]') : null;
+    if (out) out.textContent = v + unit;
+  }
+  function inferUnit(input) {
+    const out = input.closest('.slider').querySelector('[data-slider-out]');
+    const m = out && out.textContent.match(/[^\d.\-]+$/);
+    return m ? m[0] : '';
+  }
+
+  /* Live-refresh the value-drivers stage as a slider or figure moves: each
+     driver's own value, its share bar, the running total, the capacity note
+     and the benefit chart — so the money visibly moves with the input. */
+  function liveDriverRefresh() {
+    const r = result;
+    r.ben.lines.forEach((line) => {
+      const box = canvas().querySelector(`[data-driver-value="${line.key}"]`);
+      if (!box) return;
+      const share = r.ben.annualBenefit > 0 ? line.value / r.ben.annualBenefit : 0;
+      const amount = box.querySelector('[data-driver-amount]');
+      const shareEl = box.querySelector('[data-driver-share]');
+      const contrib = box.querySelector('[data-driver-contrib]');
+      const basis = box.querySelector('[data-driver-basis]');
+      if (amount) amount.textContent = fmt.money(line.value);
+      if (shareEl) shareEl.textContent = Math.round(share * 100) + '% of total';
+      if (contrib) contrib.style.width = Math.round(share * 100) + '%';
+      if (basis) basis.textContent = line.basis;
+    });
+    const totalEl = canvas().querySelector('[data-total-benefit]');
+    if (totalEl) totalEl.textContent = fmt.money(r.ben.annualBenefit);
+    const capNote = canvas().querySelector('[data-capacity-note]');
+    if (capNote) capNote.textContent = r.ben.capacityFte > 0 ? r.ben.capacityFte.toFixed(1) + ' FTE of capacity returned, without removing staff' : '';
+    const bars = canvas().querySelector('[data-benefit-bars]');
+    if (bars) bars.innerHTML = A.charts.benefitBars(r.ben.lines);
+  }
+
   function findField(key) {
     for (const s of STEPS) {
       if (!s.groups) continue;
@@ -322,15 +541,25 @@
     return null;
   }
 
+  /* Keys that carry numbers into the model — editing one begins the assessment
+     and brings the blank-slate live panel to life. Discovery free text and the
+     cover details deliberately do not, so the panel stays a clean slate until
+     there is something real to calculate. */
+  const NUMERIC_PREFIX = /^(current|drivers|invest)\./;
+  const startsIfNumeric = (key) => { if (NUMERIC_PREFIX.test(key)) markStarted(); };
+
   function setValue(key, value) {
     set(key, value);
+    startsIfNumeric(key);
     recompute();
     validateField(key);
+    if (key === 'discovery.success') updateSuccessHint();
   }
 
   function pickScale(btn) {
     const key = btn.dataset.scale, v = +btn.dataset.value;
     set(key, v);
+    startsIfNumeric(key);
     const group = btn.closest('.scale-row');
     group.querySelectorAll('.scale-btn').forEach((b) => {
       const on = +b.dataset.value === v;
@@ -345,6 +574,7 @@
   function pickChoice(btn) {
     const key = btn.dataset.choice, v = btn.dataset.value;
     set(key, v);
+    startsIfNumeric(key);
     btn.closest('.scale-row').querySelectorAll('.scale-btn').forEach((b) =>
       b.setAttribute('aria-pressed', b.dataset.value === v));
     recompute();
@@ -353,6 +583,7 @@
   function pickCurrencyChoice(btn) {
     const key = btn.dataset.cchoice, v = +btn.dataset.value;
     set(key, v);
+    startsIfNumeric(key);
     const field = btn.closest('.field');
     field.querySelectorAll('[data-cchoice]').forEach((b) => b.setAttribute('aria-pressed', +b.dataset.value === v));
     const input = field.querySelector('input[data-key]');
@@ -422,15 +653,18 @@
   }
 
   function toggleDriver(key) {
+    markStarted();
     state.drivers[key].on = !state.drivers[key].on;
     recompute(); renderStep();
   }
   function toggleSuitability(key) {
+    markStarted();
     state.suitability[key] = !state.suitability[key];
     recompute(); renderStep();
   }
 
   function applySuggestions() {
+    markStarted();
     analysis.suggestions.forEach((s) => set(s.path, s.value));
     state.appliedSuggestions = true;
     recompute();
@@ -482,12 +716,12 @@
 
     const cls = a.workflowType || a.agenticPattern;
     const classBlock = cls ? `
-      <div class="signal" style="grid-template-columns:1fr auto;align-items:center">
+      <div class="signal" style="grid-template-columns:auto 1fr">
+        <span class="signal-dot" style="background:var(--ink-3)"></span>
         <div>
-          <h4>AIVA's classification</h4>
-          <p>${a.workflowType ? 'Workflow type looks like <strong>' + fmt.escapeHtml(a.workflowType) + '</strong>. ' : ''}${a.agenticPattern ? 'Suggested pattern: <strong>' + fmt.escapeHtml(a.agenticPattern) + '</strong> — ' + fmt.escapeHtml(a.patternWhy) : ''}</p>
+          <h4>AIVA reads this as ${a.workflowType ? fmt.escapeHtml(a.workflowType.toLowerCase()) : 'knowledge work'}</h4>
+          <p>${a.agenticPattern ? 'Likely pattern: <strong>' + fmt.escapeHtml(a.agenticPattern) + '</strong> — ' + fmt.escapeHtml(a.patternWhy) : 'Keep describing the work and AIVA will suggest the agent pattern that fits.'}</p>
         </div>
-        <button class="btn btn-ghost" style="white-space:nowrap" data-action="apply-classification" type="button">Apply</button>
       </div>` : '';
 
     const signalHtml = signals.length ? signals.map((s) =>
@@ -554,7 +788,7 @@
       </section>
 
       <section class="card">
-        <div class="card-head"><h2>Agentic fit score</h2><p>Derived from your answers and the current-state baseline. The score decides whether this is agent-shaped work.</p></div>
+        <div class="card-head"><h2>Agentic fit score</h2><p>Derived from your seven answers above and the current-state baseline. The score decides whether this is agent-shaped work.</p></div>
         <div style="display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:center">
           ${dial(r.fit.score, 132)}
           <div>
@@ -563,15 +797,28 @@
             <p class="muted" style="font-size:.85rem">Interpretation: 90–100 Ideal · 70–89 Strong candidate · 50–69 Copilot candidate · below 50 traditional automation better.</p>
           </div>
         </div>
-        <figure style="margin-top:1.5rem">
-          <div class="chart-scroll" style="max-width:420px;margin:0 auto">${A.charts.fitRadar(r.fit.dimensions)}</div>
-          <figcaption>The eight dimensions. Human intervention is scored inversely — more required means a lower fit.</figcaption>
-        </figure>
+
+        <div class="radar-layout">
+          <figure style="margin:0">
+            <div class="chart-scroll" style="max-width:440px;margin:0 auto">${A.charts.fitRadar(r.fit.dimensions, { interactive: true })}</div>
+            <figcaption><strong>Drag any point</strong> to adjust that dimension. The reading updates below.</figcaption>
+          </figure>
+          <div class="radar-key">
+            <h3>How to read this</h3>
+            <ul class="radar-key-list">
+              <li><span class="rk-mark"></span><span>Each <strong>spoke</strong> is one of the eight scoring dimensions.</span></li>
+              <li><span class="rk-line"></span><span>The <strong>further a point sits from the centre</strong>, the more that dimension favours an agent. The four rings mark the 1–5 scale.</span></li>
+              <li><span class="rk-fill"></span><span>The <strong>orange shape</strong> is this workflow's profile. A large, even shape is ideal agentic work; a small or spiky one points to a copilot or traditional automation.</span></li>
+            </ul>
+            <p class="radar-key-note">The shape is built from your <strong>seven yes/no answers</strong> above and the systems, handoffs and pain figures from the current-state stage — it is not a separate questionnaire. Hover a point to see which answers drive it. <strong>Human intervention is inverse:</strong> the more a person must stay in the loop, the shorter that spoke and the lower the fit.</p>
+            <div class="radar-readout" id="radar-readout" aria-live="polite"></div>
+          </div>
+        </div>
       </section>
 
       <section class="card">
         <div class="card-head"><h2>Adjust the dimensions <span style="font-weight:400;font-size:.85rem;color:var(--ink-3)">— optional</span></h2>
-          <p>AIVA derived each dimension from your answers. Override any that you know better; your value is used in the score.</p></div>
+          <p>AIVA derived each dimension from your answers. Override any that you know better by clicking a number or dragging on the diagram; your value is used in the score.</p></div>
         <div class="field-grid">${dims}</div>
         <button class="btn btn-ghost" data-action="reset-fit" type="button" style="margin-top:1rem">Reset to AIVA's values</button>
       </section>`;
@@ -583,11 +830,11 @@
     const total = r.ben.annualBenefit;
     return `
       <section class="card">
-        <div class="card-head"><h2>Total quantified benefit</h2><p>The sum of the drivers you have switched on, calculated from your baseline at full run rate.</p></div>
+        <div class="card-head"><h2>Total quantified benefit</h2><p>The sum of the drivers you have switched on, calculated from your baseline at full run rate. Slide any input below and watch this total move.</p></div>
         <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center;justify-content:space-between">
-          <div class="stat"><span class="stat-label">Annual benefit</span><span class="stat-value">${fmt.money(total)}</span>
-            <span class="stat-note">${r.ben.capacityFte > 0 ? r.ben.capacityFte.toFixed(1) + ' FTE of capacity returned, without removing staff' : ''}</span></div>
-          <div style="flex:1;min-width:280px">${A.charts.benefitBars(r.ben.lines)}</div>
+          <div class="stat"><span class="stat-label">Annual benefit</span><span class="stat-value" data-total-benefit>${fmt.money(total)}</span>
+            <span class="stat-note" data-capacity-note>${r.ben.capacityFte > 0 ? r.ben.capacityFte.toFixed(1) + ' FTE of capacity returned, without removing staff' : ''}</span></div>
+          <div style="flex:1;min-width:280px" data-benefit-bars>${A.charts.benefitBars(r.ben.lines)}</div>
         </div>
       </section>
       <div style="display:grid;gap:1rem">${cards}</div>`;
@@ -599,8 +846,17 @@
     const on = d.on;
     const swatch = meta.series ? A.charts.seriesColor(meta.series) : 'var(--ink-3)';
     const inner = on ? driverInputs(meta) : '';
+    const share = line && r.ben.annualBenefit > 0 ? line.value / r.ben.annualBenefit : 0;
     const valueLine = meta.quantified && on && line
-      ? `<div class="driver-value"><span>Annual value</span><b>${fmt.money(line.value)}</b><span class="muted" style="font-size:.78rem">${fmt.escapeHtml(line.basis)}</span></div>`
+      ? `<div class="driver-value" data-driver-value="${meta.key}">
+           <div class="driver-value-head">
+             <span>Annual value</span>
+             <b data-driver-amount>${fmt.money(line.value)}</b>
+             <span class="driver-share" data-driver-share>${Math.round(share * 100)}% of total</span>
+           </div>
+           <div class="driver-contrib"><div class="driver-contrib-fill" data-driver-contrib style="width:${Math.round(share * 100)}%;background:${swatch}"></div></div>
+           <span class="muted driver-basis" data-driver-basis style="font-size:.78rem">${fmt.escapeHtml(line.basis)}</span>
+         </div>`
       : (!meta.quantified && on ? `<div class="driver-value"><span class="muted" style="font-size:.82rem">Carried qualitatively in the value score — never as a dollar figure.</span></div>` : '');
 
     return `<div class="driver ${on ? 'is-on' : ''}">
@@ -620,8 +876,7 @@
       const val = get(key);
       const o = opts || {};
       if (o.slider) return `<div class="field"><span class="field-label">${label}</span>
-        <div class="slider-row"><input data-key="${key}" type="range" min="${o.min || 0}" max="${o.max || 100}" step="${o.step || 5}" value="${val}">
-        <span class="slider-value" data-slider-out="s_${key.replace(/\./g, '_')}">${val}${o.unit || '%'}</span></div></div>`;
+        ${richSlider(key, val, { min: o.min || 0, max: o.max || 100, step: o.step || 5, unit: o.unit || '%' })}</div>`;
       const pre = o.currency ? `<div class="input-wrap has-pre"><span class="affix affix-pre">${fmt.symbol()}</span>` : '<div class="input-wrap' + (o.unit ? ' has-post' : '') + '">';
       return `<div class="field"><span class="field-label">${label}</span>${pre}
         <input data-key="${key}" type="number" min="0" step="${o.step || 1}" value="${val}">${o.unit && !o.currency ? `<span class="affix affix-post">${o.unit}</span>` : ''}</div></div>`;
@@ -651,7 +906,10 @@
              <div class="scale"><div class="scale-row">${[1, 2, 3, 4, 5].map((v) => `<button type="button" class="scale-btn" aria-pressed="${v === get('drivers.customer.experienceImpact')}" data-scale="drivers.customer.experienceImpact" data-value="${v}">${v}</button>`).join('')}</div></div></div>`;
       case 'strategic':
         return `<div class="field span-2"><span class="field-label">Strategic rationale <span style="font-weight:400;color:var(--ink-3)">— appears in the business case</span></span>
-          <textarea data-key="drivers.strategic.note" rows="3" placeholder="e.g. Builds internal agentic capability the enterprise strategy names as a priority; augments a workforce we cannot easily grow.">${fmt.escapeHtml(get('drivers.strategic.note') || '')}</textarea></div>`;
+          <div class="ta-wrap">
+            <textarea id="f_drivers_strategic_note" data-key="drivers.strategic.note" rows="3" placeholder="e.g. Builds internal agentic capability the enterprise strategy names as a priority; augments a workforce we cannot easily grow.">${fmt.escapeHtml(get('drivers.strategic.note') || '')}</textarea>
+            <div class="field-tools">${micButton('f_drivers_strategic_note')}</div>
+          </div></div>`;
       default: return '';
     }
   }
@@ -817,11 +1075,100 @@
     }
 
     html += renderNav();
+    stopDictation();
     canvas().innerHTML = html;
     canvas().scrollIntoView({ behavior: 'auto', block: 'start' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
     wireFitButtons();
+    if (step.id === 'fit') wireRadar();
+    if (step.id === 'discovery') updateSuccessHint();
     updatePanel();
+  }
+
+  /* -------------------------------------------------------------------------
+     Interactive spider diagram — drag a vertex to override a fit dimension
+     ---------------------------------------------------------------------- */
+
+  function wireRadar() {
+    const svg = canvas().querySelector('svg.radar.is-interactive');
+    if (!svg) return;
+    const cx = +svg.dataset.cx, cy = +svg.dataset.cy, R = +svg.dataset.r;
+    const shape = svg.querySelector('.radar-shape');
+    const readout = el('#radar-readout');
+    const invertMap = {}; FIT_DIMENSIONS.forEach((d) => { invertMap[d.key] = d.invert; });
+
+    // Map a client point into the SVG's own coordinate system.
+    const toLocal = (evt) => {
+      const p = svg.createSVGPoint();
+      p.x = evt.clientX; p.y = evt.clientY;
+      const m = svg.getScreenCTM();
+      return m ? p.matrixTransform(m.inverse()) : { x: evt.clientX, y: evt.clientY };
+    };
+
+    let drag = null;
+
+    const vertexAt = (i, frac) => {
+      const angle = (Math.PI * 2 * i) / (+svg.dataset.n) - Math.PI / 2;
+      return [cx + Math.cos(angle) * R * frac, cy + Math.sin(angle) * R * frac];
+    };
+
+    const redrawShape = () => {
+      const verts = [...svg.querySelectorAll('.radar-vertex')]
+        .sort((a, b) => (+a.dataset.vi) - (+b.dataset.vi))
+        .map((v) => `${(+v.getAttribute('cx')).toFixed(1)},${(+v.getAttribute('cy')).toFixed(1)}`)
+        .join(' ');
+      shape.setAttribute('points', verts);
+    };
+
+    const fracToRaw = (frac, invert) =>
+      clamp(invert ? Math.round((1 - frac) * 4) + 1 : Math.round(frac * 4) + 1, 1, 5);
+
+    svg.querySelectorAll('.radar-handle').forEach((handle) => {
+      handle.style.cursor = 'grab';
+      handle.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        const i = +handle.dataset.radarI;
+        const key = handle.dataset.dim;
+        handle.setPointerCapture(e.pointerId);
+        handle.style.cursor = 'grabbing';
+        svg.classList.add('is-dragging');
+        drag = { i, key, invert: invertMap[key],
+          vertex: svg.querySelector(`.radar-vertex[data-vi="${i}"]`), value: null };
+      });
+      handle.addEventListener('pointermove', (e) => {
+        if (!drag) return;
+        const loc = toLocal(e);
+        const angle = (Math.PI * 2 * drag.i) / (+svg.dataset.n) - Math.PI / 2;
+        // Project the pointer onto the spoke and snap to the nearest ring.
+        const proj = (loc.x - cx) * Math.cos(angle) + (loc.y - cy) * Math.sin(angle);
+        let frac = clamp(proj / R, 0, 1);
+        frac = Math.round(frac * 4) / 4;
+        const [vx, vy] = vertexAt(drag.i, frac);
+        drag.vertex.setAttribute('cx', vx.toFixed(1));
+        drag.vertex.setAttribute('cy', vy.toFixed(1));
+        handle.setAttribute('cx', vx.toFixed(1));
+        handle.setAttribute('cy', vy.toFixed(1));
+        redrawShape();
+        drag.value = fracToRaw(frac, drag.invert);
+        const dim = FIT_DIMENSIONS.find((d) => d.key === drag.key);
+        if (readout) readout.innerHTML = `<strong>${fmt.escapeHtml(dim.label)}</strong> set to <b class="num">${drag.value}</b> of 5${drag.invert ? ' <span class="muted">(inverse — lower favours an agent)</span>' : ''}. Release to apply.`;
+      });
+      const finish = (e) => {
+        if (!drag) return;
+        handle.style.cursor = 'grab';
+        svg.classList.remove('is-dragging');
+        const d = drag; drag = null;
+        try { handle.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        if (d.value != null) {
+          markStarted();
+          state.fitOverrides[d.key] = d.value;
+          recompute();
+          renderStep();
+        }
+      };
+      handle.addEventListener('pointerup', finish);
+      handle.addEventListener('pointercancel', finish);
+    });
   }
 
   function wireFitButtons() {
@@ -858,6 +1205,7 @@
   function goto(i) {
     stepIndex = Math.max(0, Math.min(STEPS.length - 1, i));
     maxVisited = Math.max(maxVisited, stepIndex);
+    if (stepIndex >= indexOf('current')) markStarted();
     recompute();
     renderStep();
   }
@@ -892,7 +1240,8 @@
 
   function sampleState() {
     const s = A.schema.defaultState();
-    s.meta = { caseName: 'Agentic claims triage', organisation: 'Northbridge Mutual', sponsor: 'Chief Operating Officer', preparedBy: 'Transformation Office', currency: 'AUD' };
+    s.meta = { caseName: 'Agentic claims triage', organisation: 'Northbridge Mutual', sponsor: 'Chief Operating Officer', preparedBy: 'Transformation Office', currency: 'AUD', pristine: false };
+    s.discovery.strategyText = 'Become a digital-first insurer by 2027. Grow claims capacity without growing headcount. Reduce operational and compliance risk in regulated processes. Build internal AI and automation capability.';
     s.discovery.problem = 'First-notification-of-loss claims take too long to triage. Consultants spend most of their time gathering information across systems rather than assessing the claim, and storm-season peaks create a backlog that drives complaints and SLA breaches.';
     s.discovery.currentWorkflow = 'A claim arrives by email or through the portal. A consultant opens the case in the claims system, re-keys the customer details from the PDF, checks the policy in the policy admin system and the customer history in the CRM, then reads the policy wording to decide whether the claim is in scope. Complex claims are escalated to a senior assessor, who drafts an assessment letter and sends it for approval. Volumes spike after storms and the backlog builds. Errors in policy interpretation cause rework and complaints.';
     s.discovery.success = 'Reduce triage handling time by 60% and clear the storm-season backlog without adding headcount.';
@@ -939,6 +1288,118 @@
       });
     }, { passive: true });
     document.addEventListener('pointerleave', () => tipEl.classList.remove('is-visible'));
+  }
+
+  /* -------------------------------------------------------------------------
+     Dictation — point-and-click speech to text on any text field
+     ---------------------------------------------------------------------- */
+
+  let recog = null;
+  let dictState = null;   // { targetId, btn, base, finalText }
+
+  function stopDictation() {
+    if (recog) { try { recog.stop(); } catch (e) { /* already stopped */ } }
+  }
+
+  function startDictation(btn) {
+    const targetId = btn.dataset.dictate;
+    const field = document.getElementById(targetId);
+    if (!field) return;
+
+    // Clicking the active mic stops it.
+    if (dictState && dictState.targetId === targetId) { stopDictation(); return; }
+    stopDictation();
+
+    recog = new SpeechRec();
+    recog.lang = document.documentElement.lang || 'en-AU';
+    recog.interimResults = true;
+    recog.continuous = true;
+
+    const base = field.value ? field.value.replace(/\s+$/, '') + ' ' : '';
+    dictState = { targetId, btn, base, finalText: '' };
+    setMicState(btn, true);
+    announceMic('Listening — speak now. Click the mic again to stop.');
+
+    recog.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const chunk = e.results[i][0].transcript;
+        if (e.results[i].isFinal) dictState.finalText += chunk;
+        else interim += chunk;
+      }
+      field.value = (dictState.base + dictState.finalText + interim).replace(/\s{2,}/g, ' ');
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    recog.onerror = (e) => {
+      announceMic(e.error === 'not-allowed'
+        ? 'Microphone blocked. Allow microphone access in your browser to dictate.'
+        : 'Dictation stopped.');
+    };
+    recog.onend = () => {
+      if (dictState) setMicState(dictState.btn, false);
+      dictState = null;
+    };
+    try { recog.start(); }
+    catch (e) { setMicState(btn, false); dictState = null; }
+  }
+
+  function setMicState(btn, on) {
+    btn.classList.toggle('is-recording', on);
+    const label = btn.querySelector('.dictate-label');
+    if (label) label.textContent = on ? 'Listening…' : 'Dictate';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function announceMic(msg) { toast(msg); }
+
+  /* -------------------------------------------------------------------------
+     Attach a document into a text field (in-browser only)
+     ---------------------------------------------------------------------- */
+
+  function handleAttach(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const target = document.getElementById(input.dataset.attachTarget);
+    const kind = input.dataset.attach;
+    const textLike = /\.(txt|md|csv|rtf|json|html?)$/i.test(file.name) || /^text\//.test(file.type) || file.type === 'application/json';
+
+    if (kind === 'strategy') set('discovery.strategyDocName', file.name);
+
+    if (textLike) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = String(reader.result || '').replace(/\r/g, '').trim();
+        if (target) {
+          const existing = target.value ? target.value.replace(/\s+$/, '') + '\n\n' : '';
+          target.value = existing + text;
+          target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        toast('Loaded “' + file.name + '” into the field. Edit it as you like.');
+      };
+      reader.onerror = () => toast('Could not read that file.');
+      reader.readAsText(file);
+    } else {
+      // Binary formats (Word, PDF) can't be parsed without a library; note the
+      // attachment and prompt the reader to paste the key points.
+      recompute();
+      toast('Attached “' + file.name + '”. It can\'t be read automatically — paste or dictate the key strategy points so AIVA can use them.');
+    }
+    input.value = '';
+  }
+
+  /* -------------------------------------------------------------------------
+     Success-question live hint — nudge toward a measurable target
+     ---------------------------------------------------------------------- */
+
+  function updateSuccessHint() {
+    const slot = canvas().querySelector('[data-live-hint="quantify-success"]');
+    if (!slot) return;
+    const text = String(get('discovery.success') || '');
+    const hasNumber = /\d/.test(text) || /\b(half|double|triple|quarter|third)\b/i.test(text);
+    const enough = text.trim().length >= 20;
+    if (!enough || hasNumber) { slot.hidden = true; return; }
+    slot.hidden = false;
+    slot.innerHTML = `<span class="live-hint-icon" aria-hidden="true">↳</span>
+      <span><strong>Add a number if you can.</strong> "Reduce manual effort" is a fine aim, but a measurable target — like "cut turnaround from 5 days to 1" or "reduce effort by 60%" — becomes a testable benefit in your business case. A qualitative aim still works if you don't have one.</span>`;
   }
 
   /* -------------------------------------------------------------------------
