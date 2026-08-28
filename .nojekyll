@@ -1,0 +1,2 @@
+Presence of this file tells GitHub Pages to serve the repository as static
+files without running Jekyll, so the AIVA app's JS/CSS in /aiva/ load as-is.
