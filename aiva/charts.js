@@ -115,14 +115,17 @@ window.AIVA = window.AIVA || {};
      Radar — the eight agentic fit dimensions
      ----------------------------------------------------------------------- */
 
-  function fitRadar(dims) {
+  function fitRadar(dims, opts) {
+    const interactive = opts && opts.interactive;
     const W = 380, H = 360, cx = W / 2, cy = H / 2 + 6, R = 118;
     const N = dims.length;
     const angle = (i) => (Math.PI * 2 * i) / N - Math.PI / 2;
     const pt = (i, r) => [cx + Math.cos(angle(i)) * R * r, cy + Math.sin(angle(i)) * R * r];
 
-    let svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Agentic fit across eight dimensions" preserveAspectRatio="xMidYMid meet">`;
+    let svg = `<svg class="chart radar${interactive ? ' is-interactive' : ''}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Agentic fit across eight dimensions"
+      data-cx="${cx}" data-cy="${cy}" data-r="${R}" data-n="${N}" preserveAspectRatio="xMidYMid meet">`;
 
+    // Concentric rings — one per point on the 1–5 scale (the outer ring is 5).
     for (let ring = 1; ring <= 4; ring++) {
       const r = ring / 4;
       const poly = dims.map((_, i) => pt(i, r).map((v) => v.toFixed(1)).join(',')).join(' ');
@@ -134,11 +137,16 @@ window.AIVA = window.AIVA || {};
     });
 
     const shape = dims.map((d, i) => pt(i, d.score / 100).map((v) => v.toFixed(1)).join(',')).join(' ');
-    svg += `<polygon points="${shape}" fill="var(--brand)" fill-opacity=".16" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round"/>`;
+    svg += `<polygon class="radar-shape" points="${shape}" fill="var(--brand)" fill-opacity=".16" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round"/>`;
 
     dims.forEach((d, i) => {
       const [mx, my] = pt(i, d.score / 100);
-      svg += `<circle class="chart-mark" cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="4" fill="var(--brand)" stroke="var(--surface)" stroke-width="1.5" ${tip(d.label + ': ' + Math.round(d.score) + '/100' + (d.overridden ? ' (adjusted)' : ''))}/>`;
+      const tipTxt = d.label + ': ' + Math.round(d.score) + '/100' + (d.overridden ? ' (adjusted)' : '') + (interactive ? ' — drag to change' : '');
+      svg += `<circle class="radar-vertex" data-vi="${i}" cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="4.5" fill="var(--brand)" stroke="var(--surface)" stroke-width="1.5" ${tip(tipTxt)}/>`;
+      if (interactive) {
+        // A large, transparent grab target over each vertex.
+        svg += `<circle class="radar-handle" data-radar-i="${i}" data-dim="${esc(d.key)}" cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="17" fill="transparent" ${tip(tipTxt)}/>`;
+      }
       const [lx, ly] = pt(i, 1.16);
       const anchor = Math.abs(Math.cos(angle(i))) < 0.35 ? 'middle' : (Math.cos(angle(i)) > 0 ? 'start' : 'end');
       const words = d.label.split(' ');

@@ -201,7 +201,10 @@ window.AIVA = window.AIVA || {};
       organisation: '',
       sponsor: '',
       preparedBy: '',
-      currency: 'AUD'
+      currency: 'AUD',
+      /* A fresh assessment starts pristine: the live results stay a blank
+         slate until the user actually begins entering the workflow. */
+      pristine: true
     },
     discovery: {
       problem: '',
@@ -211,7 +214,9 @@ window.AIVA = window.AIVA || {};
       workflowType: 'Knowledge Work',
       agenticPattern: 'Unsure',
       industry: 'Financial Services',
-      strategicAlignment: 4
+      strategicAlignment: 4,
+      strategyText: '',
+      strategyDocName: ''
     },
     current: {
       frequency: 'Weekly',
@@ -293,21 +298,9 @@ window.AIVA = window.AIVA || {};
             {
               key: 'discovery.success', label: 'What does success look like?',
               type: 'textarea', span: true, required: true, minLength: 20, rows: 3,
-              placeholder: 'Reduce preparation time by 70%.',
-              help: 'Be specific if you can. A number here becomes a testable assumption later.'
-            }
-          ]
-        },
-        {
-          title: 'Classify the workflow',
-          blurb: 'Two choices that set the shape of the solution. AIVA proposes both from your description — accept or change them.',
-          fields: [
-            { key: 'discovery.workflowType', label: 'Workflow type', type: 'select', options: WORKFLOW_TYPES },
-            {
-              key: 'discovery.agenticPattern', label: 'Agentic workflow type', type: 'select',
-              options: AGENTIC_PATTERNS.map((p) => p.value),
-              optionNotes: AGENTIC_PATTERNS.reduce((m, p) => { m[p.value] = p.note; return m; }, {}),
-              help: 'Which best describes the future state?'
+              placeholder: 'e.g. Cut board-pack preparation from 10 days to 3, with no increase in headcount.',
+              help: 'A measurable target is ideal — a number here becomes a testable assumption in the business case (e.g. "reduce turnaround by 70%", "clear the backlog within a quarter"). A qualitative aim such as "reduce manual effort" is fine too; AIVA will prompt you if a number would strengthen the case.',
+              liveHint: 'quantify-success'
             }
           ]
         },
@@ -321,10 +314,22 @@ window.AIVA = window.AIVA || {};
             { key: 'discovery.industry', label: 'Industry', type: 'select', options: INDUSTRIES },
             { key: 'meta.sponsor', label: 'Executive sponsor', type: 'text', placeholder: 'e.g. Chief Operating Officer' },
             { key: 'meta.preparedBy', label: 'Prepared by', type: 'text', placeholder: 'Your name' },
-            { key: 'meta.currency', label: 'Reporting currency', type: 'select', options: ['AUD', 'NZD', 'USD', 'GBP', 'EUR', 'SGD', 'CAD'] },
+            { key: 'meta.currency', label: 'Reporting currency', type: 'select', options: ['AUD', 'NZD', 'USD', 'GBP', 'EUR', 'SGD', 'CAD'] }
+          ]
+        },
+        {
+          title: 'Strategic alignment',
+          blurb: 'How this workflow sits against your organisation\'s strategy. Paste the relevant strategy points — or attach a strategy document — and AIVA weaves them into the business case and the strategic-alignment score.',
+          fields: [
             {
-              key: 'discovery.strategicAlignment', label: 'Strategic alignment', type: 'scale',
-              help: 'How directly this workflow supports a stated strategic priority.',
+              key: 'discovery.strategyText', label: 'Your organisation\'s strategy points', type: 'textarea', span: true, rows: 4,
+              placeholder: 'e.g. 1) Become a digital-first insurer by 2027.  2) Grow adviser capacity without growing headcount.  3) Reduce operational risk in regulated processes.  4) Build internal AI and automation capability.',
+              help: 'The strategic priorities this workflow could support. Bullet points are perfect. Nothing you paste or attach leaves your browser.',
+              attach: 'strategy'
+            },
+            {
+              key: 'discovery.strategicAlignment', label: 'How strongly does this workflow support that strategy?', type: 'scale',
+              help: 'Your own read on the alignment. This feeds the strategic-alignment component of the value score.',
               captions: ['Not on the strategic agenda', 'Loosely related', 'Supports a stated priority',
                 'Named in the strategic plan', 'Board-level priority this year']
             }
